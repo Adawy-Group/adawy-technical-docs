@@ -16,7 +16,7 @@ flowchart LR
 
 | Phase | Product | What it proves |
 | ----- | ------- | -------------- |
-| 1 | **The Websites** — adawygroup.com, Adawy Studio, Adawy Pack, Adawy Print, and every other brand site | The multi-tenant platform and the design system |
+| 1 | **The Websites** — adawygroup.com, Adawy Studio, Adawy Pack, Adawy Print, and every other brand site | The monorepo platform and the design system |
 | 2 | **The Client Portal** — the daily product of being an ecosystem member | The backend, Odoo integration, auth, and member-facing AI |
 | 3 | **The Employee Portal** — one internal home for the group's teams | Internal AI, search, and operational intelligence |
 
@@ -25,19 +25,21 @@ flowchart LR
 The entire public face of the group, rebuilt on one platform. Order of
 delivery, priority first:
 
-1. **adawygroup.com** — the corporate site and first tenant. Building it
-   builds the permanent infrastructure: the multi-tenant codebase, hosting,
-   domains, deployment pipeline, and the design system. Committed dates:
+1. **adawygroup.com** (`apps/group`) — the corporate site and the first app
+   in the monorepo. Building it builds the permanent foundation: the
+   `@adawy/*` packages (ui, tailwind-config, motion, seo, utils), hosting,
+   domains, and the deployment pipeline. Committed dates:
    [kickoff 14 June → launch 23 July 2026](/about/timeline).
-2. **Adawy Studio** — the creative flagship; sets the design bar and the
-   creative template.
-3. **Adawy Pack** — the industrial flagship; exercises the industrial
-   template that Print, Production, and Supplies reuse.
+2. **Adawy Studio** (`apps/studio`) — the creative flagship; sets the design
+   bar and hardens the shared packages against a second, very different
+   brand identity.
+3. **Adawy Pack** (`apps/pack`) — the industrial flagship; establishes the
+   industrial patterns that Print, Production, and Supplies reuse.
 4. **Adawy Print, Adawy Supplies, Adawy Marketing Solutions, Adawy Business
    Development, Adawy Media Production, Adawy Production, and the rest** —
-   built from the templates, each one faster than the last
+   each a thin new app composed from the mature packages
    ([the workflow](/guides/launch-new-brand)). Six weeks per site becomes
-   one week per site as the templates mature.
+   one week per site as the packages mature.
 
 Every site ships to the same bar: bilingual-ready (EN/AR), WCAG 2.1 AA,
 Lighthouse mobile ≥ 94, structured data, analytics, and the "part of Adawy

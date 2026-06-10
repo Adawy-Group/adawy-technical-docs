@@ -4,49 +4,51 @@ title: Launching a New Brand Site
 
 # Launching a New Brand Site
 
-The test of the multi-tenant architecture is that adding brand #39 is a
-**configuration task, not a build**. Under WordPress this took ~6 weeks; on
-the platform it is about a week of elapsed time, most of it content.
+The test of the platform is that adding the next brand is **a thin app, not a
+new project**. Under WordPress this took ~6 weeks; in the monorepo it is about
+a week of elapsed time, most of it content.
 
 ## The workflow
 
 | Step | Time | Who |
 | ---- | ---- | --- |
-| 1. Point the brand's domain at the platform | Few minutes | Lead (or any developer) |
-| 2. Create the brand configuration — colors, fonts, logos as design tokens | Few hours | Designer, with dev support |
-| 3. Pick the template: industrial / creative / services / retail | Few minutes | Designer + lead together |
-| 4. Populate content (MDX/config in the repo, via PR) | 2–5 days | Team, with copy from marketing |
-| 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + lead |
-| 6. Quality review and launch | 1–2 days | Lead |
+| 1. Scaffold the app under `apps/<brand>` from the closest existing app | Few hours | Developer |
+| 2. Define the brand's tokens — colors, fonts, logos — on the `@adawy/tailwind-config` structure | Few hours | Designer, with dev support |
+| 3. Create the Vercel project and point the brand's domain | Few minutes | CTO (or any developer) |
+| 4. Populate content (MDX/config in the app, via PR) | 2–5 days | Team, with copy from marketing |
+| 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + developer |
+| 6. Quality review and launch | 1–2 days | CTO |
 
 ## Step notes
 
-1. **Domain:** add the domain in Vercel + Cloudflare; the routing layer
-   resolves the tenant from the hostname. Verify staging serves the new brand
-   before announcing anything.
-2. **Brand config:** a new folder under `brands/` — tokens only, no logic
-   ([project structure](/standards/project-structure)). Both logo variants
-   (light/dark), EN + AR font stacks.
-3. **Template choice** is a decision, not a default — match the brand's
-   sector. Getting the *industrial* template right once is why Print,
-   Production, and Supplies cost days, not weeks.
-4. **Content:** lives in the repo as MDX and configuration, in English and
+1. **Scaffold:** copy the structurally closest app (industrial brand → start
+   from `apps/pack`; creative → `apps/studio`). The app should contain only
+   routes, content, and token values — everything else comes from `@adawy/*`
+   packages ([keep apps thin](/standards/project-structure)).
+2. **Tokens:** the brand's identity is a set of overrides on the shared token
+   structure — never edited copies of shared components. Include both logo
+   variants (light/dark) and the EN + AR font stacks.
+3. **Domain:** each app is its own Vercel project; add the domain there and
+   verify the preview serves the new brand before announcing anything.
+4. **Content:** lives in the app as MDX and configuration, in English and
    Arabic, and lands via reviewed PRs like any other change. Marketing
    supplies the copy; the team commits it
    ([ADR-004](/architecture/adrs) — the CMS is deferred for now).
-5. **Custom tweaks:** the template policy applies — configuration over
-   customization. If a request can't be met with tokens, it goes through the
-   lead as an explicitly scoped exception.
+5. **Custom tweaks:** configuration over customization. If a request can't be
+   met with tokens, it goes through the CTO as an explicitly scoped
+   exception — and if the new section is genuinely reusable, it's built in
+   `@adawy/ui`, not in the app.
 6. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass,
-   RTL verified, metadata/OG/structured data set, analytics live, footer
-   "part of Adawy Group" cross-link present, corporate directory updated.
+   RTL verified, metadata/OG/structured data set (via `@adawy/seo`),
+   analytics live, footer "part of Adawy Group" cross-link present, corporate
+   directory updated.
 
 ## Pitfalls
 
-- Don't copy another brand's folder and edit in place — generate from the
-  brand-config schema so missing tokens fail at build time.
-- Don't let "small" one-off component changes slip in during step 5 — that's
-  how the shared platform decays into 38 forks
-  ([the scope-creep risk](/architecture/roadmap#known-risks-and-how-we-manage-them)).
-- Don't launch without the redirect map if the brand had an old site — losing
-  existing search ranking costs more than the build did.
+- **Don't fork shared components into the app.** The moment `apps/<brand>`
+  contains an edited copy of a `@adawy/ui` component, the platform has started
+  decaying into 38 separate sites. Fixes flow upstream to `packages/`.
+- **Don't skip the token structure** by hard-coding brand values in the app —
+  the next person can't tell identity from implementation.
+- **Don't launch without the redirect map** if the brand had an old site —
+  losing existing search ranking costs more than the build did.

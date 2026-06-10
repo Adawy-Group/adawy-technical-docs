@@ -17,10 +17,11 @@ The software department builds that digital layer. Concretely, our mandate is:
 
 1. **The websites — one shared platform for every brand site** (Phase 1).
    adawygroup.com, Adawy Studio, Adawy Pack, Adawy Print, and the rest. The
-   group owns 38 domains today and plans for 110; building each separately
-   would require ~30 engineers at maturity, one multi-tenant codebase does it
-   with 7–8. This is the single most important architectural decision we have
-   made — see [ADR-001](/architecture/adrs).
+   group owns 38 domains today and plans for 110; building each as a separate
+   project would require ~30 engineers at maturity — one monorepo of thin
+   brand apps on shared `@adawy/*` packages does it with 7–8. This is the
+   single most important architectural decision we have made — see
+   [ADR-001](/architecture/adrs).
 2. **The client portal** (Phase 2) — the experience of being an Adawy
    ecosystem member: all orders across sub-brands in one place (pulled from
    Odoo), brand assets, invoices, structured work requests, and an AI

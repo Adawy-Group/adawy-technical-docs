@@ -18,8 +18,9 @@ reasoning: [ADR-002](/architecture/adrs).
 ## Why one codebase for 38 (eventually 110) brands?
 
 At six weeks per separate site, 110 sites ≈ 660 engineer-weeks — thirteen
-engineers doing nothing else for a year. Multi-tenant turns each new brand
-into configuration. [ADR-001](/architecture/adrs) has the details.
+engineers doing nothing else for a year. The monorepo turns each new brand
+into a thin app composed from shared `@adawy/*` packages.
+[ADR-001](/architecture/adrs) has the details.
 
 ## Why not Shopify for the shop? Why not Contentful/Clerk/etc.?
 

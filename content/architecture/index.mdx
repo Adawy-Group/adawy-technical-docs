@@ -4,38 +4,51 @@ title: Products & Architecture
 
 # Products & Architecture
 
-One decision shapes everything we build: **a single codebase serves every
-Adawy brand**. Each of the 38 companies keeps its own domain and its own
-visual identity; behind the scenes, one Next.js application, one PostgreSQL
-database, and one component library power them all.
+One decision shapes everything we build: **one monorepo, shared packages, a
+thin app per brand.** Each of the 38 companies keeps its own domain, its own
+visual identity, and its own deployment; behind the scenes, every site is
+composed from the same `@adawy/*` packages.
 
 ```mermaid
 flowchart TD
-    subgraph Domains["38 brand domains (110 planned)"]
-        D1[adawygroup.com]
-        D2[adawystudio.com]
-        D3[adawypack.com]
-        D4[adawyshop.com]
-        D5[+ 34 more]
+    subgraph MONO["The adawy monorepo (Turborepo)"]
+        subgraph PKGS["packages/ — where the engineering lives"]
+            UI["@adawy/ui\nshadcn primitives"]
+            TW["@adawy/tailwind-config\ndesign tokens"]
+            MO["@adawy/motion\nGSAP"]
+            SEOP["@adawy/seo\nmetadata + sitemaps"]
+            UT["@adawy/utils"]
+        end
+        subgraph APPS["apps/ — one thin app per brand"]
+            G["group"]
+            S["studio"]
+            P["pack"]
+            N["+ print, supplies, …"]
+        end
+        PKGS --> APPS
     end
-    Domains --> R["Domain routing layer (Cloudflare + Vercel)"]
-    R --> APP["One Next.js application (multi-tenant)\nshared design system · component library"]
-    APP --> BE["Node.js backend (NestJS)\nauth · business logic · integrations"]
+    G --> DG["adawygroup.com"]
+    S --> DS["adawystudio.com"]
+    P --> DP["adawypack.com"]
+    APPS --> BE["Node.js backend (NestJS) — Phase 2\nauth · business logic · integrations"]
     BE --> ODOO["Odoo (system of record)\nfinance · inventory · payroll · manufacturing"]
     BE --> DB[("PostgreSQL + pgvector")]
     BE --> PORTAL["Client portal (Phase 2)\nportal.adawygroup.com"]
     BE --> EMP["Employee portal (Phase 3)\ninternal AI · search · dashboards"]
 ```
 
-## Why multi-tenant (the business reason)
+## Why this shape (the business reason)
 
-- A change to the corporate footer ships **once** and reaches every brand site
-  in one deployment, instead of 38 times.
-- A security patch protects every domain at once.
-- Adding the 39th brand is **configuration, not a build**: point the domain,
-  set the brand tokens, pick a template, populate content. Days, not weeks.
-- Without this decision, 110 brands would need ~30 engineers. With it, the
-  same work is done by 7–8 at maturity.
+- A fix in `@adawy/ui` or a token change in `@adawy/tailwind-config` ships
+  **from one PR** and reaches every brand site — never the same change ×38.
+- Each brand deploys **independently** as its own Vercel project: a bad deploy
+  on one site cannot take down the others, and flagship brands keep full
+  creative freedom inside their own app.
+- Adding the next brand is **a thin app, not a new project**: scaffold under
+  `apps/`, set the brand tokens, point the domain, fill content. Days, not
+  weeks.
+- Without shared packages, 110 brands would need ~30 engineers. With them,
+  the same work is done by 7–8 at maturity.
 
 Each brand site cross-links the parent ("part of Adawy Group") and the
 corporate site links out to every sub-brand — the LVMH model: individual brand

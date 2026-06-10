@@ -12,9 +12,11 @@ the lead reviewing platform-level changes.
 
 1. **Correctness** — does it do what the card says? Edge cases, error states,
    loading states.
-2. **Platform impact** — this is multi-tenant: does the change behave for
-   *every* brand, or only the one being worked on? Does it respect the
-   template policy ([no one-off customizations](/architecture/roadmap#known-risks-and-how-we-manage-them))?
+2. **Platform impact** — a change in `@adawy/*` packages ships to *every*
+   brand app: does it behave for all of them, or only the one being worked
+   on? Conversely, is reusable code being forked into an app when it belongs
+   upstream in `packages/`
+   ([keep apps thin](/standards/project-structure))?
 3. **Standards** — [coding conventions](/standards/coding), accessibility,
    bilingual/RTL readiness, performance budget (no regression on Lighthouse).
 4. **Tests and checks** — automated checks green, and changed behavior covered

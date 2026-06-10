@@ -8,7 +8,7 @@ title: Our Systems
 
 | System | What it is | Status |
 | ------ | ---------- | ------ |
-| **Brand sites platform** | One multi-tenant Next.js app serving every brand domain — adawygroup.com, Adawy Studio, Adawy Pack, Adawy Print, and the rest — each with its own theme, content, and navigation | Phase 1 — in build |
+| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per brand (`apps/group`, `apps/studio`, `apps/pack`, …) on shared `@adawy/*` packages, each deployed to its own domain | Phase 1 — in build |
 | **Shared design system** | React + TypeScript + Tailwind component library, themeable per brand via CSS variables; industrial / creative / services / retail page templates | Phase 1 — the most important technical deliverable |
 | **Backend service** | Node.js (NestJS): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 — first build of the phase |
 | **Aladawy Shop (rebuild)** | Custom e-commerce on the same stack; catalog synced from Odoo; Paymob (cards) + Fawry (cash on delivery) | Phase 2 |
@@ -20,11 +20,11 @@ title: Our Systems
 
 | On Vercel (frontend) | On the backend host (Railway → DigitalOcean) |
 | -------------------- | -------------------------------------------- |
-| All brand websites | Authentication and sessions |
+| All brand websites — one Vercel project per app | Authentication and sessions |
 | SSR and static generation | Business logic and Odoo integration |
 | Client portal UI | Background jobs and scheduled tasks |
 | Image optimization | Real-time connections (Pusher) for the portal |
-| Edge functions for domain routing | Background jobs and webhooks |
+| Preview deployments per PR (affected apps only) | Webhooks from Odoo |
 
 The split exists because Vercel functions can't hold persistent connections
 and time out on long-running jobs — fine for serving pages, wrong for Odoo

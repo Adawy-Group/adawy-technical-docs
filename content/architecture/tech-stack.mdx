@@ -12,8 +12,9 @@ avoiding subscription dependencies that compound at 110-brand scale.**
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Framework | **Next.js 15 + TypeScript** | Native multi-tenant support, performance built in, and three years of production experience on the team |
-| Styling | **Tailwind CSS + shadcn/ui** | Themeable per brand via CSS variables, accessible, owned by the team — no component library subscription |
+| Monorepo | **Turborepo** — `apps/` per brand + shared `@adawy/*` packages (`ui`, `tailwind-config`, `motion`, `seo`, `utils`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Framework | **Next.js 15 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team |
+| Styling | **Tailwind CSS + shadcn/ui** (`@adawy/ui`, `@adawy/tailwind-config`) | Themeable per brand via design tokens, accessible, owned by the team — no component library subscription |
 | Motion | **GSAP + Framer Motion** | The brand guidelines require cinematic, scroll-driven motion; these are the industry standards for it |
 | Forms | **React Hook Form + Zod** | Type-safe forms with validation shared between client and server |
 
