@@ -5,13 +5,54 @@ import { Head, Search } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'nextra-theme-docs/style.css'
 
+const siteName = 'Adawy Group — Software Department Handbook'
+const siteDescription =
+  'Technical documentation and onboarding handbook for the Adawy Group software department: what we build, why we build it, and how we work.'
+
 export const metadata: Metadata = {
+  metadataBase: new URL('https://adawy-technical-docs.vercel.app'),
   title: {
-    default: 'Adawy Group — Software Department Handbook',
+    default: siteName,
     template: '%s | Adawy Docs'
   },
-  description:
-    'Technical documentation and onboarding handbook for the Adawy Group software department: what we build, why we build it, and how we work.'
+  description: siteDescription,
+  applicationName: 'Adawy Software Handbook',
+  keywords: [
+    'Adawy Group',
+    'software department',
+    'engineering handbook',
+    'technical documentation',
+    'onboarding',
+    'Next.js',
+    'multi-tenant platform'
+  ],
+  authors: [{ name: 'Adawy Group Software Department' }],
+  creator: 'Adawy Group',
+  robots: {
+    index: true,
+    follow: true
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName,
+    title: siteName,
+    description: siteDescription,
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Adawy Group — Software Department Handbook'
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteName,
+    description: siteDescription,
+    images: ['/og.png']
+  }
 }
 
 const navbar = (
