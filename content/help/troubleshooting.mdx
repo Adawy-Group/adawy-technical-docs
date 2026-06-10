@@ -20,7 +20,8 @@ Hit something new? Fix it, then add it here in the same PR.
 
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
-| Wrong brand theme renders locally | Tenant resolution falls back to default when the hostname isn't mapped | Use the documented local hostname mapping from the platform README, not `localhost` directly |
+| A shared-package change doesn't show up in the app you're running | Stale Turborepo cache or the dev task isn't watching `packages/` | Restart the filtered dev task (`turbo dev --filter=<app>`); if it persists, `turbo build --force` the package |
+| Two apps fight over the same port locally | Both started with default ports | Run one app at a time with `--filter`, or set per-app ports in each app's dev script |
 | Env vars missing after pull | New variables added since your last sync | `vercel env pull .env.local` again; backend values from the password manager |
 | Lighthouse dropped after your change | Usually a new client component or unoptimized media | Work through the [Performance Checklist](/guides/performance-checklist) |
 | Arabic layout breaks | Hard-coded directional CSS (`margin-left` etc.) | Use logical properties (`margin-inline-start`) — see [UI standards](/standards/ui) |

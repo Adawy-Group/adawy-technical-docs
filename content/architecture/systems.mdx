@@ -9,7 +9,7 @@ title: Our Systems
 | System | What it is | Status |
 | ------ | ---------- | ------ |
 | **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per brand (`apps/group`, `apps/studio`, `apps/pack`, …) on shared `@adawy/*` packages, each deployed to its own domain | Phase 1 — in build |
-| **Shared design system** | React + TypeScript + Tailwind component library, themeable per brand via CSS variables; industrial / creative / services / retail page templates | Phase 1 — the most important technical deliverable |
+| **Shared design system** | The `@adawy/*` packages: `ui` (shadcn primitives + sections), `tailwind-config` (design tokens), `motion` (GSAP), `seo`, `utils` — themeable per brand via tokens | Phase 1 — the most important technical deliverable |
 | **Backend service** | Node.js (NestJS): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 — first build of the phase |
 | **Aladawy Shop (rebuild)** | Custom e-commerce on the same stack; catalog synced from Odoo; Paymob (cards) + Fawry (cash on delivery) | Phase 2 |
 | **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | Phase 2 — the flagship |

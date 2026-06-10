@@ -74,9 +74,12 @@ exaggeration.
 
 ## Component rules
 
-- Build with the shared design system (shadcn/ui-based primitives + section
-  components). Check whether a component exists before writing one.
-- New component → themeable via tokens, accessible, documented, reviewed as
-  platform code (it will run on 38 sites).
+- Build with the shared design system: `@adawy/ui` (shadcn-based primitives +
+  section components), themed by `@adawy/tailwind-config` tokens, animated
+  with `@adawy/motion`. Check whether a component exists before writing one.
+- New reusable component → it goes in `@adawy/ui`, themeable via tokens,
+  accessible, documented, reviewed as platform code (it will run on every
+  brand app).
 - Brand-specific need → first ask whether it's a token override; only flagship
-  brands get genuinely custom components, explicitly scoped.
+  brands get genuinely custom components, explicitly scoped — and they live in
+  that brand's app, never as edited copies of shared ones.
