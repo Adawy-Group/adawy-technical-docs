@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
+/** Production origin for canonicals, OG URLs, and JSON-LD. Never use VERCEL_URL — it is the per-deployment hostname. */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://adawy-technical-docs.vercel.app')
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://adawy-technical-docs.vercel.app'
 
 export const siteName = 'Adawy Group — Software Department Handbook'
 export const siteDescription =
