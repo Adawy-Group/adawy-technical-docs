@@ -3,5 +3,5 @@ export default {
   coding: 'Coding Conventions',
   'project-structure': 'Project Structure',
   security: 'Security Basics',
-  ui: 'UI & Components'
+  ui: 'UI & Brand Standards'
 }

@@ -1,0 +1,74 @@
+---
+title: The Board & Labels
+---
+
+# The Board & Labels
+
+All department work lives on **one Trello board**. Each list is a stage; a
+card moves left to right:
+
+| # | List | Meaning |
+| - | ---- | ------- |
+| 1 | **Requests** | New work lands here before it is reviewed |
+| 2 | **Backlog** | Accepted work, not yet scheduled |
+| 3 | **This Week** | Committed for the current week — priority = position in the list (top first) |
+| 4 | **Design** | Interface and experience being prepared |
+| 5 | **Ready for Dev** | Design approved and fully specified, waiting to be built |
+| 6 | **In Progress** | Currently being developed — **strict WIP limit** |
+| 7 | **Review** | Tested on staging, checked before release |
+| 8 | **Done** | Delivered and live |
+
+## What every card carries
+
+- A clear title and short description
+- One **Brand** label and one **Type** label (see below)
+- A link to its **Figma** design
+- A link to its **GitHub pull request**
+- A checklist of what counts as done
+- A target date and the person who owns it
+
+Everything needed to understand and finish the work lives in one place —
+nothing is lost between design and development.
+
+## The label system
+
+The rule underneath it all: **every color means exactly one thing.** A card
+can be read by its colors alone.
+
+**Type of work** — exactly one per card:
+
+| Label | Color | Meaning |
+| ----- | ----- | ------- |
+| Feature | Blue | New functionality or a new build |
+| Bug | Orange | Something is broken and needs fixing |
+| Content | Sky | Copy, images, or content updates — no new functionality |
+| Design | Purple | Design work, before or without development |
+| Maintenance | Grey | Dependency updates, refactors, behind-the-scenes upkeep |
+
+**Brand or site** — exactly one per card, so the board filters to a single
+brand instantly:
+
+| Label | Color |
+| ----- | ----- |
+| Adawy Group | Green |
+| Adawy Studio | Lime |
+| Adawy Pack | Yellow |
+
+**Flags** — only when they truly apply; most cards carry none:
+
+| Label | Color | Meaning |
+| ----- | ----- | ------- |
+| Urgent | Red | Drop everything — red is reserved for this and nothing else |
+| Blocked | Black | Cannot move until something else is resolved — reads as a stop sign |
+
+**Do not add priority labels.** Priority is shown by where a card sits in its
+list — the most important work sits at the top of *This Week*.
+
+## Board add-ons and scaling
+
+- **Calendar view** places every dated card on a timeline — that's how the
+  delivery roadmap is read.
+- **Custom Fields** put priority and target date on the card face.
+- When the board carries more than ~8 brands, brand moves from labels into a
+  Custom Field dropdown so the label list stays short. Type and flag labels
+  never change.

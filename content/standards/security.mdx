@@ -4,16 +4,43 @@ title: Security Basics
 
 # Security Basics
 
-The non-negotiables. These exist to protect our users and the business.
+The non-negotiables. Ecosystem members trust Adawy with their business
+operations through our systems — these rules protect that trust.
 
-{/* TODO(content): Tailor to real policy. Starter set: */}
+## Secrets and credentials
 
-- **Never commit secrets.** Env vars live in the hosting platform / a password
-  manager — never in git, never in chat.
-- **Never paste production data** into third-party tools (including AI tools)
-  unless the tool is approved for it.
-- **All input is untrusted.** Validate on the server, not just the client.
-- **Dependencies:** keep them updated; investigate audit warnings before release.
+- **Never commit secrets.** Environment variables live in Vercel/Railway and a
+  team password manager — never in git, never in chat, never in Trello cards.
+- **Never paste production data** (client data, credentials, Odoo exports)
+  into third-party tools, including AI tools, unless the tool is approved for
+  it.
+- Access is granted per person, per system, by the lead. When someone leaves,
+  access is revoked the same day.
 
-> 🚧 **Stub** — confirm and extend with department policy (access control,
-> incident response contact, data handling).
+## Application security
+
+- **All input is untrusted.** Validate on the server with Zod schemas — client
+  validation is UX, not security.
+- **Permissions are enforced at every layer.** The backend verifies on every
+  request that the authenticated user may see the requested data, and the
+  database uses **row-level security** so a code defect cannot leak one
+  member's data to another. *Why both:* the client portal serves competing
+  businesses from one database; defense must not depend on a single check.
+- **Authentication is Better Auth**, self-hosted: email + password, two-factor
+  support, organization-based permissions. User data stays in our database.
+- The Payload admin enforces per-brand permissions — an editor for Adawy
+  Studio cannot touch Adawy Pack content without being granted it.
+
+## Dependencies and updates
+
+- Keep dependencies updated; treat `npm audit` findings as cards on the board
+  (Maintenance/grey), not as noise to silence.
+- Pin versions where an upstream is known-unstable, and record the reason in
+  the lockfile commit (see this repo's zod pin for Nextra as an example).
+
+## Incidents
+
+If you suspect a leak or breach: tell the **lead immediately** — speed beats
+embarrassment, always. Rotate affected credentials first, investigate second,
+write down what happened third (an ADR or incident note), so the lesson
+outlives the incident.

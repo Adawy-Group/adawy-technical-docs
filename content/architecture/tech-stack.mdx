@@ -4,15 +4,67 @@ title: Tech Stack & Why
 
 # Tech Stack & Why
 
-Our stack is centered on **TypeScript and the Next.js/React ecosystem**.
+Every tool here was chosen for a reason, and the reasons matter more than the
+names. The governing principle: **choose tools the group owns and controls,
+avoiding subscription dependencies that compound at 110-brand scale.**
 
-{/* TODO(content): For each technology, a row: what / where used / WHY chosen.
-    The "why" column is the whole point of this page — e.g. "one language across
-    frontend and backend lowers hiring and context-switching costs". */}
+## Frontend
 
-| Technology | Used for | Why we chose it |
-| ---------- | -------- | --------------- |
-| TypeScript | All projects | 🚧 |
-| Next.js    | Web apps | 🚧 |
+| Layer | Choice | Why |
+| ----- | ------ | --- |
+| Framework | **Next.js 15 + TypeScript** | Native multi-tenant support, performance built in, and three years of production experience on the team |
+| Styling | **Tailwind CSS + shadcn/ui** | Themeable per brand via CSS variables, accessible, owned by the team — no component library subscription |
+| Motion | **GSAP + Framer Motion** | The brand guidelines require cinematic, scroll-driven motion; these are the industry standards for it |
+| Forms | **React Hook Form + Zod** | Type-safe forms with validation shared between client and server |
 
-> 🚧 **Stub** — complete the stack table with reasoning per choice.
+## Backend
+
+| Layer | Choice | Why |
+| ----- | ------ | --- |
+| Runtime | **Node.js + NestJS** | One language across the whole platform; NestJS adds structure as the codebase grows |
+| Database | **PostgreSQL + Prisma** | Open source; relational data and vector storage (pgvector) in one system — no separate vector DB |
+| Cache & queue | **Redis (Upstash)** | Pay-as-you-go; sessions, rate limiting, caching, background jobs |
+| Object storage | **Cloudflare R2** | S3-compatible with **no download fees** — members download brand asset packages constantly |
+
+## Platform services
+
+| Service | Choice | Why |
+| ------- | ------ | --- |
+| CMS / admin dashboard | **Payload** (self-hosted) | Open source, runs alongside the app, bilingual content built in, per-brand permissions — full ownership of content and schema |
+| Search | **Meilisearch** (self-hosted) | Strong Arabic morphology support; no subscription |
+| Authentication | **Better Auth** | Open source, multi-tenant, no per-user fees; user data stays in our database |
+| AI | **Vercel AI SDK + Claude & Gemini APIs** | Provider-agnostic; Gemini leads on Egyptian Arabic, Claude on English business prose |
+| Vector storage | **pgvector** | Same PostgreSQL database; no extra service at this scale |
+
+## Operations
+
+| Tool | Purpose |
+| ---- | ------- |
+| Vercel Pro | Frontend hosting (built for Next.js) |
+| Railway → DigitalOcean | Backend hosting (Railway early, DO at scale) |
+| GitHub | Code hosting + CI (the `adawy-group` org) |
+| Sentry | Error tracking and performance monitoring |
+| Better Stack | Uptime monitoring and alerting |
+| Linear | Engineering project management |
+| Trello | Department-level Kanban board (see [How We Work](/how-we-work)) |
+| Notion | Internal documentation |
+| Figma | Design and design-to-code handoff |
+
+## What we deliberately avoid (and why)
+
+- **No hosted CMS (Contentful etc.)** — we own the content and the schema in
+  Payload.
+- **No hosted auth (Clerk, Auth0)** — user data stays in our database, no
+  per-user fees across 110 brands.
+- **No Shopify / per-store commerce** — dozens of stores would compound into a
+  significant subscription and operational burden; custom commerce on our
+  stack has no vendor dependency and no revenue-tied fees
+  ([ADR-005](/architecture/adrs)).
+- **No dedicated vector database** — pgvector in the existing PostgreSQL.
+- **No third-party analytics holding our user data** — Vercel Analytics on the
+  frontend, self-hosted Metabase for internal dashboards.
+
+> Every component is owned by the group except the few cloud services that
+> genuinely cannot be self-hosted at this scale (Vercel for frontend hosting,
+> Cloudflare for CDN). The group owns the code, the content, the user data,
+> and the architecture.

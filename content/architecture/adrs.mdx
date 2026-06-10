@@ -4,19 +4,84 @@ title: Decision Records (ADRs)
 
 # Architecture Decision Records
 
-Significant technical decisions are recorded here so future team members
-understand not just *what* we decided, but *why* — and what we knew at the time.
+Significant technical decisions, recorded so future team members understand
+not just *what* we decided but *why* — and what we knew at the time. Format:
+**Context → Decision → Consequences.** New ADRs are added via PR.
 
-## ADR format
+## ADR-001 — One multi-tenant codebase for all brand sites
 
-Each ADR is short: **Context → Decision → Consequences.**
+- **Context:** 38 domains today, 110 planned. Separate sites mean every
+  change, patch, and feature ×38 — roughly 30 engineers at maturity.
+- **Decision:** One Next.js application serves every brand. The platform
+  detects the domain and applies that brand's theme, content, and navigation.
+  Brands are tenants; adding one is configuration, not a build.
+- **Consequences:** Every improvement reaches every brand at once; 7–8
+  engineers suffice at maturity. Trade-off: platform-wide discipline required —
+  a sloppy shared component breaks 38 sites at once; template policy guards
+  against per-brand customization creep.
 
-{/* TODO(content): Add real ADRs. Seed candidates:
-    - Why Nextra for documentation
-    - Choice of hosting platform
-    - Frontend framework decision
-    - Any past migration and its reasoning */}
+## ADR-002 — Rebuild on a code-first stack instead of patching WordPress
 
-| # | Decision | Status | Date |
-| - | -------- | ------ | ---- |
-| 001 | 🚧 | — | — |
+- **Context:** The 2026 technical audit of adawygroup.com documented 20
+  findings (Lighthouse mobile ~32, template footer credits, broken sub-brand
+  links, missing SEO/meta/structured data, stock photography, English only).
+  Root cause: page-builder platform fit, not execution.
+- **Decision:** Rebuild from scratch on Next.js + Payload, accepted by
+  leadership. WordPress is right for a small business with simple needs and
+  wrong for a 38-company group operating one coordinated digital experience.
+- **Consequences:** Full code/content ownership, real version control and
+  review, bilingual/RTL by design, cinematic motion possible. Cost: we build
+  and own everything — hence the design system investment in Phase 1.
+
+## ADR-003 — Keep Odoo as the system of record
+
+- **Context:** The group runs finance, inventory, payroll, HR, and
+  manufacturing on Odoo. Custom ERPs almost always end in regret.
+- **Decision:** Keep Odoo permanently. Build differentiating layers (portal,
+  dashboards, AI) on top via its APIs, behind an abstraction layer; cache in
+  our PostgreSQL.
+- **Consequences:** Years of engineering saved. Odoo API deprecation (Odoo 22,
+  late 2028) costs one or two sprints thanks to the abstraction. SAP is a
+  Phase-4 evaluation, not a today problem — and the platform doesn't depend on
+  Odoo specifically.
+
+## ADR-004 — Self-hosted Payload CMS as the unified admin dashboard
+
+- **Context:** 3 WordPress admins today; 38 would be unmanageable. Hosted CMSs
+  (Contentful) charge per-seat/per-entry at compounding scale and hold our
+  content.
+- **Decision:** One Payload instance: single login, per-brand permissions,
+  native EN/AR content, owned by the group.
+- **Consequences:** Marketing edits every brand from one place; content lives
+  in our database; we maintain the instance ourselves.
+
+## ADR-005 — Custom e-commerce instead of Shopify/WooCommerce
+
+- **Context:** Aladawy Shop runs on WooCommerce; the group may eventually sell
+  across multiple storefronts sharing one inventory, one customer base, one
+  Odoo integration. Shopify means a subscription + transaction fees per store.
+- **Decision:** Custom commerce on the platform stack — catalog in PostgreSQL
+  synced from Odoo, Paymob (cards) + Fawry (cash on delivery).
+- **Consequences:** No per-store fees or vendor lock-in; storefronts for new
+  brands (or ecosystem members, Phase 3–4) ship in days. Cost: we own cart,
+  checkout, and payment-integration code — using well-established Next.js
+  commerce patterns, not from scratch.
+
+## ADR-006 — Every brand keeps its own domain, cross-linked to the group
+
+- **Context:** Three options: subdomains of adawygroup.com, fully separate
+  domains, or own domains with cross-linking.
+- **Decision:** Own domains with "part of Adawy Group" cross-links both ways
+  (the LVMH model).
+- **Consequences:** Each company reads as a real company, not a corporate
+  department; the ecosystem stays discoverable; routing layer must map all
+  domains to the platform (Cloudflare + Vercel edge).
+
+## ADR-007 — Documentation lives in this repo, public, docs-as-code
+
+- **Context:** Department knowledge was scattered across chats and PDFs; new
+  members had no single source of truth.
+- **Decision:** This Nextra site, public, on the same Vercel/GitHub workflow
+  as everything else. Changes via PR.
+- **Consequences:** Onboarding is self-serve; docs rot is visible in git; the
+  handbook itself demonstrates the platform's standards.

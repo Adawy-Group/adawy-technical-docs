@@ -4,9 +4,52 @@ title: Dev Environment Setup
 
 # Dev Environment Setup
 
-{/* TODO(content): Per-project setup. For each repo:
-    - prerequisites (Node version via nvm/fnm, package manager)
-    - clone → install → env vars (where to get them) → run dev → verify
-    - common setup errors and fixes */}
+Every repo in the `adawy-group` org follows the same pattern — if you can set
+up one, you can set up all of them.
 
-> 🚧 **Stub** — step-by-step environment setup for each active project.
+## The standard sequence
+
+```bash
+# 1. Clone
+git clone git@github.com:adawy-group/<repo>.git
+cd <repo>
+
+# 2. Use the right Node version (LTS; .nvmrc/.node-version in the repo wins)
+fnm use   # or: nvm use
+
+# 3. Install
+npm install
+
+# 4. Environment variables — never copied from chat
+vercel env pull .env.local   # for Vercel-linked frontends
+# (backend repos: values come from the team password manager)
+
+# 5. Run
+npm run dev
+```
+
+## Verify your setup with this docs site
+
+The lowest-risk first clone is this handbook itself:
+
+```bash
+git clone git@github.com:adawy-group/adawy-technical-docs.git
+cd adawy-technical-docs
+npm install
+npm run dev    # → http://localhost:3000
+npm run build  # must pass before any PR
+```
+
+If the build passes locally, your toolchain is correct.
+
+## Common issues
+
+| Symptom | Cause → fix |
+| ------- | ----------- |
+| Wrong Node version errors | You skipped the version manager — `fnm use` / `nvm use` in the repo root |
+| Build fails on a page that renders fine in dev | MDX/prerender error — run `npm run build` and read the first failing page; dev mode shows the real error message |
+| `Invalid input: expected nonoptional` (this repo) | A dependency override drifted — `zod` must stay pinned to the version in `package.json` `overrides` (Nextra 4.6 compatibility) |
+| Missing env vars | `vercel env pull` again, or ask the lead — never invent values |
+
+Anything not covered here belongs in [Troubleshooting](/help/troubleshooting)
+— and adding it is a perfect first PR.

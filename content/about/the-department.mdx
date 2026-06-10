@@ -4,10 +4,56 @@ title: The Software Department
 
 # The Software Department
 
-{/* TODO(content): What the department builds and WHY.
-    - Mission: what business problems does software solve for Adawy Group?
-    - Current product portfolio at a glance (one line each, link to architecture section)
-    - What success looks like for the department */}
+## Why a software department exists in a manufacturing group
 
-> 🚧 **Stub** — should describe the department's mission, what it builds, and
-> the business reasoning behind it.
+Adawy Group's business model is **ecosystem membership, not project services**.
+A client enters once and accesses every service: branding, packaging,
+manufacturing, marketing, business development, technology. That model only
+works if the digital layer is real — a portfolio site explains what a company
+offers, but an *ecosystem* requires interfaces where members manage their
+relationship with the group every day.
+
+The software department builds that digital layer. Concretely, our mandate is:
+
+1. **One shared platform for every brand site.** The group owns 38 domains
+   today and plans for 110. Building each as a separate site would require an
+   engineering team of ~30 at maturity. One multi-tenant codebase does the
+   same with 7–8 engineers. This is the single most important architectural
+   decision we have made — see [ADR-001](/architecture/adrs).
+2. **One unified admin dashboard** (built on Payload CMS) so the marketing
+   team manages content for every brand from one place, in English and Arabic.
+3. **The client portal** (Phase 3) — the experience of being an Adawy
+   ecosystem member: all orders across sub-brands in one place (pulled from
+   Odoo), brand assets, invoices, structured work requests, and an AI
+   assistant. This is the most defensible product the group can build, because
+   no regional competitor operates the integrated stack that makes it possible.
+4. **AI solutions** that make the ecosystem AI-native: internal assistant,
+   content engine (bilingual first drafts for every brand), lead scoring,
+   manufacturing intelligence, and internal search.
+
+## What success looks like
+
+| Measure | Before (WordPress) | Phase 1 target | Phase 3 target |
+| ------- | ------------------ | -------------- | -------------- |
+| Lighthouse mobile performance | ~32 | 94 | 95+ sustained on every site |
+| Time to launch a new brand site | ~6 weeks | ~4 weeks | ~1 week |
+| Languages | English only | Bilingual-ready (EN/AR) | Bilingual live across all sites |
+| Admin dashboards to manage | 3 separate WP admins | 1 unified dashboard | 1 unified dashboard for all brands |
+| Code & content ownership | On WP themes/plugins | Full ownership | Full group ownership |
+
+## The current team
+
+The department currently operates with **two roles**:
+
+- **Lead & technical owner** (Seif Eldin Sameh) — architecture and technical
+  decisions, development, code review and deployment, setting priorities, and
+  reporting to management. This role sits at both ends of every task: deciding
+  what gets built and confirming it is ready before it goes live.
+- **UI/UX designer** — user experience and interface design, and keeping one
+  consistent design language across all brands so the platform stays unified
+  as it scales.
+
+The team grows phase by phase (backend engineer, second frontend developer,
+DevOps, engineering manager, analytics, QA…) — every hire justified by
+specific work, never by org-chart filling. See the
+[roadmap](/architecture/roadmap) for the phase-by-phase plan.

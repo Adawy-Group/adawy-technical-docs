@@ -4,10 +4,45 @@ title: Deployment
 
 # Deployment
 
-{/* TODO(content): Per environment:
-    - how previews/staging/production deploys are triggered
-    - who can deploy to production, and when (release windows?)
-    - how to roll back, and what to do when a deploy breaks
-    - where to watch logs/monitoring */}
+The pipeline is Git-based end to end. There are no manual FTP uploads, no
+editing on production, no exceptions.
 
-> 🚧 **Stub** — the path from merged PR to production, including rollback.
+## Environments
+
+| Environment | What it is | When it updates |
+| ----------- | ---------- | --------------- |
+| **Preview** | A unique URL per pull request (Vercel) | On every push to the PR branch |
+| **Staging** | The live staging link leadership reviews against weekly milestones | On merge to `main` |
+| **Production** | The real brand domains | Promotion from staging after verification |
+
+From week one of any project there is a **live staging link**; from the first
+build weeks it contains real pages. Anyone in leadership can open it at any
+time — that is the point: progress is something you can click, not a status
+claim in a report.
+
+## The path to production
+
+1. PR merged to `main` → automatic deploy to staging.
+2. Work verified on staging: tested on real phones, tablets, and browsers;
+   automated checks passed; no regressions.
+3. Card moves to **Done** only when the change is live with no regressions
+   ([Definition of Done](/how-we-work/definition-of-done)).
+4. Production deploys are owned by the lead. Rollback = redeploy the previous
+   build from Vercel (instant) — every deployment is immutable.
+
+## Monitoring
+
+- **Sentry** — error tracking and performance; a spike after deploy is treated
+  as a blocked release.
+- **Better Stack** — uptime monitoring and alerting on every production domain.
+- **Vercel Analytics / PageSpeed** — Core Web Vitals are watched after each
+  meaningful change; the performance budget (Lighthouse mobile ≥ 90s) is part
+  of "no regressions".
+
+## Launch weeks
+
+For site launches, the final week deliberately contains **no new building** —
+content entry and proofreading, device testing, SEO setup, performance
+optimization for Egyptian mobile networks, analytics, and the production
+cutover. That week is both real work and the buffer that absorbs slips so the
+launch date stays reliable.

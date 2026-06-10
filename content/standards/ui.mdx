@@ -1,13 +1,82 @@
 ---
-title: UI & Components
+title: UI & Brand Standards
 ---
 
-# UI & Components
+# UI & Brand Standards
 
-{/* TODO(content):
-    - design system / component library in use and where it lives
-    - when to build a new component vs reuse
-    - accessibility expectations
-    - responsive/RTL requirements if applicable */}
+Adawy Group's identity is **authentic, corporate, industrial, scalable,
+structured** — institutional infrastructure, not a trendy creative brand.
+Every interface we ship must hold that feeling. The full source of truth is
+the brand guidelines document; this page is the engineering-facing distillation.
 
-> 🚧 **Stub** — component and design-system rules.
+## Color
+
+Primary palette: **black, white, industrial gray** — timeless, technical,
+institutional.
+
+| Color | Usage ratio |
+| ----- | ----------- |
+| Black | ~50% |
+| White | ~35% |
+| Gray | ~15% |
+
+Avoid: bright/saturated palettes, neon tones, trend gradients, color-heavy
+layouts. Sub-brands have their own accent identities — applied through design
+tokens, never hard-coded.
+
+## Typography
+
+- **English:** Helvetica Now, Neue Haas Grotesk, General Sans, Satoshi
+- **Arabic:** Cairo, IBM Plex Arabic, DIN Next Arabic
+
+Style: bold headlines, large clean layouts, strong hierarchy, wide spacing,
+structured alignment, minimal clutter.
+
+## Layout & design character
+
+Designs should feel like industrial annual reports and architectural
+presentations: **grid-based, large negative space, structured composition,
+technical alignment, clean hierarchy.** Avoid overdesigned layouts, random
+graphic elements, visual clutter, excessive effects.
+
+## Motion
+
+Cinematic and intentional — GSAP and Framer Motion, controlled pacing,
+structured cuts, minimal transitions. Never TikTok-style editing, meme
+transitions, or hyperactive motion. **Always respect
+`prefers-reduced-motion`** — motion is brand, accessibility is law.
+
+## Imagery
+
+Real, documentary, industrial: factories, production lines, machinery,
+packaging processes, real meetings, execution environments. **Never obvious
+stock photography** — the audit showed exactly how much credibility Unsplash
+images cost a branding business. Until original photography exists, an honest
+photo of the factory floor beats polished stock.
+
+## Voice in the UI (microcopy)
+
+Tone: **strategic confidence** — calm authority, clear, precise, human without
+exaggeration.
+
+- ✅ "Connected systems create scalable businesses." / "Build Smarter." /
+  "From Idea To Expansion."
+- ❌ "We are the best", "Think outside the box", "Hurry up", "DM us today",
+  clickbait, hype, startup clichés.
+
+## Accessibility & bilingual
+
+- WCAG 2.1 AA on everything: contrast, focus states, keyboard navigation,
+  meaningful alt text, no screen-reader traps (marquee duplicates get
+  `aria-hidden`).
+- Every layout must survive **RTL** and Arabic text lengths from day one —
+  bilingual is designed in, not bolted on.
+
+## Component rules
+
+- Build with the shared design system (shadcn/ui-based primitives + section
+  components). Check whether a component exists before writing one.
+- New component → themeable via tokens, accessible, documented, reviewed as
+  platform code (it will run on 38 sites).
+- Brand-specific need → first ask whether it's a token override; only flagship
+  brands get genuinely custom components, explicitly scoped.

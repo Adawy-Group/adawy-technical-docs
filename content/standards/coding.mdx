@@ -4,10 +4,63 @@ title: Coding Conventions
 
 # Coding Conventions
 
-{/* TODO(content):
-    - TypeScript strictness, lint/format tooling (ESLint/Prettier config source of truth)
-    - naming conventions (files, components, functions, variables)
-    - error handling patterns, async patterns
-    - what goes in a PR vs what gets its own PR */}
+Conventions exist so anyone can work in any repo. Each rule states its reason;
+a rule without a reason is a candidate for deletion.
 
-> 🚧 **Stub** — the department's TypeScript/JavaScript conventions, each with its reason.
+## TypeScript
+
+- **Strict mode, always.** `strict: true` in every tsconfig. *Why:* the
+  platform serves 38 brands from one codebase — a type error caught at build
+  time is a bug prevented on 38 sites at once.
+- **No `any` in committed code.** Use `unknown` + narrowing, or fix the type.
+  *Why:* `any` silently disables the protection we pay for.
+- **Validate at the boundary with Zod.** Every external input — form
+  submissions, API responses, Odoo webhooks, CMS content — is parsed with a
+  Zod schema before it enters typed code. *Why:* types are compile-time only;
+  the boundary is where runtime reality enters.
+
+## Next.js / React
+
+- **Server Components by default; `"use client"` only where interaction
+  requires it.** *Why:* this is a core part of how we hold the Lighthouse 94
+  target — less JavaScript shipped is the cheapest performance win.
+- **`next/image` for every image; no raw `<img>`.** *Why:* WebP/AVIF and
+  responsive sizing cut 25–50% of image weight — the exact failure of the old
+  sites.
+- **Brand theming flows through CSS variables (design tokens), never
+  hard-coded values.** *Why:* a hard-coded color works on one brand and breaks
+  on 37 others.
+- **Forms: React Hook Form + Zod resolver.** One validation schema serves
+  client and server.
+
+## Naming & files
+
+- Components: `PascalCase` (`HeroSection.tsx`); hooks: `useCamelCase`;
+  everything else (files, folders, routes): `kebab-case`.
+- One component per file; co-locate component-specific helpers and types with
+  the component.
+- Branches and commits follow the [git workflow](/how-we-work/git-workflow):
+  `feat/`, `fix/`, `content/`, `chore/` — mirroring the board's Type labels.
+
+## Quality bars (enforced, not aspirational)
+
+- **Accessibility:** WCAG 2.1 AA. Semantic HTML first, ARIA second. Every
+  image has meaningful alt text (or `alt=""` if decorative); decorative
+  marquee duplicates get `aria-hidden="true"`. *Why:* these were audit
+  findings on the old site — we do not re-introduce documented mistakes.
+- **Performance:** Lighthouse mobile ≥ 90 on every page; heavy media re-encoded
+  (background video ≤1080p, poster frame, `preload="none"`,
+  `prefers-reduced-motion` respected). *Why:* our audience loads pages on
+  Egyptian 4G; every megabyte is real money and real abandonment.
+- **Bilingual-ready:** no concatenated strings that break under translation;
+  layouts must survive RTL. *Why:* Arabic is not an afterthought — it is the
+  market.
+- **SEO:** every page sets a real title (50–60 chars), meta description
+  (140–160 chars), Open Graph tags, and structured data where applicable.
+  *Why:* the old site's tab literally said "About Page – Adawy Group".
+
+## Linting & formatting
+
+ESLint + Prettier run in CI and as pre-commit hooks; the configuration in the
+platform repo is the source of truth. Don't argue style in review — the
+formatter wins.

@@ -4,10 +4,43 @@ title: Git Workflow
 
 # Git Workflow
 
-{/* TODO(content): The real workflow:
-    - branching model (e.g. trunk-based / GitHub flow), branch naming
-    - commit message convention, with examples
-    - PR size guidance, when to rebase vs merge
-    - protected branches and merge rules */}
+All code lives in the **`adawy-group`** GitHub organization. The workflow is
+GitHub Flow — simple by design, because the deployment pipeline (previews on
+every PR, auto-deploy on merge) does the heavy lifting.
 
-> 🚧 **Stub** — document the branching model, naming, and merge rules.
+## The rules
+
+1. **`main` is always deployable.** It is protected: no direct pushes, changes
+   land via reviewed pull requests only.
+2. **One branch per card.** Branch from `main`, named for the work:
+   `feat/<short-description>`, `fix/<short-description>`,
+   `content/<short-description>`, `chore/<short-description>` — mirroring the
+   board's Type labels (Feature, Bug, Content, Maintenance).
+3. **One PR per card, linked both ways.** The Trello card carries the PR link;
+   the PR description carries the card link. This is how design, code, and
+   status stay connected in one place.
+4. **Small PRs.** The Kanban principle applies to code: small finished pieces,
+   reviewed and closed before the next one starts. If a PR is hard to review
+   in one sitting, it should have been two PRs.
+5. **Commits are written for the reader.** Imperative mood, scoped, honest:
+   `Add industrial template hero section`, `Fix RTL layout in navbar`. The
+   history is documentation.
+
+## Lifecycle of a change
+
+```mermaid
+flowchart LR
+    A[Card in Ready for Dev] --> B[Branch from main]
+    B --> C[Commits]
+    C --> D[Pull request - linked to card]
+    D --> E[Automated checks + preview deploy]
+    E --> F[Code review]
+    F --> G[Merge to main]
+    G --> H[Auto-deploy + card to Review]
+    H --> I[Verified on staging - card to Done]
+```
+
+Every PR gets a **preview deployment** automatically — reviews happen on real
+running pages, not screenshots. Automated checks (build, types, lint) must
+pass before review; a red check is the author's to fix, not the reviewer's to
+catch.

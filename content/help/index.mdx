@@ -4,7 +4,52 @@ title: Help & FAQ
 
 # Help & FAQ
 
-{/* TODO(content): Real questions new hires actually asked. Every time someone
-    asks a question twice, the answer belongs here. */}
+Real questions, asked by real people. If you ask a question twice, the answer
+belongs here.
 
-> 🚧 **Stub** — frequently asked questions and their answers.
+## Why are we rebuilding instead of improving the WordPress sites?
+
+Because the audit showed the problems are **platform fit, not execution**:
+page builders impose their patterns, fight custom motion, handle bilingual/RTL
+poorly, and ship slow by default (Lighthouse ~32). The brand wants to be
+institutional infrastructure; that cannot live inside a page builder. Full
+reasoning: [ADR-002](/architecture/adrs).
+
+## Why one codebase for 38 (eventually 110) brands?
+
+At six weeks per separate site, 110 sites ≈ 660 engineer-weeks — thirteen
+engineers doing nothing else for a year. Multi-tenant turns each new brand
+into configuration. [ADR-001](/architecture/adrs) has the details.
+
+## Why not Shopify for the shop? Why not Contentful/Clerk/etc.?
+
+Subscriptions that scale per-store, per-seat, or per-user **compound** at
+110-brand scale, and they hold our data. We self-host what can be self-hosted
+and own everything else. See
+[what the stack deliberately avoids](/architecture/tech-stack#what-we-deliberately-avoid-and-why).
+
+## Why do we keep Odoo instead of building our own ERP?
+
+Accounting, payroll, and inventory are commodity functions; custom ERPs
+consume years and end in regret. We build the *differentiating* layer (portal,
+dashboards, AI) on top of Odoo's APIs. [ADR-003](/architecture/adrs).
+
+## Why is the documentation public?
+
+Nothing here is secret — the architecture patterns are industry-standard and
+the business positioning is published marketing. Public docs are simpler to
+host, shareable with candidates and partners, and force a quality bar.
+Credentials and client data never belong here regardless
+([Security Basics](/standards/security)).
+
+## I have an urgent request — can I DM the developer?
+
+No — and it's not personal. All work enters through
+[one channel](/how-we-work/communication); genuinely urgent items go through
+the **operations manager** so the cost (what gets delayed) is decided
+deliberately. This is what keeps committed dates honest.
+
+## Who approves my access / reviews my PR / decides priorities?
+
+The lead & technical owner, for all three. See
+[Who to Ask](/help/who-to-ask).

@@ -4,14 +4,33 @@ title: Definition of Done
 
 # Definition of Done
 
-Work is **done** when all of the following are true:
+The department's quality standard has two gates — one before building starts,
+one before work is called done. They keep one consistent standard across
+everything we ship.
 
-{/* TODO(content): Adjust to the department's real bar. Starter checklist: */}
+## Ready to build
 
-- ✅ Code merged to the main branch via a reviewed PR
-- ✅ Tests written/updated and passing
-- ✅ Deployed and verified in production (not just staging)
-- ✅ Documentation updated (this handbook, README, or ADR as appropriate)
-- ✅ No known regressions; monitoring is clean
+Work enters **Ready for Dev** only when:
 
-> 🚧 **Stub** — confirm and tailor this checklist.
+- ✅ Its design is **approved**
+- ✅ It is **fully specified** — the card carries the Figma link, the
+  checklist of what counts as done, a target date, and an owner
+
+No building on guesses. If the spec is ambiguous, the card goes back to
+Design, not forward to In Progress.
+
+## Done
+
+Work is **done** only when:
+
+- ✅ Tested on the **staging environment** (real phones, tablets, browsers)
+- ✅ **Automated checks** passed (build, types, lint, link checks)
+- ✅ Code **reviewed and merged** via PR linked to its card
+- ✅ **Deployed with no regressions** — performance budget held, monitoring
+  clean
+- ✅ Documentation updated where the change affects it (this handbook, README,
+  or an [ADR](/architecture/adrs) for significant decisions)
+
+"Done" never means "works on my machine," "merged but not deployed," or
+"deployed but nobody checked." It means **live, verified, and closed** — the
+card moves to Done and the next one is pulled.

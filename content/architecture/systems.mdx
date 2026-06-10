@@ -4,10 +4,55 @@ title: Our Systems
 
 # Our Systems
 
-{/* TODO(content): One subsection per product/system. For each:
-    - What it is and who uses it (business purpose first)
-    - Repo link, production URL, owner
-    - High-level architecture (Mermaid diagram)
-    - How it connects to other systems */}
+## The unified platform (what we are building)
 
-> 🚧 **Stub** — inventory of every system the department runs.
+| System | What it is | Status |
+| ------ | ---------- | ------ |
+| **Brand sites platform** | One multi-tenant Next.js app serving every brand domain with its own theme, content, and navigation | Phase 1 — in build |
+| **Unified admin dashboard** | Payload CMS: one login, one content library, per-brand permissions, native EN/AR content | Phase 1 |
+| **Shared design system** | React + TypeScript + Tailwind component library, themeable per brand via CSS variables; industrial / creative / services / retail page templates | Phase 1 — the most important technical deliverable |
+| **Backend service** | Node.js (NestJS): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 |
+| **Aladawy Shop (rebuild)** | Custom e-commerce on the same stack; catalog synced from Odoo; Paymob (cards) + Fawry (cash on delivery) | Phase 2 |
+| **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | Phase 3 — the flagship |
+| **AI solutions** | Assistant, content engine, lead scoring, manufacturing intelligence, internal search | Phases 2–4 |
+
+## What runs where
+
+| On Vercel (frontend) | On the backend host (Railway → DigitalOcean) |
+| -------------------- | -------------------------------------------- |
+| All brand websites | Authentication and sessions |
+| SSR and static generation | Business logic and Odoo integration |
+| Client portal UI | Background jobs and scheduled tasks |
+| Image optimization | Real-time connections (Pusher) for the portal |
+| Edge functions for domain routing | The admin dashboard (Payload) |
+
+The split exists because Vercel functions can't hold persistent connections
+and time out on long-running jobs — fine for serving pages, wrong for Odoo
+webhooks and queues. PostgreSQL runs managed (Supabase or Neon); Redis on
+Upstash.
+
+## Odoo — the system of record
+
+The group runs on **Odoo** for accounting, payroll, inventory, supply chain,
+HR, and manufacturing. **We keep it permanently** and build custom layers on
+top through its APIs. Commodity functions (payroll, tax compliance) are not
+where we differentiate; client experience, dashboards, and AI are.
+
+Flow example: a client orders on Aladawy Shop → the backend writes the order
+to Odoo → Odoo handles inventory, accounting, fulfilment → the client sees
+status in the portal, surfaced from Odoo via our cache. Odoo's current API is
+deprecated in Odoo 22 (late 2028), so the integration sits behind an
+abstraction layer — migrating is one or two sprints, not a rewrite.
+
+## The legacy systems (what we are replacing, and why)
+
+| Site | Old stack | Verdict from the technical audit |
+| ---- | --------- | -------------------------------- |
+| adawygroup.com | WordPress 6.9 + Semplice page builder | Lighthouse mobile ~32; 4K background videos; stock photography; CMS-default page titles; no meta/OG tags; no structured data; English only. 20 documented findings. |
+| aladawypack.com | WordPress | Separate theme/plugins, no shared code |
+| aladawyshop.com | WordPress + WooCommerce + Woodmart | Demo content still visible; stack never designed for multi-brand commerce |
+
+The audit's conclusion — accepted by leadership — was that these are problems
+of **platform fit, not execution**: no amount of WordPress optimization makes
+a page-builder deliver the cinematic, bilingual, brand-driven experience the
+group's positioning requires. Hence the rebuild ([ADR-002](/architecture/adrs)).

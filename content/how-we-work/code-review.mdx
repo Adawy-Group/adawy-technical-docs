@@ -4,10 +4,33 @@ title: Code Review
 
 # Code Review
 
-{/* TODO(content):
-    - who reviews what, expected turnaround time
-    - what reviewers check (correctness, standards, tests, security)
-    - tone: review the code, not the person; how to disagree
-    - when approval is required vs optional */}
+Every change is reviewed before it merges. Today the **lead & technical
+owner** reviews all PRs; as the team grows, review becomes peer-based with
+the lead reviewing platform-level changes.
 
-> 🚧 **Stub** — review expectations for authors and reviewers.
+## What reviewers check, in order
+
+1. **Correctness** — does it do what the card says? Edge cases, error states,
+   loading states.
+2. **Platform impact** — this is multi-tenant: does the change behave for
+   *every* brand, or only the one being worked on? Does it respect the
+   template policy ([no one-off customizations](/architecture/roadmap#known-risks-and-how-we-manage-them))?
+3. **Standards** — [coding conventions](/standards/coding), accessibility,
+   bilingual/RTL readiness, performance budget (no regression on Lighthouse).
+4. **Tests and checks** — automated checks green, and changed behavior covered
+   where it matters.
+5. **Clarity** — will the next person understand this without asking the
+   author?
+
+## Expectations
+
+- **Authors:** keep PRs small, link the card, describe *why* not just *what*,
+  and self-review the diff before requesting review. The preview link should
+  show the change working.
+- **Reviewers:** respond within one working day. Review the code, not the
+  person. A disagreement is resolved with a reason ("this breaks brand
+  theming because…"), not a preference.
+- **Approval is required** before merge — work is only *ready to build* once
+  its design is approved and fully specified, and only *done* once it has
+  passed review and staging checks (see
+  [Definition of Done](/how-we-work/definition-of-done)).

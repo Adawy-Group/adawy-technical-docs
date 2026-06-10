@@ -1,0 +1,42 @@
+---
+title: Performance Checklist
+---
+
+# Performance Checklist
+
+The platform target is **Lighthouse mobile 94** at launch and **95+
+sustained** — measured on throttled mobile, because the audience loads pages
+on Egyptian 4G. The old WordPress site scored ~32; every item below traces to
+a documented cause of that score.
+
+## Before you open the PR
+
+- [ ] **Images** through `next/image` — WebP/AVIF, responsive `sizes`,
+      explicit width/height (no layout shift). No `-scaled.jpeg` uploads, ever
+      again.
+- [ ] **Video** used decoratively: ≤1080p (720p is fine for a background
+      loop), poster frame, `preload="none"`, starts after paint, respects
+      `prefers-reduced-motion`. Long term: video CDN (Cloudflare Stream/Mux),
+      not files served from the app.
+- [ ] **Client JavaScript** — is each `"use client"` boundary necessary?
+      Server Components for static-heavy pages; dynamic-import anything heavy
+      and below the fold.
+- [ ] **Fonts** — self-hosted via `next/font`, subsetted; Arabic and Latin
+      loaded only where used.
+- [ ] **Third-party scripts** — every one is a performance tax; each needs a
+      reason, and analytics loads after interaction/idle.
+
+## Verify
+
+- [ ] `npm run build` then check the route-size output — a page that jumped in
+      JS weight needs an explanation in the PR.
+- [ ] Lighthouse (mobile, throttled) on the preview URL: **≥ 90 is the merge
+      bar**, 94+ is the target.
+- [ ] Core Web Vitals sanity: LCP < 2.5s, CLS < 0.1, INP < 200ms.
+
+## After deploy
+
+- [ ] Watch Vercel Analytics / PageSpeed for the affected routes — the score
+      moving is the proof, not the technique.
+- [ ] A performance regression on a shared component is a platform incident,
+      not a brand bug: it just shipped to every site at once.

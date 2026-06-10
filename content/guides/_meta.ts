@@ -1,3 +1,5 @@
 export default {
-  index: 'Overview'
+  index: 'Overview',
+  'launch-new-brand': 'Launching a New Brand Site',
+  'performance-checklist': 'Performance Checklist'
 }
