@@ -8,17 +8,24 @@ Significant technical decisions, recorded so future team members understand
 not just *what* we decided but *why* — and what we knew at the time. Format:
 **Context → Decision → Consequences.** New ADRs are added via PR.
 
-## ADR-001 — One multi-tenant codebase for all brand sites
+## ADR-001 — One monorepo: a thin app per brand on shared packages
 
-- **Context:** 38 domains today, 110 planned. Separate sites mean every
-  change, patch, and feature ×38 — roughly 30 engineers at maturity.
-- **Decision:** One Next.js application serves every brand. The platform
-  detects the domain and applies that brand's theme, content, and navigation.
-  Brands are tenants; adding one is configuration, not a build.
-- **Consequences:** Every improvement reaches every brand at once; 7–8
-  engineers suffice at maturity. Trade-off: platform-wide discipline required —
-  a sloppy shared component breaks 38 sites at once; template policy guards
-  against per-brand customization creep.
+- **Context:** 38 domains today, 110 planned. Fully separate sites mean every
+  change, patch, and feature ×38 — roughly 30 engineers at maturity. A single
+  multi-tenant app with domain routing was considered, but it couples every
+  brand to one deployment and makes flagship-level customization awkward.
+- **Decision:** One Turborepo monorepo. Each brand is a **thin Next.js app**
+  (`apps/group`, `apps/studio`, `apps/pack`, …) deployed to its own domain as
+  its own Vercel project. All real engineering lives in shared packages:
+  `@adawy/ui` (shadcn primitives), `@adawy/tailwind-config` (design tokens),
+  `@adawy/motion` (GSAP), `@adawy/seo`, `@adawy/utils`.
+- **Consequences:** A fix in a shared package ships to every brand from one
+  PR; Turborepo rebuilds only affected apps. Each brand deploys independently —
+  a bad deploy on one site cannot take down the others, and flagships keep
+  full creative freedom in their own app. Trade-offs: a shared-package change
+  re-deploys every affected app, and discipline is required to keep apps thin —
+  reusable code must flow upstream into `packages/`, never get forked into an
+  app ([project structure](/standards/project-structure)).
 
 ## ADR-002 — Rebuild on a code-first stack instead of patching WordPress
 

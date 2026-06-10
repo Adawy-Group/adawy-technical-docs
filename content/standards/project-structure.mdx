@@ -4,41 +4,53 @@ title: Project Structure
 
 # Project Structure
 
-## The platform layout
+## The platform monorepo
 
-The platform is one repository. The structure reflects the multi-tenant
-architecture — shared first, brand-specific as thin configuration:
+The platform is **one monorepo (Turborepo)**: a thin Next.js app per brand in
+`apps/`, built entirely from shared `@adawy/*` packages in `packages/`. Each
+app deploys to its own domain as its own Vercel project.
 
 ```
-platform/
-├─ app/                  # Next.js App Router — routes shared by all brands
-├─ components/           # The shared design system (the product, not a utility)
-│  ├─ ui/                # Primitives (shadcn/ui based)
-│  └─ sections/          # Composed page sections: heroes, galleries, cards…
-├─ templates/            # Complete page templates: industrial / creative / services / retail
-├─ brands/               # One folder per brand: tokens, fonts, logo, config — no logic
-├─ lib/                  # Shared utilities, Odoo client, helpers
-└─ content/              # Site content (MDX/config) — edited via PR
+adawy/
+├── apps/
+│   ├── group/            Adawy Group   → adawygroup.com
+│   ├── studio/           Adawy Studio  → adawystudio.com
+│   └── pack/             Adawy Pack    → adawypack.com
+└── packages/
+    ├── ui/               @adawy/ui              (shadcn primitives)
+    ├── tailwind-config/  @adawy/tailwind-config (token structure and base)
+    ├── motion/           @adawy/motion          (GSAP)
+    ├── seo/              @adawy/seo             (metadata and sitemap helpers)
+    └── utils/            @adawy/utils
 ```
+
+New brands are new folders under `apps/` — Adawy Print, Adawy Supplies, and
+the rest follow the same pattern as the first three.
 
 ## The rules behind the layout
 
-1. **Brand folders contain configuration, not code.** Colors, typography,
-   logos, navigation structure. If you are writing a component inside
-   `brands/`, stop — it belongs in the design system, themed by tokens.
-   *Why:* this is what makes brand #39 a configuration task
-   ([ADR-001](/architecture/adrs)).
-2. **Templates are the unit of reuse.** New sub-brand sites pick a template
-   and configure it. Custom layouts are for flagships only (corporate site,
-   Adawy Studio) and are explicitly scoped. *Why:* one "small" one-off
-   customization replicated across 38 brands is a maintenance disaster.
-3. **The design system is documented as it grows.** A component without usage
-   guidance is half-finished — the next 35 sites are built by people who
-   weren't there when it was written.
-4. **Monorepo by default.** The brand sites, design system, and CMS live
-   together so a change can be reviewed and shipped atomically. The backend
-   service (NestJS) is its own repo because it deploys to different
-   infrastructure on a different cadence.
+1. **Apps are thin; packages own the logic.** An app contributes its routes,
+   its content, and its token values — the components, motion patterns, SEO
+   helpers, and utilities it composes all come from `@adawy/*`. If you are
+   writing a reusable component inside an app, stop: it belongs in
+   `packages/ui`, themed by tokens. *Why:* this is what makes a fix ship once
+   and reach every brand ([ADR-001](/architecture/adrs)).
+2. **Where code goes:**
+   - Visual primitives and composed sections → `@adawy/ui`
+   - Design tokens, theme structure, Tailwind base → `@adawy/tailwind-config`
+   - Animation patterns and scroll choreography → `@adawy/motion`
+   - Metadata, Open Graph, sitemap/robots helpers → `@adawy/seo`
+   - Everything shared and unglamorous → `@adawy/utils`
+3. **Brand identity lives in tokens, not forks.** A brand customizes by
+   overriding token values from `@adawy/tailwind-config` — never by copying a
+   shared component into its app and editing it. Genuinely custom sections are
+   for flagships only and are explicitly scoped.
+4. **Generalize on the third use, not the first.** A section used by one app
+   can live in that app; the moment a second or third brand needs it, it moves
+   to `packages/` — extraction is a deliberate step, not a default.
+5. **Turborepo runs the builds.** Only affected apps rebuild on a change; a
+   PR that touches `@adawy/ui` shows every affected app's preview, because
+   that change ships to all of them.
 
 ## This documentation site
 

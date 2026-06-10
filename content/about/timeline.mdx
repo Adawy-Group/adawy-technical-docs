@@ -9,7 +9,7 @@ promised, by when, and how progress stays verifiable week by week.
 
 ## The current commitment: the Adawy Group website
 
-The first tenant of the unified platform is the new **adawygroup.com** — the
+The first app on the unified platform is the new **adawygroup.com** — the
 portfolio site presenting the group, its story, its business units, and its
 work. Six weeks from kickoff to launch, with design and development running in
 parallel (development stays ~one week behind design at all times).
@@ -42,7 +42,7 @@ gantt
     Portfolio, Services, Contact design  :2026-07-05, 5d
     Responsive + motion specs, handoff   :2026-07-12, 5d
     section Development
-    Platform foundation (multi-tenant, CI/CD) :2026-06-14, 5d
+    Platform foundation (monorepo, CI/CD) :2026-06-14, 5d
     Design system in code                :2026-06-21, 5d
     Home page build                      :2026-06-28, 5d
     About + Ecosystem build              :2026-07-05, 5d
@@ -51,7 +51,7 @@ gantt
 ```
 
 **Why this matters beyond one website:** the foundation built in week one —
-the multi-tenant codebase, hosting, domains, deployment pipeline — is
+the monorepo and its shared packages, hosting, domains, deployment pipeline — is
 permanent infrastructure. Every Adawy site that follows runs on it, which is
 why later sites ship in weeks, then days, instead of months.
 
