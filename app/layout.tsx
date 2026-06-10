@@ -17,7 +17,9 @@ export const metadata: Metadata = {
 const navbar = (
   <Navbar
     logo={
-      <span style={{ fontWeight: 700 }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 700 }}>
+        {/* White-on-transparent brand mark: inverted to black in light mode via CSS */}
+        <img src="/logo.png" alt="Adawy Group" width={28} height={28} className="adawy-logo" />
         Adawy <span style={{ fontWeight: 400 }}>Software Handbook</span>
       </span>
     }
@@ -32,7 +34,9 @@ const footer = (
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
-      <Head />
+      <Head>
+        <style>{`.adawy-logo{filter:invert(1)}html.dark .adawy-logo{filter:none}`}</style>
+      </Head>
       <body>
         <Layout
           navbar={navbar}
