@@ -1,0 +1,19 @@
+---
+title: Security Basics
+---
+
+# Security Basics
+
+The non-negotiables. These exist to protect our users and the business.
+
+{/* TODO(content): Tailor to real policy. Starter set: */}
+
+- **Never commit secrets.** Env vars live in the hosting platform / a password
+  manager — never in git, never in chat.
+- **Never paste production data** into third-party tools (including AI tools)
+  unless the tool is approved for it.
+- **All input is untrusted.** Validate on the server, not just the client.
+- **Dependencies:** keep them updated; investigate audit warnings before release.
+
+> 🚧 **Stub** — confirm and extend with department policy (access control,
+> incident response contact, data handling).
