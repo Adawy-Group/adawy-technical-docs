@@ -1,8 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { MetadataRoute } from 'next'
-
-const BASE_URL = 'https://adawy-technical-docs.vercel.app'
+import { SITE_URL } from '../lib/seo'
 const CONTENT_DIR = path.join(process.cwd(), 'content')
 
 function collectRoutes(dir: string, prefix = ''): string[] {
@@ -20,7 +19,7 @@ function collectRoutes(dir: string, prefix = ''): string[] {
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return collectRoutes(CONTENT_DIR).map(route => ({
-    url: `${BASE_URL}${route === '/' ? '' : route}`,
+    url: `${SITE_URL}${route === '/' ? '' : route}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: route === '/' ? 1 : 0.7
