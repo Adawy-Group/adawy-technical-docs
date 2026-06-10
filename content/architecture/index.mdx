@@ -23,7 +23,8 @@ flowchart TD
     APP --> BE["Node.js backend (NestJS)\nauth · business logic · integrations"]
     BE --> ODOO["Odoo (system of record)\nfinance · inventory · payroll · manufacturing"]
     BE --> DB[("PostgreSQL + pgvector")]
-    BE --> PORTAL["Client portal (Phase 3)\nportal.adawygroup.com"]
+    BE --> PORTAL["Client portal (Phase 2)\nportal.adawygroup.com"]
+    BE --> EMP["Employee portal (Phase 3)\ninternal AI · search · dashboards"]
 ```
 
 ## Why multi-tenant (the business reason)
@@ -50,7 +51,8 @@ department.
 - **[Tech Stack & Why](/architecture/tech-stack)** — every tool, with the
   reasoning. The principle: **own what we build; avoid subscriptions that
   compound at 110-brand scale.**
-- **[Roadmap & Phases](/architecture/roadmap)** — Phase 1 (portfolios) through
-  Phase 5 (consolidation), including the seven AI solutions.
+- **[Roadmap & Phases](/architecture/roadmap)** — the three product phases:
+  the websites → the client portal → the employee portal, with AI woven
+  through.
 - **[Decision Records](/architecture/adrs)** — the significant decisions,
   their context, and their trade-offs.
