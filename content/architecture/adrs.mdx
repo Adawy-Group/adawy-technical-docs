@@ -26,7 +26,7 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   findings (Lighthouse mobile ~32, template footer credits, broken sub-brand
   links, missing SEO/meta/structured data, stock photography, English only).
   Root cause: page-builder platform fit, not execution.
-- **Decision:** Rebuild from scratch on Next.js + Payload, accepted by
+- **Decision:** Rebuild from scratch on Next.js, accepted by
   leadership. WordPress is right for a small business with simple needs and
   wrong for a 38-company group operating one coordinated digital experience.
 - **Consequences:** Full code/content ownership, real version control and
@@ -45,15 +45,19 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   Phase-4 evaluation, not a today problem — and the platform doesn't depend on
   Odoo specifically.
 
-## ADR-004 — Self-hosted Payload CMS as the unified admin dashboard
+## ADR-004 — Defer the CMS; content is managed in the repo for now
 
-- **Context:** 3 WordPress admins today; 38 would be unmanageable. Hosted CMSs
-  (Contentful) charge per-seat/per-entry at compounding scale and hold our
-  content.
-- **Decision:** One Payload instance: single login, per-brand permissions,
-  native EN/AR content, owned by the group.
-- **Consequences:** Marketing edits every brand from one place; content lives
-  in our database; we maintain the instance ourselves.
+- **Context:** A unified admin dashboard (originally planned on Payload CMS)
+  was considered for Phase 1 so non-developers could edit every brand's
+  content. With a two-person team and the website launch as the priority,
+  building and operating a CMS now adds scope without near-term benefit.
+- **Decision:** Defer the CMS. Site content lives in the repository (MDX and
+  configuration), edited by the team and reviewed via PR like any other
+  change. Revisit when content volume or non-developer editing demands it —
+  and if adopted, it will be self-hosted, never a per-seat hosted service.
+- **Consequences:** Zero CMS infrastructure to run today; every content change
+  is versioned and reviewed. Trade-off: content edits require a developer in
+  the loop until a CMS decision is made.
 
 ## ADR-005 — Custom e-commerce instead of Shopify/WooCommerce
 

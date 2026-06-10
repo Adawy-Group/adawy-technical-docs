@@ -20,7 +20,6 @@ flowchart TD
     end
     Domains --> R["Domain routing layer (Cloudflare + Vercel)"]
     R --> APP["One Next.js application (multi-tenant)\nshared design system · component library"]
-    APP --> CMS["Payload CMS\nunified admin dashboard (EN/AR)"]
     APP --> BE["Node.js backend (NestJS)\nauth · business logic · integrations"]
     BE --> ODOO["Odoo (system of record)\nfinance · inventory · payroll · manufacturing"]
     BE --> DB[("PostgreSQL + pgvector")]
