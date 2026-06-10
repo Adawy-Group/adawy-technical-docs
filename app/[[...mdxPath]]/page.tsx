@@ -1,12 +1,21 @@
+import type { Metadata } from 'next'
 import { generateStaticParamsFor, importPage } from 'nextra/pages'
+import { buildPageMetadata, pagePath } from '../../lib/seo'
 import { useMDXComponents as getMDXComponents } from '../../mdx-components'
 
 export const generateStaticParams = generateStaticParamsFor('mdxPath')
 
-export async function generateMetadata(props: PageProps) {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params
   const { metadata } = await importPage(params.mdxPath)
-  return metadata
+  const path = pagePath(params.mdxPath)
+  const title = typeof metadata.title === 'string' ? metadata.title : 'Adawy Docs'
+
+  return buildPageMetadata({
+    title,
+    description: metadata.description,
+    path
+  })
 }
 
 type PageProps = {
