@@ -9,7 +9,6 @@ title: Our Systems
 | System | What it is | Status |
 | ------ | ---------- | ------ |
 | **Brand sites platform** | One multi-tenant Next.js app serving every brand domain with its own theme, content, and navigation | Phase 1 — in build |
-| **Unified admin dashboard** | Payload CMS: one login, one content library, per-brand permissions, native EN/AR content | Phase 1 |
 | **Shared design system** | React + TypeScript + Tailwind component library, themeable per brand via CSS variables; industrial / creative / services / retail page templates | Phase 1 — the most important technical deliverable |
 | **Backend service** | Node.js (NestJS): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 |
 | **Aladawy Shop (rebuild)** | Custom e-commerce on the same stack; catalog synced from Odoo; Paymob (cards) + Fawry (cash on delivery) | Phase 2 |
@@ -24,7 +23,7 @@ title: Our Systems
 | SSR and static generation | Business logic and Odoo integration |
 | Client portal UI | Background jobs and scheduled tasks |
 | Image optimization | Real-time connections (Pusher) for the portal |
-| Edge functions for domain routing | The admin dashboard (Payload) |
+| Edge functions for domain routing | Background jobs and webhooks |
 
 The split exists because Vercel functions can't hold persistent connections
 and time out on long-running jobs — fine for serving pages, wrong for Odoo

@@ -15,7 +15,7 @@ the platform it is about a week of elapsed time, most of it content.
 | 1. Point the brand's domain at the platform | Few minutes | Lead (or any developer) |
 | 2. Create the brand configuration — colors, fonts, logos as design tokens | Few hours | Designer, with dev support |
 | 3. Pick the template: industrial / creative / services / retail | Few minutes | Designer + lead together |
-| 4. Populate content through the Payload dashboard | 2–5 days | Marketing team |
+| 4. Populate content (MDX/config in the repo, via PR) | 2–5 days | Team, with copy from marketing |
 | 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + lead |
 | 6. Quality review and launch | 1–2 days | Lead |
 
@@ -30,9 +30,10 @@ the platform it is about a week of elapsed time, most of it content.
 3. **Template choice** is a decision, not a default — match the brand's
    sector. Getting the *industrial* template right once is why Print,
    Production, and Supplies cost days, not weeks.
-4. **Content:** created in Payload under the brand's permissions, in English
-   and Arabic. The content team never needs a developer for this — that is
-   the entire point of the unified dashboard.
+4. **Content:** lives in the repo as MDX and configuration, in English and
+   Arabic, and lands via reviewed PRs like any other change. Marketing
+   supplies the copy; the team commits it
+   ([ADR-004](/architecture/adrs) — the CMS is deferred for now).
 5. **Custom tweaks:** the template policy applies — configuration over
    customization. If a request can't be met with tokens, it goes through the
    lead as an explicitly scoped exception.

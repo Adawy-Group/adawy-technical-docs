@@ -30,7 +30,7 @@ avoiding subscription dependencies that compound at 110-brand scale.**
 
 | Service | Choice | Why |
 | ------- | ------ | --- |
-| CMS / admin dashboard | **Payload** (self-hosted) | Open source, runs alongside the app, bilingual content built in, per-brand permissions — full ownership of content and schema |
+| Content | **In the repo** (MDX/config, reviewed via PR) | Site content is managed by the team in git for now; a CMS is a future decision, made when the content volume demands it |
 | Search | **Meilisearch** (self-hosted) | Strong Arabic morphology support; no subscription |
 | Authentication | **Better Auth** | Open source, multi-tenant, no per-user fees; user data stays in our database |
 | AI | **Vercel AI SDK + Claude & Gemini APIs** | Provider-agnostic; Gemini leads on Egyptian Arabic, Claude on English business prose |
@@ -52,8 +52,8 @@ avoiding subscription dependencies that compound at 110-brand scale.**
 
 ## What we deliberately avoid (and why)
 
-- **No hosted CMS (Contentful etc.)** — we own the content and the schema in
-  Payload.
+- **No hosted CMS (Contentful etc.)** — content lives in the group's own
+  repositories and database; if a CMS is adopted later, it will be self-hosted.
 - **No hosted auth (Clerk, Auth0)** — user data stays in our database, no
   per-user fees across 110 brands.
 - **No Shopify / per-store commerce** — dozens of stores would compound into a
