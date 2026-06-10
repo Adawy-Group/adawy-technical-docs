@@ -15,24 +15,28 @@ relationship with the group every day.
 
 The software department builds that digital layer. Concretely, our mandate is:
 
-1. **One shared platform for every brand site.** The group owns 38 domains
-   today and plans for 110. Building each as a separate site would require an
-   engineering team of ~30 at maturity. One multi-tenant codebase does the
-   same with 7–8 engineers. This is the single most important architectural
-   decision we have made — see [ADR-001](/architecture/adrs).
-2. **The client portal** (Phase 3) — the experience of being an Adawy
+1. **The websites — one shared platform for every brand site** (Phase 1).
+   adawygroup.com, Adawy Studio, Adawy Pack, Adawy Print, and the rest. The
+   group owns 38 domains today and plans for 110; building each separately
+   would require ~30 engineers at maturity, one multi-tenant codebase does it
+   with 7–8. This is the single most important architectural decision we have
+   made — see [ADR-001](/architecture/adrs).
+2. **The client portal** (Phase 2) — the experience of being an Adawy
    ecosystem member: all orders across sub-brands in one place (pulled from
    Odoo), brand assets, invoices, structured work requests, and an AI
    assistant. This is the most defensible product the group can build, because
    no regional competitor operates the integrated stack that makes it possible.
-3. **AI solutions** that make the ecosystem AI-native: internal assistant,
-   content engine (bilingual first drafts for every brand), lead scoring,
-   manufacturing intelligence, and internal search.
+3. **The employee portal** (Phase 3) — the same idea pointed inward: one
+   internal home for the group's teams, with the internal AI assistant,
+   search across all company systems, and operational dashboards.
+4. **AI solutions woven through all three** — member-facing assistants and
+   lead scoring in the client portal; internal assistant, content engine,
+   search, and manufacturing intelligence in the employee portal.
 
 ## What success looks like
 
-| Measure | Before (WordPress) | Phase 1 target | Phase 3 target |
-| ------- | ------------------ | -------------- | -------------- |
+| Measure | Before (WordPress) | First sites | At scale |
+| ------- | ------------------ | ----------- | -------- |
 | Lighthouse mobile performance | ~32 | 94 | 95+ sustained on every site |
 | Time to launch a new brand site | ~6 weeks | ~4 weeks | ~1 week |
 | Languages | English only | Bilingual-ready (EN/AR) | Bilingual live across all sites |
@@ -50,7 +54,7 @@ The department currently operates with **two roles**:
   and keeping one consistent design language across all brands so the platform
   stays unified as it scales.
 
-The team grows phase by phase (backend engineer, second frontend developer,
-DevOps, engineering manager, analytics, QA…) — every hire justified by
-specific work, never by org-chart filling. See the
-[roadmap](/architecture/roadmap) for the phase-by-phase plan.
+The team grows phase by phase (frontend, backend, DevOps, engineering
+manager, analytics, QA…) — every hire justified by specific work, never by
+org-chart filling. See the [roadmap](/architecture/roadmap) for the
+websites → client portal → employee portal plan.

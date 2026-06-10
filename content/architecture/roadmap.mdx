@@ -4,86 +4,127 @@ title: Roadmap & Phases
 
 # Roadmap & Phases
 
-The platform is delivered in five phases over two to three years. **Phase 1 is
-the only firm commitment** — every later phase is direction, reviewed against
-actual delivery before continuing. Each phase begins only after the prior
-phase has delivered.
+The platform is delivered in three product phases, in strict order. Each phase
+ships a complete product surface and proves the foundation the next one
+builds on. **Phase 1 is the firm commitment** — later phases are direction,
+reviewed against actual delivery before continuing.
 
-| Phase | Window | Headline | Team size |
-| ----- | ------ | -------- | --------- |
-| 1 | Months 0–3 | The portfolios (current priority) | 2 |
-| 2 | Months 3–9 | Rest of portfolios, shop rebuild, platform foundation | 4–5 |
-| 3 | Months 9–18 | Client portal, AI, ecosystem layer | 7–8 |
-| 4 | Months 18–24 | Geographic scale, deeper integrations | 10–12 |
-| 5 | Months 24–36 | Consolidation and specialists | 13–16 |
+```mermaid
+flowchart LR
+    P1["Phase 1\nThe Websites\nadawygroup.com + every brand site"] --> P2["Phase 2\nThe Client Portal\nthe ecosystem membership product"] --> P3["Phase 3\nThe Employee Portal\nthe internal operations product"]
+```
 
-## Phase 1 — The portfolios (now)
+| Phase | Product | What it proves |
+| ----- | ------- | -------------- |
+| 1 | **The Websites** — adawygroup.com, Adawy Studio, Adawy Pack, Adawy Print, and every other brand site | The multi-tenant platform and the design system |
+| 2 | **The Client Portal** — the daily product of being an ecosystem member | The backend, Odoo integration, auth, and member-facing AI |
+| 3 | **The Employee Portal** — one internal home for the group's teams | Internal AI, search, and operational intelligence |
 
-Shipped by the current two-person team in 2–3 months:
+## Phase 1 — The Websites
 
-- **adawygroup.com rebuilt from scratch** — custom, mobile-first,
-  bilingual-ready, WCAG 2.1 AA, Lighthouse mobile target 94 (from ~32).
-- **Two or three flagship sub-brand portfolios** — recommended: Adawy Studio
-  (creative flagship, sets the design bar) and Adawy Pack (industrial
-  flagship, exercises the industrial template every later industrial brand
-  reuses).
-- **The shared design system** — the single most important technical
-  deliverable; component library + industrial/creative/services templates.
-- **Deployment & quality foundation** — Git workflow with preview
-  environments, automated checks, error tracking, uptime monitoring.
+The entire public face of the group, rebuilt on one platform. Order of
+delivery, priority first:
 
-Deliberately **not** in Phase 1: client portal, AI, Odoo integration,
-e-commerce. Ship excellent foundations, prove the architecture, then add scope.
+1. **adawygroup.com** — the corporate site and first tenant. Building it
+   builds the permanent infrastructure: the multi-tenant codebase, hosting,
+   domains, deployment pipeline, and the design system. Committed dates:
+   [kickoff 14 June → launch 23 July 2026](/about/timeline).
+2. **Adawy Studio** — the creative flagship; sets the design bar and the
+   creative template.
+3. **Adawy Pack** — the industrial flagship; exercises the industrial
+   template that Print, Production, and Supplies reuse.
+4. **Adawy Print, Adawy Supplies, Adawy Marketing Solutions, Adawy Business
+   Development, Adawy Media Production, Adawy Production, and the rest** —
+   built from the templates, each one faster than the last
+   ([the workflow](/guides/launch-new-brand)). Six weeks per site becomes
+   one week per site as the templates mature.
 
-## Phase 2 — Expansion & platform foundation
+Every site ships to the same bar: bilingual-ready (EN/AR), WCAG 2.1 AA,
+Lighthouse mobile ≥ 94, structured data, analytics, and the "part of Adawy
+Group" cross-link.
 
-Remaining sub-brand sites (Print, Supplies, Marketing Solutions, Business
-Development, Media Production, Production…) on the Phase-1 templates; the
-**Aladawy Shop rebuild** (Paymob + Fawry); first Odoo integrations
-(read products/inventory, write back orders); client portal v0; the shared
-NestJS backend. Hires: senior backend engineer, second frontend dev, part-time
-DevOps.
+**Deliberately not in Phase 1:** the portals, AI features, Odoo integration,
+e-commerce. Ship excellent websites, prove the platform, then add scope.
 
-## Phase 3 — The ecosystem layer
+## Phase 2 — The Client Portal
 
-The **full client portal** (orders across sub-brands from Odoo, brand assets,
-invoices, structured intake, team access). First **AI solutions in
-production**. Deeper Odoo integration and the analytics/BI foundation
-(Metabase). Hires: engineering manager, 2 mid-level full-stack, senior
-analytics engineer, QA + second designer as load requires.
+The experience of *being* an Adawy ecosystem member, at
+`portal.adawygroup.com`. Without it, "integrated ecosystem" is a marketing
+claim; with it, it is a product members use every day — and the most
+defensible thing the group can build, because no regional competitor operates
+the integrated stack that makes it possible.
 
-## Phases 4–5 — Scale, geography, specialists
+Phase 2 starts with the infrastructure the portal needs, which also unlocks
+the shop:
 
-Localization for KSA/UAE/Libya/GCC (currency, tax, regional payments),
-manufacturing intelligence, the Odoo-vs-SAP evaluation (Phase 4 question, not
-Phase 1), security/compliance hardening, and specialist hires (AI, security,
-data) once the work proves the need.
+- **The shared backend service** (Node.js/NestJS): authentication (Better
+  Auth), business logic, background jobs, real-time updates.
+- **Odoo integration** — read products, inventory, orders, invoices; write
+  back through APIs behind an abstraction layer ([ADR-003](/architecture/adrs)).
+- **Aladawy Shop rebuilt** on the platform — custom commerce, Paymob + Fawry
+  ([ADR-005](/architecture/adrs)).
 
-## The seven AI solutions
+Then the portal itself. What members can do:
 
-| Solution | Phase | What it does |
-| -------- | ----- | ------------ |
-| AI assistant (internal + members) | Late 2 → 3 | RAG over the group's systems (pgvector); answers in natural language, permissions enforced at retrieval |
-| Client portal assistant | 3 | Task completion via conversation — quotes, orders, briefs; drafts for human review, never autonomous |
-| Content engine | 3 | First-draft bilingual content in each brand's voice profile; review queue before publication; 110 brands × ~2 carousels + 2 reels/week can't be written by hand |
-| Lead scoring | 3 | Every form submission enriched, scored, routed; high-intent leads surfaced immediately |
-| Internal search | 3 | One search across Notion/Drive/Slack/Odoo/email — lowest-glamour, possibly highest daily value |
-| Manufacturing intelligence | Late 3 → 4 | Dashboards over Odoo manufacturing data with AI commentary; augmentation, not autonomous control |
-| Design system assistant | 4 | Brief → palettes, typography pairings, layout starting points pushed to Figma |
+- See **all orders across every sub-brand** in one place, status pulled from Odoo
+- Download **brand assets** organized by project
+- **Request new work** through structured intake forms (replacing email/WhatsApp)
+- View **invoices and payment history**, with online payment
+- Chat with the **AI assistant** about orders, projects, and history
+- Manage **team access** with per-person permissions
 
-No dedicated AI engineer for the first ~18 months: a senior full-stack
-engineer can build production RAG with the Vercel AI SDK, the Anthropic SDK,
-and pgvector in 4–6 weeks. The specialist joins when AI features become
-revenue-bearing (Phase 4–5).
+Member-facing AI lands here too: the **portal assistant** (quotes, orders,
+briefs drafted through conversation — always human-reviewed, never
+autonomous) and **lead scoring** on every form across the brand sites.
+
+## Phase 3 — The Employee Portal
+
+One internal home for the group's teams — the same idea as the client portal,
+pointed inward. Today group knowledge is scattered across email, WhatsApp,
+Drive, Notion, and Odoo; finding any single piece takes minutes and depends on
+knowing where to look.
+
+- **Internal AI assistant** — ask in natural language, answered from the
+  group's own systems (RAG over pgvector), permissions respected
+- **Internal search** across Notion, Drive, Slack, Odoo, and email — the
+  lowest-glamour feature with possibly the highest daily value
+- **Operational dashboards** — sales, operations, and marketing leadership
+  views (Metabase), including **manufacturing intelligence** over Odoo's
+  production data: line efficiency, anomalies, supplier signals
+- **The content engine** — first-draft bilingual content in each brand's
+  voice, with a human review queue; at 100+ brands content cannot be written
+  by hand alone
+- **Employee-facing workflows** — the structured versions of what currently
+  happens over chat: requests, approvals, handoffs
+
+## Beyond the phases
+
+Once all three products are live: geographic scale-out (KSA, UAE, Libya, GCC —
+localization, currency, regional payments), e-commerce as a service to
+ecosystem members, the Odoo-vs-SAP evaluation, security/compliance hardening,
+and specialist hires (AI, security, data). Direction, not commitments —
+decided against real delivery.
+
+## How the team grows
+
+| Phase | Team size | Added roles |
+| ----- | --------- | ----------- |
+| 1 — Websites | 2 → 3–4 | Current team (CTO + designer); a second frontend developer once template volume demands it |
+| 2 — Client Portal | 4–6 | Senior backend engineer (first hire of the phase — nothing in Phase 2 starts without the backend), part-time DevOps |
+| 3 — Employee Portal | 7–9 | Engineering manager, mid-level full-stack engineers, senior analytics engineer; QA + second designer when workload requires |
+
+Every hire is justified by specific work the current team cannot complete —
+no role is added until the prior phase's delivery proves the need.
 
 ## Known risks and how we manage them
 
-1. **Hiring is slow** → start the backend search in week 6 of Phase 1, recruit
-   at the top of the market, consider regional remote.
+1. **Hiring is slow** → start the backend search during Phase 1, recruit at
+   the top of the market, consider regional remote.
 2. **Odoo integration complexity** → engage the Odoo administrator before
-   Phase 2; scope first delivery to read-only if needed.
-3. **Scope creep across 38 brands** → template policy from day one: sub-brands
-   configure within templates; custom work only for flagships, explicitly
-   scoped. Platform-wide consistency beats any single brand's preference.
+   Phase 2; scope the first delivery to read-only if needed.
+3. **Scope creep across the brand portfolio** → template policy from day one:
+   sub-brands configure within templates; custom work only for flagships,
+   explicitly scoped. Platform-wide consistency beats any single brand's
+   preference.
 4. **FX exposure** → favor self-hosted/usage-priced services; largest costs in
    local currency.
