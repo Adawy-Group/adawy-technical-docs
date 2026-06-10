@@ -1,0 +1,51 @@
+---
+title: Launching a New Brand Site
+---
+
+# Launching a New Brand Site
+
+The test of the multi-tenant architecture is that adding brand #39 is a
+**configuration task, not a build**. Under WordPress this took ~6 weeks; on
+the platform it is about a week of elapsed time, most of it content.
+
+## The workflow
+
+| Step | Time | Who |
+| ---- | ---- | --- |
+| 1. Point the brand's domain at the platform | Few minutes | Lead (or any developer) |
+| 2. Create the brand configuration — colors, fonts, logos as design tokens | Few hours | Designer, with dev support |
+| 3. Pick the template: industrial / creative / services / retail | Few minutes | Designer + lead together |
+| 4. Populate content through the Payload dashboard | 2–5 days | Marketing team |
+| 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + lead |
+| 6. Quality review and launch | 1–2 days | Lead |
+
+## Step notes
+
+1. **Domain:** add the domain in Vercel + Cloudflare; the routing layer
+   resolves the tenant from the hostname. Verify staging serves the new brand
+   before announcing anything.
+2. **Brand config:** a new folder under `brands/` — tokens only, no logic
+   ([project structure](/standards/project-structure)). Both logo variants
+   (light/dark), EN + AR font stacks.
+3. **Template choice** is a decision, not a default — match the brand's
+   sector. Getting the *industrial* template right once is why Print,
+   Production, and Supplies cost days, not weeks.
+4. **Content:** created in Payload under the brand's permissions, in English
+   and Arabic. The content team never needs a developer for this — that is
+   the entire point of the unified dashboard.
+5. **Custom tweaks:** the template policy applies — configuration over
+   customization. If a request can't be met with tokens, it goes through the
+   lead as an explicitly scoped exception.
+6. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass,
+   RTL verified, metadata/OG/structured data set, analytics live, footer
+   "part of Adawy Group" cross-link present, corporate directory updated.
+
+## Pitfalls
+
+- Don't copy another brand's folder and edit in place — generate from the
+  brand-config schema so missing tokens fail at build time.
+- Don't let "small" one-off component changes slip in during step 5 — that's
+  how the shared platform decays into 38 forks
+  ([the scope-creep risk](/architecture/roadmap#known-risks-and-how-we-manage-them)).
+- Don't launch without the redirect map if the brand had an old site — losing
+  existing search ranking costs more than the build did.

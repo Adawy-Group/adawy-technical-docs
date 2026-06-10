@@ -1,0 +1,90 @@
+---
+title: Roadmap & Phases
+---
+
+# Roadmap & Phases
+
+The platform is delivered in five phases over two to three years. **Phase 1 is
+the only firm commitment** — every later phase is direction, reviewed against
+actual delivery before continuing. Each phase begins only after the prior
+phase has delivered.
+
+| Phase | Window | Headline | Team size |
+| ----- | ------ | -------- | --------- |
+| 1 | Months 0–3 | The portfolios (current priority) | 2 |
+| 2 | Months 3–9 | Rest of portfolios, shop rebuild, platform foundation | 4–5 |
+| 3 | Months 9–18 | Client portal, AI, ecosystem layer | 7–8 |
+| 4 | Months 18–24 | Geographic scale, deeper integrations | 10–12 |
+| 5 | Months 24–36 | Consolidation and specialists | 13–16 |
+
+## Phase 1 — The portfolios (now)
+
+Shipped by the current two-person team in 2–3 months:
+
+- **adawygroup.com rebuilt from scratch** — custom, mobile-first,
+  bilingual-ready, WCAG 2.1 AA, Lighthouse mobile target 94 (from ~32).
+- **Two or three flagship sub-brand portfolios** — recommended: Adawy Studio
+  (creative flagship, sets the design bar) and Adawy Pack (industrial
+  flagship, exercises the industrial template every later industrial brand
+  reuses).
+- **The shared design system** — the single most important technical
+  deliverable; component library + industrial/creative/services templates.
+- **The unified admin dashboard** (Payload).
+- **Deployment & quality foundation** — Git workflow with preview
+  environments, automated checks, error tracking, uptime monitoring.
+
+Deliberately **not** in Phase 1: client portal, AI, Odoo integration,
+e-commerce. Ship excellent foundations, prove the architecture, then add scope.
+
+## Phase 2 — Expansion & platform foundation
+
+Remaining sub-brand sites (Print, Supplies, Marketing Solutions, Business
+Development, Media Production, Production…) on the Phase-1 templates; the
+**Aladawy Shop rebuild** (Paymob + Fawry); first Odoo integrations
+(read products/inventory, write back orders); client portal v0; the shared
+NestJS backend. Hires: senior backend engineer, second frontend dev, part-time
+DevOps.
+
+## Phase 3 — The ecosystem layer
+
+The **full client portal** (orders across sub-brands from Odoo, brand assets,
+invoices, structured intake, team access). First **AI solutions in
+production**. Deeper Odoo integration and the analytics/BI foundation
+(Metabase). Hires: engineering manager, 2 mid-level full-stack, senior
+analytics engineer, QA + second designer as load requires.
+
+## Phases 4–5 — Scale, geography, specialists
+
+Localization for KSA/UAE/Libya/GCC (currency, tax, regional payments),
+manufacturing intelligence, the Odoo-vs-SAP evaluation (Phase 4 question, not
+Phase 1), security/compliance hardening, and specialist hires (AI, security,
+data) once the work proves the need.
+
+## The seven AI solutions
+
+| Solution | Phase | What it does |
+| -------- | ----- | ------------ |
+| AI assistant (internal + members) | Late 2 → 3 | RAG over the group's systems (pgvector); answers in natural language, permissions enforced at retrieval |
+| Client portal assistant | 3 | Task completion via conversation — quotes, orders, briefs; drafts for human review, never autonomous |
+| Content engine | 3 | First-draft bilingual content in each brand's voice profile; review queue before publication; 110 brands × ~2 carousels + 2 reels/week can't be written by hand |
+| Lead scoring | 3 | Every form submission enriched, scored, routed; high-intent leads surfaced immediately |
+| Internal search | 3 | One search across Notion/Drive/Slack/Odoo/email — lowest-glamour, possibly highest daily value |
+| Manufacturing intelligence | Late 3 → 4 | Dashboards over Odoo manufacturing data with AI commentary; augmentation, not autonomous control |
+| Design system assistant | 4 | Brief → palettes, typography pairings, layout starting points pushed to Figma |
+
+No dedicated AI engineer for the first ~18 months: a senior full-stack
+engineer can build production RAG with the Vercel AI SDK, the Anthropic SDK,
+and pgvector in 4–6 weeks. The specialist joins when AI features become
+revenue-bearing (Phase 4–5).
+
+## Known risks and how we manage them
+
+1. **Hiring is slow** → start the backend search in week 6 of Phase 1, recruit
+   at the top of the market, consider regional remote.
+2. **Odoo integration complexity** → engage the Odoo administrator before
+   Phase 2; scope first delivery to read-only if needed.
+3. **Scope creep across 38 brands** → template policy from day one: sub-brands
+   configure within templates; custom work only for flagships, explicitly
+   scoped. Platform-wide consistency beats any single brand's preference.
+4. **FX exposure** → favor self-hosted/usage-priced services; largest costs in
+   local currency.

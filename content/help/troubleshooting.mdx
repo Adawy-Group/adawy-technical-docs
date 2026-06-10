@@ -4,7 +4,23 @@ title: Troubleshooting
 
 # Troubleshooting
 
-{/* TODO(content): Known issues and fixes, grouped by project.
-    Format per entry: symptom → cause → fix. */}
+Known issues and fixes, grouped by area. Format: **symptom → cause → fix.**
+Hit something new? Fix it, then add it here in the same PR.
 
-> 🚧 **Stub** — common errors and their fixes.
+## This documentation site
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Build fails: `Invalid input: expected nonoptional, received undefined → at children` on every page | A newer `zod` was hoisted; Nextra 4.6's Layout validates props with the older `z.custom` behavior | Keep the `overrides.zod` pin in `package.json`; run `npm install` again |
+| Page renders in dev but fails `next build` | Prerender error in MDX (unsupported syntax, broken import) | Run the dev server, open the failing route — dev shows the real error message production hides |
+| New page doesn't appear in the sidebar | Missing entry in that folder's `_meta.ts` | Add the filename key with its display title |
+| Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate the snippet in mermaid.live, then paste back |
+
+## Platform development
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Wrong brand theme renders locally | Tenant resolution falls back to default when the hostname isn't mapped | Use the documented local hostname mapping from the platform README, not `localhost` directly |
+| Env vars missing after pull | New variables added since your last sync | `vercel env pull .env.local` again; backend values from the password manager |
+| Lighthouse dropped after your change | Usually a new client component or unoptimized media | Work through the [Performance Checklist](/guides/performance-checklist) |
+| Arabic layout breaks | Hard-coded directional CSS (`margin-left` etc.) | Use logical properties (`margin-inline-start`) — see [UI standards](/standards/ui) |
