@@ -17,8 +17,10 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
 - **Decision:** One Turborepo monorepo. Each brand is a **thin Next.js app**
   (`apps/group`, `apps/studio`, `apps/pack`, …) deployed to its own domain as
   its own Vercel project. All real engineering lives in shared packages:
-  `@adawy/ui` (shadcn primitives), `@adawy/tailwind-config` (design tokens),
-  `@adawy/motion` (GSAP), `@adawy/seo`, `@adawy/utils`.
+  `@adawy/ui` (shadcn primitives), `@adawy/design` (design tokens),
+  `@adawy/motion` (GSAP + Lenis), `@adawy/i18n` (next-intl), `@adawy/seo`,
+  `@adawy/utils`. Own apps are for flagship brands; the long tail is served
+  by one multi-tenant app ([ADR-008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app)).
 - **Consequences:** A fix in a shared package ships to every brand from one
   PR; Turborepo rebuilds only affected apps. Each brand deploys independently —
   a bad deploy on one site cannot take down the others, and flagships keep
@@ -95,4 +97,46 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
 - **Decision:** This Nextra site, public, on the same Vercel/GitHub workflow
   as everything else. Changes via PR.
 - **Consequences:** Onboarding is self-serve; docs rot is visible in git; the
-  handbook itself demonstrates the platform's standards.
+  handbook itself demonstrates the platform's standards. The handbook is
+  **English-only by decision, not omission**: its audience is engineers, whose
+  working language is English, and a parallel Arabic tree would rot with a
+  small team — a stale translation is worse than none. Revisit if the
+  audience expands beyond engineers (company-wide operations handbook, or a
+  hire for whom English documentation is a genuine barrier) — and then
+  translate the process pages (How We Work, onboarding), not the ADRs.
+  Arabic stays first-class where it serves the market: the brand sites.
+
+## ADR-008 — Flagships get their own app; the long tail shares one multi-tenant app
+
+- **Context:** ADR-001 gives each brand its own Next.js app. That is right for
+  flagships, but extrapolated to 110 brands it breaks down: a change to
+  `@adawy/ui` would trigger ~110 Vercel builds (turbo-ignore cannot help — the
+  change genuinely affects all of them), and the team would manage ~110 Vercel
+  projects, domain configs, and env setups. Realistically, brands #10–#110 are
+  templated marketing sites — same sections, different tokens and content.
+- **Decision:** Two tiers inside the same monorepo. A brand gets **its own
+  app** (`apps/group`, `apps/studio`, `apps/pack`, `apps/shop`, …) when it
+  needs unique routes, custom sections, or bespoke motion. Everything else
+  lives in **one multi-tenant app** (`apps/sites`) that maps hostname → brand
+  config (tokens, content, section composition). Both tiers consume the same
+  `@adawy/*` packages, so a brand can graduate from `apps/sites` to its own
+  app without a rewrite — it is a promotion path, not a migration.
+- **Consequences:** The long tail is one deployment and one Vercel project
+  (Vercel serves many domains per project natively); design-system PRs stay
+  reviewable. The future CMS (ADR-004) has one obvious consumer instead of a
+  hundred. Trade-off: `apps/sites` couples its brands to one deployment — the
+  flagship isolation argument from ADR-001 deliberately does not apply to
+  templated sites. The decision rule per new brand lives in the
+  [launch guide](/guides/launch-new-brand).
+
+## ADR-009 — The Phase-2 backend joins the same monorepo
+
+- **Context:** The NestJS backend (auth, Odoo integration, jobs) could live in
+  its own repository or in the platform monorepo. The team is small and the
+  frontend and backend share TypeScript contracts (API types, Zod schemas).
+- **Decision:** The backend lives in the monorepo as `apps/api`, deployed to
+  its own host (Railway → DigitalOcean) rather than Vercel.
+- **Consequences:** Shared types between portal/shop frontends and the API are
+  imported, not duplicated; one CI setup; one place to look. If a dedicated
+  backend team ever needs its own repo, extracting one later is far easier
+  than merging repos later.

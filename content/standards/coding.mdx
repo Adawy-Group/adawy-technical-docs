@@ -18,6 +18,11 @@ a rule without a reason is a candidate for deletion.
   submissions, API responses, Odoo webhooks, CMS content — is parsed with a
   Zod schema before it enters typed code. *Why:* types are compile-time only;
   the boundary is where runtime reality enters.
+- **TSDoc on every exported symbol.** Package entry points carry
+  `@packageDocumentation`; exports document their role and the rule they
+  enforce, not a restatement of the signature. *Why:* the packages are the
+  product — a brand developer should understand `@adawy/*` from the editor
+  tooltip, without reading the source.
 
 ## Next.js / React
 
@@ -61,6 +66,20 @@ a rule without a reason is a candidate for deletion.
 
 ## Linting & formatting
 
-ESLint + Prettier run in CI and as pre-commit hooks; the configuration in the
-platform repo is the source of truth. Don't argue style in review — the
-formatter wins.
+ESLint + Prettier run in CI; `@adawy/eslint-config` in the platform repo is
+the source of truth. Don't argue style in review — the formatter wins.
+
+The lint philosophy: **a rule is an error or it is not enabled.** No
+warnings — they scroll past and never get fixed, and with one developer per
+brand a warning-only lint is no lint at all.
+
+Beyond the standard presets (type-aware `typescript-eslint`, React + hooks,
+`jsx-a11y`, Next.js Core Web Vitals), the config machine-enforces the
+architecture — the rules in this handbook fail the build, not just review:
+
+| Enforced rule | What it guards |
+| ------------- | -------------- |
+| `gsap`/`lenis` imports banned outside `@adawy/motion` | Single plugin registration, SSR safety, one shared ticker ([project structure](/standards/project-structure)) |
+| `next/link` and `next/navigation`'s router APIs banned in apps — use `@/i18n/navigation` | Every URL carries the correct locale prefix |
+| Physical Tailwind classes (`ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`/`text-left`/`text-right`) are errors — use logical ones (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`/`text-end`) | Layouts mirror correctly in Arabic (RTL) without retrofitting |
+| `no-floating-promises` (type-aware) | An unawaited promise in a Server Component is a silently dropped error |

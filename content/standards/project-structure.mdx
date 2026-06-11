@@ -6,26 +6,35 @@ title: Project Structure
 
 ## The platform monorepo
 
-The platform is **one monorepo (Turborepo)**: a thin Next.js app per brand in
-`apps/`, built entirely from shared `@adawy/*` packages in `packages/`. Each
-app deploys to its own domain as its own Vercel project.
+The platform is **one monorepo (Turborepo, pnpm workspaces)**: a thin Next.js
+app per flagship brand in `apps/`, built entirely from shared `@adawy/*`
+packages in `packages/`. Each flagship app deploys to its own domain as its
+own Vercel project; the long tail of templated brands shares one multi-tenant
+app ([ADR-008](/architecture/adrs)).
 
 ```
-adawy/
+adawy-platform/
 ├── apps/
-│   ├── group/            Adawy Group   → adawygroup.com
-│   ├── studio/           Adawy Studio  → adawystudio.com
-│   └── pack/             Adawy Pack    → adawypack.com
+│   ├── group/      Adawy Group   → adawygroup.com   (flagship — own app)
+│   ├── studio/     Adawy Studio  → adawystudio.com  (flagship — own app)
+│   ├── pack/       Adawy Pack    → adawypack.com    (flagship — own app)
+│   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config
+│   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
-    ├── ui/               @adawy/ui              (shadcn primitives)
-    ├── tailwind-config/  @adawy/tailwind-config (token structure and base)
-    ├── motion/           @adawy/motion          (GSAP)
-    ├── seo/              @adawy/seo             (metadata and sitemap helpers)
-    └── utils/            @adawy/utils
+    ├── ui/                 @adawy/ui      (shadcn primitives + sections)
+    ├── design/             @adawy/design  (Tailwind v4 token structure, CSS-first)
+    ├── motion/             @adawy/motion  (GSAP + Lenis primitives)
+    ├── i18n/               @adawy/i18n    (next-intl routing, RTL helpers)
+    ├── seo/                @adawy/seo     (metadata and sitemap helpers)
+    ├── utils/              @adawy/utils
+    └── typescript-config/  shared tsconfig bases
 ```
 
-New brands are new folders under `apps/` — Adawy Print, Adawy Supplies, and
-the rest follow the same pattern as the first three.
+A new brand is a **config entry in `apps/sites`** by default. It gets its own
+folder under `apps/` only when it needs unique routes, custom sections, or
+bespoke motion — the decision rule lives in the
+[launch guide](/guides/launch-new-brand). Packages ship as TypeScript source
+(no build step); apps compile them.
 
 ## The rules behind the layout
 
@@ -37,18 +46,25 @@ the rest follow the same pattern as the first three.
    and reach every brand ([ADR-001](/architecture/adrs)).
 2. **Where code goes:**
    - Visual primitives and composed sections → `@adawy/ui`
-   - Design tokens, theme structure, Tailwind base → `@adawy/tailwind-config`
-   - Animation patterns and scroll choreography → `@adawy/motion`
+   - Design tokens, theme structure, Tailwind base → `@adawy/design`
+   - Animation primitives and scroll machinery → `@adawy/motion`
+   - Locale routing, direction handling, next-intl config → `@adawy/i18n`
    - Metadata, Open Graph, sitemap/robots helpers → `@adawy/seo`
    - Everything shared and unglamorous → `@adawy/utils`
 3. **Brand identity lives in tokens, not forks.** A brand customizes by
-   overriding token values from `@adawy/tailwind-config` — never by copying a
+   overriding token values from `@adawy/design` — never by copying a
    shared component into its app and editing it. Genuinely custom sections are
    for flagships only and are explicitly scoped.
-4. **Generalize on the third use, not the first.** A section used by one app
+4. **Shared means machinery, not appearance.** Fonts, colors, SEO content,
+   and motion *choreography* are per-brand by design: `@adawy/design` defines
+   the token slots (`--font-display`, `--color-brand`, …) and each brand
+   assigns its own values; `@adawy/seo` is plumbing fed with brand content;
+   `@adawy/motion` ships primitives that brands compose into their own feel.
+   The system exists to make brands siblings, not clones.
+5. **Generalize on the third use, not the first.** A section used by one app
    can live in that app; the moment a second or third brand needs it, it moves
    to `packages/` — extraction is a deliberate step, not a default.
-5. **Turborepo runs the builds.** Only affected apps rebuild on a change; a
+6. **Turborepo runs the builds.** Only affected apps rebuild on a change; a
    PR that touches `@adawy/ui` shows every affected app's preview, because
    that change ships to all of them.
 

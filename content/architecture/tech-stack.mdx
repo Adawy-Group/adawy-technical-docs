@@ -12,10 +12,11 @@ avoiding subscription dependencies that compound at 110-brand scale.**
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Monorepo | **Turborepo** — `apps/` per brand + shared `@adawy/*` packages (`ui`, `tailwind-config`, `motion`, `seo`, `utils`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
-| Framework | **Next.js 15 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team |
-| Styling | **Tailwind CSS + shadcn/ui** (`@adawy/ui`, `@adawy/tailwind-config`) | Themeable per brand via design tokens, accessible, owned by the team — no component library subscription |
-| Motion | **GSAP + Framer Motion** | The brand guidelines require cinematic, scroll-driven motion; these are the industry standards for it |
+| Monorepo | **Turborepo** — `apps/` per brand + shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `seo`, `utils`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team |
+| Styling | **Tailwind CSS v4 + shadcn/ui** (`@adawy/ui`, `@adawy/design`) | Tokens are CSS-first (`@theme`): `@adawy/design` defines the token structure, each brand overrides the values — accessible, owned by the team, no component library subscription |
+| Motion | **GSAP + Lenis** (`@adawy/motion`) | The brand guidelines require cinematic, scroll-driven motion; GSAP is the industry standard and Lenis provides smooth scrolling, driven by GSAP's ticker so they share one clock. Wired once in `@adawy/motion` — the package ships primitives, brands own choreography |
+| i18n | **next-intl** (`@adawy/i18n`) | Bilingual (ar/en) with RTL by design; locale routing and direction handling wired once, used by every brand |
 | Forms | **React Hook Form + Zod** | Type-safe forms with validation shared between client and server |
 
 ## Backend

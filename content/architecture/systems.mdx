@@ -8,9 +8,9 @@ title: Our Systems
 
 | System | What it is | Status |
 | ------ | ---------- | ------ |
-| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per brand (`apps/group`, `apps/studio`, `apps/pack`, …) on shared `@adawy/*` packages, each deployed to its own domain | Phase 1 — in build |
-| **Shared design system** | The `@adawy/*` packages: `ui` (shadcn primitives + sections), `tailwind-config` (design tokens), `motion` (GSAP), `seo`, `utils` — themeable per brand via tokens | Phase 1 — the most important technical deliverable |
-| **Backend service** | Node.js (NestJS): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 — first build of the phase |
+| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand (`apps/group`, `apps/studio`, `apps/pack`) plus one multi-tenant `apps/sites` for the long tail ([ADR-008](/architecture/adrs)), all on shared `@adawy/*` packages, each app deployed to its own domain(s) | Phase 1 — in build |
+| **Shared design system** | The `@adawy/*` packages: `ui` (shadcn primitives + sections), `design` (Tailwind v4 design tokens), `motion` (GSAP + Lenis), `i18n` (next-intl + RTL), `seo`, `utils` — themeable per brand via tokens | Phase 1 — the most important technical deliverable |
+| **Backend service** | Node.js (NestJS) in the same monorepo as `apps/api` ([ADR-009](/architecture/adrs)): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 — first build of the phase |
 | **Aladawy Shop (rebuild)** | Custom e-commerce on the same stack; catalog synced from Odoo; Paymob (cards) + Fawry (cash on delivery) | Phase 2 |
 | **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | Phase 2 — the flagship |
 | **Employee portal** | One internal home: internal AI assistant, search across all company systems, operational dashboards, content engine | Phase 3 |
