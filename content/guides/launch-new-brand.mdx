@@ -4,16 +4,28 @@ title: Launching a New Brand Site
 
 # Launching a New Brand Site
 
-The test of the platform is that adding the next brand is **a thin app, not a
-new project**. Under WordPress this took ~6 weeks; in the monorepo it is about
-a week of elapsed time, most of it content.
+The test of the platform is that adding the next brand is **a config entry or
+a thin app, never a new project**. Under WordPress this took ~6 weeks; in the
+monorepo it is about a week of elapsed time, most of it content.
+
+## First decision: own app or `apps/sites`?
+
+Per [ADR-008](/architecture/adrs), ask: **does this brand need unique routes,
+custom sections, or bespoke motion?**
+
+- **No (the default)** — it's a templated brand: add a config entry (tokens,
+  content, section composition) to the multi-tenant `apps/sites` and point the
+  domain at the `sites` Vercel project. Skip step 1 below.
+- **Yes (flagship treatment)** — it gets its own app under `apps/<brand>`;
+  follow the full workflow. A `sites` brand can be promoted to its own app
+  later without a rewrite — both tiers consume the same `@adawy/*` packages.
 
 ## The workflow
 
 | Step | Time | Who |
 | ---- | ---- | --- |
 | 1. Scaffold the app under `apps/<brand>` from the closest existing app | Few hours | Developer |
-| 2. Define the brand's tokens — colors, fonts, logos — on the `@adawy/tailwind-config` structure | Few hours | Designer, with dev support |
+| 2. Define the brand's tokens — colors, fonts, logos — on the `@adawy/design` structure | Few hours | Designer, with dev support |
 | 3. Create the Vercel project and point the brand's domain | Few minutes | CTO (or any developer) |
 | 4. Populate content (MDX/config in the app, via PR) | 2–5 days | Team, with copy from marketing |
 | 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + developer |

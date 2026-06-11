@@ -41,10 +41,13 @@ graphic elements, visual clutter, excessive effects.
 
 ## Motion
 
-Cinematic and intentional — GSAP and Framer Motion, controlled pacing,
-structured cuts, minimal transitions. Never TikTok-style editing, meme
-transitions, or hyperactive motion. **Always respect
-`prefers-reduced-motion`** — motion is brand, accessibility is law.
+Cinematic and intentional — GSAP (the platform's single animation library)
+with Lenis smooth scrolling, both wired once in `@adawy/motion` and imported
+only from there. Controlled pacing, structured cuts, minimal transitions.
+Never TikTok-style editing, meme transitions, or hyperactive motion.
+**Always respect `prefers-reduced-motion`** — the shared primitives handle
+this (Lenis falls back to native scroll; reveals render static), and custom
+choreography must too. Motion is brand, accessibility is law.
 
 ## Imagery
 
@@ -70,12 +73,14 @@ exaggeration.
   meaningful alt text, no screen-reader traps (marquee duplicates get
   `aria-hidden`).
 - Every layout must survive **RTL** and Arabic text lengths from day one —
-  bilingual is designed in, not bolted on.
+  bilingual is designed in, not bolted on. Use logical Tailwind classes
+  (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`/`text-end`); the
+  physical ones are [lint errors](/standards/coding).
 
 ## Component rules
 
 - Build with the shared design system: `@adawy/ui` (shadcn-based primitives +
-  section components), themed by `@adawy/tailwind-config` tokens, animated
+  section components), themed by `@adawy/design` tokens, animated
   with `@adawy/motion`. Check whether a component exists before writing one.
 - New reusable component → it goes in `@adawy/ui`, themeable via tokens,
   accessible, documented, reviewed as platform code (it will run on every

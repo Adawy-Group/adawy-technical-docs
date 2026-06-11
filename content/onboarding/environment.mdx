@@ -28,11 +28,11 @@ vercel env pull .env.local   # for Vercel-linked frontends
 npm run dev
 ```
 
-**In the platform monorepo** (`adawy/` — Turborepo), install once at the root,
-then run a single brand app:
+**In the platform monorepo** (`adawy-platform/` — Turborepo + pnpm), install
+once at the root, then run a single brand app:
 
 ```bash
-npm install            # root — installs all apps and @adawy/* packages
+pnpm install               # root — installs all apps and @adawy/* packages
 turbo dev --filter=group   # or studio, pack, …
 ```
 
