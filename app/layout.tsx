@@ -5,6 +5,7 @@ import { getPageMap } from 'nextra/page-map'
 import { JsonLd } from '../components/json-ld'
 import { organizationJsonLd, rootMetadata, websiteJsonLd } from '../lib/seo'
 import 'nextra-theme-docs/style.css'
+import './globals.css'
 
 export const metadata = rootMetadata
 

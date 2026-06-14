@@ -1,0 +1,34 @@
+/*
+ * Project styles layered on top of the Nextra theme.
+ * Imported after `nextra-theme-docs/style.css` so these rules win.
+ */
+
+/*
+ * Wide content tables (e.g. the 3-column "Why" tables) scroll horizontally
+ * inside their own box on narrow screens. Mobile browsers hide the overlay
+ * scrollbar until you start scrolling, so the scroll is easy to miss. On
+ * narrow viewports we render a slim, always-visible scrollbar under such
+ * tables as an unobtrusive "swipe for more" cue. It only appears when the
+ * table actually overflows, and is theme-aware in both light and dark mode.
+ */
+@media (max-width: 767px) {
+  main table {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(125, 125, 125, 0.5) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  main table::-webkit-scrollbar {
+    height: 4px;
+    -webkit-appearance: none;
+  }
+
+  main table::-webkit-scrollbar-thumb {
+    background-color: rgba(125, 125, 125, 0.5);
+    border-radius: 9999px;
+  }
+
+  main table::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
