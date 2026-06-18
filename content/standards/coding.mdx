@@ -40,8 +40,39 @@ a rule without a reason is a candidate for deletion.
 
 ## Naming & files
 
-- Components: `PascalCase` (`HeroSection.tsx`); hooks: `useCamelCase`;
-  everything else (files, folders, routes): `kebab-case`.
+The trap is conflating the **file name** with the **symbol it exports** — they
+use different cases. Hold them apart and the rules never collide.
+
+**Files and folders are always `kebab-case`** — components, hooks, utilities,
+routes, and assets alike: `hero-intro.tsx`, `use-media-query.ts`,
+`structured-data.ts`. *Why:* one rule for every file ends the daily "which case
+was this?" lookup, matches both the shadcn primitives we vendor (`button.tsx`)
+and Next.js's own route files (`page.tsx`, `layout.tsx`), and sidesteps the
+case-sensitivity bugs that surface when case-insensitive macOS meets
+case-sensitive Linux CI.
+
+**The exported symbol keeps its idiomatic case** — the file is kebab, the thing
+inside it is not:
+
+| Symbol | Case | Example (`file` → `export`) |
+| ------ | ---- | --------------------------- |
+| Component / provider | `PascalCase` | `theme-toggle.tsx` → `ThemeToggle` |
+| Hook | `useCamelCase` | `use-media-query.ts` → `useMediaQuery` |
+| Function | `camelCase`, verb-first | `pwa.ts` → `buildManifest` |
+| Boolean / predicate | `is` / `has` / `should` + `camelCase` | `isStandalone`, `hasSeenPreloader` |
+| Type / interface (props end in `Props`) | `PascalCase` | `Locale`, `ThemeToggleProps` |
+| Fixed-scalar constant | `SCREAMING_SNAKE_CASE` | `PRELOADER_SEEN_KEY`, `SNOOZE_DAYS` |
+
+**Design tokens and the utilities that read them are `kebab-case`:** brands
+override the slots `--brand`, `--brand-foreground`, `--brand-font-display`, and
+`--brand-font-body`, consumed as `bg-brand`, `font-heading`, `font-sans`.
+*Why:* the token name is the brand API — a stable kebab slot is what lets a
+single override repaint a brand ([project structure](/standards/project-structure)).
+
+**i18n casing:** locale codes and message files are lowercase (`ar`, `en.json`);
+message namespaces are `PascalCase` (`HomePage`, `Metadata`); leaf keys are
+`camelCase` (`installTitle`).
+
 - One component per file; co-locate component-specific helpers and types with
   the component.
 - Branches and commits follow the [git workflow](/how-we-work/git-workflow):
