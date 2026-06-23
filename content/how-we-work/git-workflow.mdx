@@ -10,8 +10,9 @@ every PR, auto-deploy on merge) does the heavy lifting.
 
 ## The rules
 
-1. **`main` is always deployable.** It is protected: no direct pushes, changes
-   land via reviewed pull requests only.
+1. **`main` is always deployable.** Treat it as protected: changes land via
+   reviewed pull requests, not direct pushes — discipline, since branch
+   protection isn't enforced on the current plan.
 2. **One branch per card.** Branch from `main`, named for the work:
    `feat/<short-description>`, `fix/<short-description>`,
    `content/<short-description>`, `chore/<short-description>` — mirroring the
@@ -41,6 +42,6 @@ flowchart LR
 ```
 
 Every PR gets a **preview deployment** automatically — reviews happen on real
-running pages, not screenshots. Automated checks (build, types, lint) must
-pass before review; a red check is the author's to fix, not the reviewer's to
-catch.
+running pages, not screenshots. Automated checks — the `verify` job runs lint,
+types, tests, and build — must pass before review; a red check is the author's
+to fix, not the reviewer's to catch.
