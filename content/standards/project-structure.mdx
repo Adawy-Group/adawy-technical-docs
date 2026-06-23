@@ -15,20 +15,26 @@ app ([ADR-008](/architecture/adrs)).
 ```
 adawy-platform/
 ├── apps/
-│   ├── group/      Adawy Group   → adawygroup.com   (flagship — own app)
-│   ├── studio/     Adawy Studio  → adawystudio.com  (flagship — own app)
-│   ├── pack/       Adawy Pack    → adawypack.com    (flagship — own app)
-│   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config
+│   ├── group/      Adawy Group   → adawygroup.com   (flagship — own app; the only app today)
+│   ├── studio/     Adawy Studio  → adawystudio.com  (flagship — own app, planned)
+│   ├── pack/       Adawy Pack    → adawypack.com    (flagship — own app, planned)
+│   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config (planned, ADR-008)
 │   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
-    ├── ui/                 @adawy/ui      (shadcn primitives + sections)
-    ├── design/             @adawy/design  (Tailwind v4 token structure, CSS-first)
-    ├── motion/             @adawy/motion  (GSAP + Lenis primitives)
-    ├── i18n/               @adawy/i18n    (next-intl routing, RTL helpers)
-    ├── seo/                @adawy/seo     (metadata and sitemap helpers)
-    ├── utils/              @adawy/utils
-    └── typescript-config/  shared tsconfig bases
+    ├── ui/                 @adawy/ui                (shadcn primitives + sections)
+    ├── design/             @adawy/design            (Tailwind v4 token structure, CSS-first)
+    ├── motion/             @adawy/motion            (GSAP + Lenis primitives)
+    ├── i18n/               @adawy/i18n              (next-intl routing, RTL helpers)
+    ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules)
+    ├── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
+    ├── seo/                @adawy/seo               (metadata + sitemap helpers — planned)
+    └── utils/              @adawy/utils             (shared utilities — planned)
 ```
+
+> **Today** only `apps/group` and the packages it uses (`ui`, `design`,
+> `motion`, `i18n`, `eslint-config`, `typescript-config`) exist. The other apps
+> and the `seo`/`utils` packages are added as the platform grows — extraction
+> is deliberate, on the third use (rule 5 below), not up front.
 
 A new brand is a **config entry in `apps/sites`** by default. It gets its own
 folder under `apps/` only when it needs unique routes, custom sections, or
