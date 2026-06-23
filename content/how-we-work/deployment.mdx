@@ -4,31 +4,37 @@ title: Deployment
 
 # Deployment
 
-The pipeline is Git-based end to end. There are no manual FTP uploads, no
-editing on production, no exceptions.
+The pipeline is Git-based end to end and runs on **GitHub Actions**
+(`.github/workflows/deploy.yml`), not Vercel's dashboard Git integration: the
+platform repo is private and org-owned, which Vercel only connects on the Pro
+plan, so the workflow deploys via the Vercel CLI + a token instead. No manual
+FTP uploads, no editing on production, no exceptions.
 
 ## Environments
 
 | Environment | What it is | When it updates |
 | ----------- | ---------- | --------------- |
-| **Preview** | A unique URL per pull request (Vercel) | On every push to the PR branch |
-| **Staging** | The live staging link leadership reviews against weekly milestones | On merge to `main` |
-| **Production** | The real brand domains | Promotion from staging after verification |
+| **Preview** | A unique URL per pull request | The `deploy` job runs `vercel deploy` on every push to a PR branch |
+| **Production** | The brand's live site — today the Vercel project URL (the "staging link" leadership reviews) until the custom domain attaches | The `deploy` job runs `vercel deploy --prod` on merge to `main` |
 
-From week one of any project there is a **live staging link**; from the first
-build weeks it contains real pages. Anyone in leadership can open it at any
-time — that is the point: progress is something you can click, not a status
-claim in a report.
+Every PR first runs a **`verify` job** (`turbo lint typecheck test build`); the
+deploy only runs after it passes. From week one there is a **live link** that
+fills with real pages — anyone in leadership can open it at any time. Progress
+is something you can click, not a status claim in a report.
 
 ## The path to production
 
-1. PR merged to `main` → automatic deploy to staging.
-2. Work verified on staging: tested on real phones, tablets, and browsers;
-   automated checks passed; no regressions.
-3. Card moves to **Done** only when the change is live with no regressions
+1. PR opened → `verify` (lint, types, tests, build) runs, then a **preview**
+   deploy. Review happens on the running preview, not screenshots.
+2. PR merged to `main` → `verify` runs again, then an automatic **production**
+   deploy (`vercel deploy --prod`). The merge is the release — there is no
+   separate manual promotion step today.
+3. Verify the change on the live URL: real phones, tablets, and browsers;
+   checks green; no regressions
    ([Definition of Done](/how-we-work/definition-of-done)).
-4. Production deploys are owned by the lead. Rollback = redeploy the previous
-   build from Vercel (instant) — every deployment is immutable.
+4. Card moves to **Done** only when it's live with no regressions. Rollback =
+   redeploy the previous build from Vercel (instant) — every deployment is
+   immutable.
 
 ## Monitoring
 
