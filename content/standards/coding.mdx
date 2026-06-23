@@ -38,6 +38,22 @@ a rule without a reason is a candidate for deletion.
 - **Forms: React Hook Form + Zod resolver.** One validation schema serves
   client and server.
 
+## Testing
+
+- **Vitest, colocated.** Tests sit next to the code they cover as `*.test.ts`
+  (zero config, no separate test tree). *Why:* a test beside its source is
+  found and updated with it; a distant test rots.
+- **Test behavior and logic, not declarative UI.** Cover the contracts that
+  break — pure helpers, edge cases, locale handling — not snapshots of markup
+  that change with every design tweak. *Why:* snapshot tests fail on intended
+  change and pass on real regressions, inverting the signal.
+- **Locale parity test per app.** Every app with a `messages/` directory
+  asserts all locale JSON files share an identical key tree; extend it when
+  adding a locale. *Why:* a missing Arabic key is a runtime hole — caught at
+  build, not in production.
+- **Tests are a merge gate.** `turbo test` runs in CI's `verify` job alongside
+  lint, types, and build; a red test blocks merge like any other check.
+
 ## Naming & files
 
 The trap is conflating the **file name** with the **symbol it exports** — they
