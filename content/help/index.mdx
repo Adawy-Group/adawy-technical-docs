@@ -22,7 +22,32 @@ engineers doing nothing else for a year. The monorepo turns each new brand
 into a thin app composed from shared `@adawy/*` packages.
 [ADR-001](/architecture/adrs) has the details.
 
-## Why not Shopify for the shop? Why not Contentful/Clerk/etc.?
+## What is the difference between Adawy Pack and Aladawy Pack?
+
+They are **two different companies**, one letter apart. **Adawy** Pack is a
+Group brand, built at `apps/pack` inside the platform monorepo. **Alad**awy
+Pack is a *client* — a flexible-packaging manufacturer founded in 1971 — with
+its own repository. Same for Aladawy Shop. See
+[the repository map](/repositories) and [the glossary](/help/glossary).
+
+## Why don't client projects use the `@adawy/*` packages?
+
+Because a client's deliverable has to be complete on its own. A repo that only
+builds against an internal package the client does not own cannot be handed
+over. Separate repos also mean a Group refactor cannot break a client's live
+site, and a client's release schedule cannot hold a Group refactor hostage.
+[ADR-010](/architecture/adrs) and
+[Client Projects](/how-we-work/client-projects).
+
+## Why doesn't Aladawy Shop have a checkout?
+
+Because the business does not sell at a list price. Packaging is quoted by
+grade, and the final figure is settled by a human against live stock — so a
+cart and a checkout would model a transaction that does not exist. The site
+ships a **quote request** instead, and the code is shaped so payment can arrive
+later without a rewrite. [ADR-005](/architecture/adrs).
+
+## Why not Contentful/Clerk/Shopify in general?
 
 Subscriptions that scale per-store, per-seat, or per-user **compound** at
 110-brand scale, and they hold our data. We self-host what can be self-hosted

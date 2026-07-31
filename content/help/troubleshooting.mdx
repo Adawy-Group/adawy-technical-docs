@@ -7,21 +7,57 @@ title: Troubleshooting
 Known issues and fixes, grouped by area. Format: **symptom → cause → fix.**
 Hit something new? Fix it, then add it here in the same PR.
 
+The platform repo keeps its own ledger in `docs/pitfalls.md` for bugs that are
+specific to the stage and the scroll takes. This page covers the ones that
+catch people across repos.
+
+## Setup and tooling
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Dependency errors that make no sense in `adawy-platform`, `aladawy-pack` or `aladawy-shop` | You ran `npm install` in a pnpm repo | Delete `node_modules` and any `package-lock.json`, then `pnpm install`. Only this handbook uses npm |
+| Wrong Node version errors | You skipped the version manager | `fnm use` / `nvm use` in the repo root; CI runs Node 22 |
+| CI fails on formatting after a green local `turbo lint` | `format:check` is a separate root-level gate, not a turbo task | Run `pnpm format:check` before pushing — [testing](/standards/testing) |
+| A class exists in your source but not in the served CSS, and restarting changes nothing | A stale Turbopack CSS chunk — the dev server does not always invalidate it | `rm -rf apps/<app>/.next` and restart. Reach for this early rather than re-reading your Tailwind config |
+| A shared-package change doesn't appear in the running app | Stale cache, or the dev task isn't watching `packages/` | Restart the filtered dev task; if it persists, `pnpm turbo build --force` the package |
+| Two apps fight over the same port locally | Both started on the default port | Run one at a time with `--filter`, or set per-app ports |
+| Env vars missing after a pull | New variables added since your last sync | `vercel env pull .env.local` again; anything else from the password manager. **Never invent a value** |
+| A stacked dependency PR installs a tree nobody tested | Someone text-merged `pnpm-lock.yaml`; a three-way merge produces a valid file that resolves to nothing | Rebuild it: check out `main`, apply the `package.json` changes, `pnpm install --lockfile-only`, commit that |
+
+## Build and CI
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Build fails on a page that renders fine in dev | A prerender error — MDX syntax, a broken import, a client-only API on the server | Run the dev server and open the failing route; dev shows the real message the build hides |
+| CI fails on accessibility with no obvious cause | The axe gate found a WCAG A/AA violation on some route | Run it locally: `pnpm --filter group start &` then `pnpm --filter group a11y:check`. It names the route and the rule |
+| `turbo --affected` deploys everything unexpectedly | A root config file changed, or the base commit is unusable (new branch, force-push) | Expected. Every fallback deploys everything on purpose — under-deploying ships stale code |
+| A Vercel deploy fails with `Project not found`, both ids masked | The project was created while the CLI was logged into a different Vercel account, so the id is valid but in another team | The preflight step prints the resolved project name — check which team owns it |
+| A deploy is green but built the wrong app | The Vercel project's root directory is unset or points elsewhere | Set it to `apps/<app>` in Vercel → Settings → Build & Deployment |
+
+## Bilingual and RTL
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| The build fails on a parity test | A message key exists in one locale and not another | Add the missing key. Do not delete the test — [i18n & RTL](/standards/i18n-rtl) |
+| The Arabic layout is mirrored wrongly | Hard-coded directional CSS or a physical Tailwind class that slipped through | Logical properties everywhere (`ms-`/`me-`/`start-`/`text-start`, `margin-inline-start`) |
+| You fix a sideways page-slide in Arabic and every sticky layer stops sticking | `overflow-x-hidden` silently makes the element a scroll container | Use `overflow-x-clip` — it clips without creating one |
+| A price range renders with its bounds swapped in Arabic | The numeric run is not bidi-isolated inside RTL text | Isolate it; both client storefronts already do |
+| French pages are missing from a sitemap or switcher | Something enumerated locales by hand instead of importing the list | Import from `@adawy/i18n` — there are **three** locales, not two |
+
+## Motion and 3D
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| A section looks broken with reduced motion on | The scrub driver early-exits before creating any trigger, so the CSS defaults *are* the layout — and they were authored as a start-of-animation state | Make the static CSS the finished layout — [platform architecture](/architecture/platform-architecture) |
+| An element strands mid-animation and stays there until reload | A per-frame write memo was not dropped when the DOM moved under it | Route writes through the stage writer and reset it wherever layout moved. `docs/pitfalls.md` in the platform repo |
+| A colour tween flashes red on its first frame | A computed theme token serialized as `lab(…)` and GSAP's parser read it as `rgb(…)` | Resolve through the repo's colour helper, which normalizes via a 1×1 canvas. Never regex the string |
+| A 3D object sits a few px off its DOM target on desktop only | Screen px were projected against `window.innerWidth`, which counts the scrollbar | Divide by the canvas box the runtime already tracks |
+
 ## This documentation site
 
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
-| Build fails: `Invalid input: expected nonoptional, received undefined → at children` on every page | A newer `zod` was hoisted; Nextra 4.6's Layout validates props with the older `z.custom` behavior | Keep the `overrides.zod` pin in `package.json`; run `npm install` again |
-| Page renders in dev but fails `next build` | Prerender error in MDX (unsupported syntax, broken import) | Run the dev server, open the failing route — dev shows the real error message production hides |
-| New page doesn't appear in the sidebar | Missing entry in that folder's `_meta.ts` | Add the filename key with its display title |
-| Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate the snippet in mermaid.live, then paste back |
-
-## Platform development
-
-| Symptom | Cause | Fix |
-| ------- | ----- | --- |
-| A shared-package change doesn't show up in the app you're running | Stale Turborepo cache or the dev task isn't watching `packages/` | Restart the filtered dev task (`turbo dev --filter=<app>`); if it persists, `turbo build --force` the package |
-| Two apps fight over the same port locally | Both started with default ports | Run one app at a time with `--filter`, or set per-app ports in each app's dev script |
-| Env vars missing after pull | New variables added since your last sync | `vercel env pull .env.local` again; backend values from the password manager |
-| Lighthouse dropped after your change | Usually a new client component or unoptimized media | Work through the [Performance Checklist](/guides/performance-checklist) |
-| Arabic layout breaks | Hard-coded directional CSS (`margin-left` etc.) | Use logical properties (`margin-inline-start`) — see [UI standards](/standards/ui) |
+| Build fails: `Invalid input: expected nonoptional, received undefined → at children` on every page | A newer `zod` was hoisted; Nextra 4.6's `Layout` validates props against older `z.custom` behavior | Keep the `overrides.zod` pin in `package.json`; `npm install` again |
+| A new page doesn't appear in the sidebar | Missing entry in that folder's `_meta.ts` | Add the filename key with its display title |
+| A Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+| Search returns nothing in `npm run dev` | The Pagefind index is built by `postbuild` | Expected — run `npm run build` to populate it |

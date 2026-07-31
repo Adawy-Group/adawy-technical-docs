@@ -1,0 +1,130 @@
+---
+title: Client Projects
+description: How the department builds software for clients — the standalone-repo pattern, what carries over from the platform, and the go-live switch.
+---
+
+# Client Projects
+
+The department builds two kinds of software. **Group work** is Adawy Group's
+own brands, in the [`adawy-platform`](/repositories/adawy-platform) monorepo.
+**Client work** is software built for other businesses — today
+[Aladawy Pack](/repositories/aladawy-pack),
+[Aladawy Shop](/repositories/aladawy-shop) and
+[Baron](/repositories/baron-menu).
+
+The rule is one line: **one client, one standalone repository, no `@adawy/*`
+dependency.** [ADR-010](/architecture/adrs) records why.
+
+## Why client work does not join the monorepo
+
+Three reasons, in order of how much they matter.
+
+1. **Handover has to be possible.** A client's deliverable must be complete on
+   its own. A repo that only builds against an internal package the client
+   does not own is not something you can hand over — it is a permanent
+   dependency on us, which is a liability, not a moat.
+2. **Blast radius.** A refactor of `@adawy/ui` should never be able to break a
+   client's live site, and a client's release schedule should never be able to
+   hold a Group refactor hostage. Separate repos make that structural rather
+   than a matter of care.
+3. **Different lifecycles.** Group brands are maintained forever. A client
+   project is delivered, then maintained on a contract, then possibly frozen.
+   Those do not belong on the same release train.
+
+The cost is real and accepted: patterns get re-implemented rather than
+imported. `lib/enquiry.ts`, the content/messages split and the
+`PRODUCTION_HOST` switch all exist twice already. **That duplication is the
+price of a clean handover** — so the knowledge is shared here, in the handbook,
+rather than in a package.
+
+## What carries over, and what does not
+
+| Carries over | Does **not** carry over |
+| ------------ | ----------------------- |
+| Next.js 16 App Router, TypeScript strict | `@adawy/*` packages — never a dependency |
+| pnpm, Prettier, ESLint gating CI | The Turborepo setup |
+| next-intl with real RTL, message-file parity test | The shared design tokens |
+| react-hook-form + zod, schema shared by form and route | Group brand identity, fonts, palette |
+| The `lib/enquiry.ts` delivery seam | The stage/scroll-take architecture |
+| WCAG 2.1 AA, Lighthouse budget, reduced-motion support | Group roadmap phases |
+| `main` deployable, PR review, preview deploys | |
+
+A client project takes the department's **standards and patterns**. It does not
+take its **code**.
+
+## Starting a new client project
+
+1. **Create the repository** in the `adawy-group` org, private. Name it for the
+   client, not the deliverable (`aladawy-shop`, not `packaging-store`).
+2. **Scaffold from the closest existing client repo**, not from the monorepo.
+   `aladawy-pack` is the reference for a marketing site; `aladawy-shop` for
+   anything with a catalogue and client-side state.
+3. **Write `README.md` and `AGENTS.md` on day one.** README is the tour;
+   `AGENTS.md` is the architectural contract and the trap ledger
+   ([working with AI](/how-we-work/working-with-ai)). Both grow with the
+   project — an `AGENTS.md` written at the end is written from memory.
+4. **Set up the locale tree and the parity test immediately.** Retrofitting
+   bilingual support is the single most expensive mistake available on a
+   client project ([i18n & RTL](/standards/i18n-rtl)).
+5. **Wire the enquiry seam early, leave it logging.** One function, one place
+   ([forms & enquiries](/guides/forms-and-enquiries)). Do not half-wire a mail
+   provider — a misconfigured transport fails silently in production, which is
+   worse than an obvious stub.
+6. **Set `PRODUCTION_HOST` to nothing until launch** so staging is
+   `noindex`-ed from the first deploy. See below.
+7. **Create the Vercel project**, deploy to a `*.vercel.app` URL, and share
+   that as the review link from week one.
+
+## The go-live switch
+
+Every client site ships with a **single publishing switch**. Before launch the
+site must be completely invisible to search engines; at launch, one value flips
+everything at once.
+
+```ts
+// lib/site.ts
+export const PRODUCTION_HOST = "" // empty until launch
+```
+
+Setting it flips, together: `robots.txt`, the `noindex` meta tag, the
+`X-Robots-Tag` header, and the sitemap host.
+
+> **Set the same value in `next.config.ts` as well.** It is restated there on
+> purpose: Next loads that config file outside the app bundle, where the `@/`
+> alias does not resolve. Setting one and not the other is the failure mode —
+> you get a live site that still says `noindex`, or a staging deploy that is
+> suddenly indexable.
+
+**Why this matters more than it sounds:** an indexable staging deployment
+competes with the client's real domain in search results. Losing a client's
+existing search ranking costs more than the entire build did, and it is not
+quickly reversible.
+
+### Launch checklist
+
+- [ ] `PRODUCTION_HOST` set in **both** `lib/site.ts` and `next.config.ts`
+- [ ] Custom domain attached in Vercel and resolving
+- [ ] `robots.txt` and the sitemap serving the real host — check the live URL,
+      not the code
+- [ ] The enquiry seam wired to a real provider, and a **test submission
+      received** by the client's actual inbox
+- [ ] **Redirect map in place** if the client had an old site — losing existing
+      rankings costs more than the build
+- [ ] Lighthouse mobile ≥ 90, WCAG 2.1 AA pass, RTL verified on a real phone
+- [ ] Metadata, Open Graph image and structured data set per page
+- [ ] The client has been shown where to find things they will want to change
+
+## Handover
+
+A client project is not finished when it deploys. It is finished when someone
+who is not you can maintain it:
+
+- The `README.md` explains how to run it and how to change the things that
+  change often — prices, products, copy.
+- Content lives somewhere a non-developer can be walked through
+  (`data/menu.js` in Baron is the clearest example — one file, plain values,
+  commented).
+- Credentials the client owns are in the client's hands, not only in our
+  password manager.
+- The repository can be transferred to the client's own organization without
+  anything breaking.

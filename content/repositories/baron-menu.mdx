@@ -1,0 +1,99 @@
+---
+title: baron-menu
+description: The Baron QR menu — a deliberately build-free static site, how to change a price, and why the deploy URL must never change.
+---
+
+# `baron-menu`
+
+**Client project.** A phone-first digital menu for **Baron — The Lord of Fried
+Chicken**, opened by scanning a QR code at the table.
+
+Private · plain HTML/CSS/JS · **no build step, no framework**
+
+This repo is the odd one out on purpose, and it is worth understanding why
+before you "modernize" it.
+
+## Why there is no framework here
+
+The whole product is: a customer at a table, hungry, on a cheap phone and
+restaurant Wi-Fi, deciding in under a minute. Success is finding an item and
+its price in a couple of thumb-scrolls.
+
+A static page of hand-written HTML, CSS and JS is the fastest possible answer
+to that, and it has **no dependency that can rot**. A menu that changes four
+times a year should not carry a build pipeline that breaks twice a year.
+"Zero build step" is a stated design principle in the repo's `PRODUCT.md`, not
+an accident of history.
+
+Do not port this to Next.js. If it ever needs a framework, that is a decision
+with an ADR behind it, not a refactor.
+
+## The one file that matters
+
+Everything is driven by **`data/menu.js`**. Editing it needs no coding.
+
+```js
+{ name: "Classic Burger", nameAr: "كلاسيك برجر",
+  desc: "Beef patty, ...", descAr: "لحم بقري، ...",
+  single: 220, double: 265, img: "classic-burger" },
+```
+
+- One price → `price: 220`
+- Two sizes → `single: 220, double: 265`
+- `img` is the filename inside `images/`, without the extension
+
+**Bilingual.** The `ع / EN` button switches language and flips the layout to
+RTL. Arabic copy lives in the same file in the `nameAr`, `descAr` and
+`heroTagAr` fields. If an Arabic field is missing the English text shows
+instead, so a partial translation never breaks the page. The choice is
+remembered on the phone, and Arabic-language phones start in Arabic.
+
+## Adding an item with a photo
+
+1. Optimize the photo into `images/`: set `SRC` in `convert-images.mjs` to the
+   folder holding your PNGs, then `node convert-images.mjs`. It writes an
+   optimized `.webp` and lowercases the filename with dashes
+   (`Cheese Fries.png` → `cheese-fries.webp`).
+2. Add the item in `data/menu.js` with `img: "cheese-fries"`.
+
+## Publishing
+
+```bash
+vercel deploy --prod --yes
+```
+
+> **The deploy URL must never change.** The QR code is printed on physical
+> table cards. `baron-menu.vercel.app` is baked into every one of them — a new
+> URL means reprinting the whole restaurant. Add a custom domain in the Vercel
+> dashboard if the client wants one; the `.vercel.app` link keeps working
+> alongside it.
+
+Preview locally with any static server:
+
+```bash
+python3 -m http.server 8848   # → http://localhost:8848
+```
+
+## Files
+
+| File / folder | What it is |
+| ------------- | ---------- |
+| `index.html`, `styles.css`, `script.js` | The site |
+| `data/menu.js` | **The menu — edit this** |
+| `images/` | Optimized food photos (WebP) |
+| `qr/` | The QR code (PNG for screens, SVG for large prints) |
+| `marketing/table-card.png` | Print-ready A6 table card |
+| `marketing/_templates/` | Generator for the table card |
+| `convert-images.mjs` | Photo optimizer |
+
+## Standards that still apply
+
+Being framework-free does not exempt it from the department's bars:
+
+- **WCAG AA contrast**, verified: cream `#F7F1EB` against red `#CE2733` is
+  4.7:1 and used for text both ways.
+- **Full `prefers-reduced-motion` alternatives**, visible focus rings,
+  semantic headings per category, alt text on every food photo.
+- **Real RTL** using logical properties — not a mirrored stylesheet.
+- **Prices match the printed menu exactly.** The print PDF is the source of
+  truth; the site follows it, never the reverse.

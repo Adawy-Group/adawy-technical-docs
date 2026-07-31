@@ -8,6 +8,10 @@ The test of the platform is that adding the next brand is **a config entry or
 a thin app, never a new project**. Under WordPress this took ~6 weeks; in the
 monorepo it is about a week of elapsed time, most of it content.
 
+> This is for **Adawy Group brands**. A site built for a client is a standalone
+> repository and follows a different procedure —
+> [Client Projects](/how-we-work/client-projects).
+
 ## First decision: own app or `apps/sites`?
 
 Per [ADR-008](/architecture/adrs), ask: **does this brand need unique routes,
@@ -50,9 +54,9 @@ custom sections, or bespoke motion?**
    met with tokens, it goes through the CTO as an explicitly scoped
    exception — and if the new section is genuinely reusable, it's built in
    `@adawy/ui`, not in the app.
-6. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass,
-   RTL verified, metadata/OG/structured data set (via `@adawy/seo` once
-   extracted — in the app's own `lib/` today),
+6. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass
+   (CI enforces zero axe violations already), RTL verified on a real phone,
+   metadata/OG/structured data set (`@adawy/site` plus the app's own `lib/`),
    analytics live, footer "part of Adawy Group" cross-link present, corporate
    directory updated.
 

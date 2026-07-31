@@ -1,0 +1,87 @@
+---
+title: adawy-technical-docs
+description: This handbook — how it is built, how to add or fix a page, and the one dependency pin that will otherwise break your build.
+---
+
+# `adawy-technical-docs`
+
+**This handbook.** The department's single source of truth: what we build, why
+we build it, and how we work.
+
+Public · Nextra 4 (Next.js docs framework) · npm
+
+It is public by decision ([ADR-007](/architecture/adrs)) — onboarding is
+self-serve, docs rot is visible in git, and the handbook itself demonstrates
+the standards it describes. It is **English-only** by decision too, for the
+reasoning in that same ADR.
+
+## Running it
+
+This is the smallest repo in the org and the best first clone — if it builds
+locally, your toolchain is correct.
+
+```bash
+git clone git@github.com:Adawy-Group/adawy-technical-docs.git
+cd adawy-technical-docs
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # must pass before any PR
+```
+
+> This repo uses **npm**, not pnpm. It is standalone and has no workspace, so
+> it keeps a `package-lock.json`. `adawy-platform` is the pnpm one — check
+> which repo you are in before installing.
+
+## Layout
+
+```
+app/                  Nextra app shell ([[...mdxPath]] catch-all + layout)
+content/              every handbook page (MDX) — the sidebar mirrors the folders
+  <section>/_meta.ts  sidebar order and titles for that section
+components/           json-ld helper
+lib/seo.ts            metadata, canonicals, structured data
+next.config.mjs       Nextra config
+mdx-components.tsx    MDX component map
+```
+
+## Adding or changing a page
+
+1. Create the `.mdx` file in the right section folder under `content/`.
+2. Add its filename key to that folder's **`_meta.ts`** with a display title.
+   A page missing from `_meta.ts` does not appear in the sidebar.
+3. Run `npm run build` — a page that renders in dev can still fail to
+   prerender.
+4. Open a PR. Vercel posts a preview URL; merging to `main` deploys.
+
+Every page has an **"Edit this page on GitHub"** link in its footer. If
+something here is wrong, that link is the shortest path to fixing it — you do
+not need permission to fix docs.
+
+### Page conventions
+
+- **Frontmatter** carries `title` and, on section indexes and major pages, a
+  `description` — it feeds the meta description and the search index.
+- **State the reason.** Every rule in this handbook says *why* it exists. A
+  rule without a reason is a candidate for deletion; that is the house style,
+  not a formality.
+- **Link across sections** with absolute paths (`/standards/coding`), not
+  relative ones.
+- **Use blockquotes for callouts.** The Nextra `<Callout>` component is not
+  registered in `mdx-components.tsx`; a `>` blockquote is the house style and
+  cannot break the build.
+- **Mermaid diagrams** render from ` ```mermaid ` fences.
+
+## Known traps
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Build fails with `Invalid input: expected nonoptional, received undefined → at children` on every page | A newer `zod` got hoisted; Nextra 4.6's `Layout` validates props against older `z.custom` behavior | Keep the `overrides.zod` pin in `package.json`, then `npm install` again |
+| A page renders in dev but fails `next build` | A prerender error in MDX — unsupported syntax or a broken import | Open the failing route in dev; it shows the real message that the production build hides |
+| A new page is missing from the sidebar | No entry in that folder's `_meta.ts` | Add the filename key with its title |
+| A Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+
+## Search
+
+`npm run build` runs a `postbuild` step that indexes the site with
+**Pagefind** into `public/_pagefind`. Search is therefore only populated after
+a full build — an empty search box in `npm run dev` is expected, not a bug.

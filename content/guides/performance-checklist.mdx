@@ -28,8 +28,9 @@ a documented cause of that score.
 
 ## Verify
 
-- [ ] `npm run build` then check the route-size output — a page that jumped in
-      JS weight needs an explanation in the PR.
+- [ ] `pnpm build` (or `pnpm turbo build --filter=<app>`) then check the
+      route-size output — a page that jumped in JS weight needs an explanation
+      in the PR.
 - [ ] Lighthouse (mobile, throttled) on the preview URL: **≥ 90 is the merge
       bar**, 94+ is the target.
 - [ ] Core Web Vitals sanity: LCP < 2.5s, CLS < 0.1, INP < 200ms.

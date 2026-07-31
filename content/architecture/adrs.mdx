@@ -14,13 +14,16 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   change, patch, and feature ×38 — roughly 30 engineers at maturity. A single
   multi-tenant app with domain routing was considered, but it couples every
   brand to one deployment and makes flagship-level customization awkward.
-- **Decision:** One Turborepo monorepo. Each brand is a **thin Next.js app**
-  (`apps/group`, `apps/studio`, `apps/pack`, …) deployed to its own domain as
-  its own Vercel project. All real engineering lives in shared packages:
-  `@adawy/ui` (shadcn primitives), `@adawy/design` (design tokens),
-  `@adawy/motion` (GSAP + Lenis), `@adawy/i18n` (next-intl), `@adawy/seo`,
-  `@adawy/utils`. Own apps are for flagship brands; the long tail is served
-  by one multi-tenant app ([ADR-008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app)).
+- **Decision:** One Turborepo monorepo for **Adawy Group's own brands**
+  ([ADR-010](#adr-010--group-brands-share-a-monorepo-client-projects-get-their-own-repo)
+  scopes this — client projects do not live here). Each brand is a **thin
+  Next.js app** (`apps/group`, `apps/studio`, `apps/pack`, …) deployed to its
+  own domain as its own Vercel project. All real engineering lives in shared
+  packages: `@adawy/ui` (shadcn primitives), `@adawy/design` (design tokens),
+  `@adawy/motion` (GSAP + Lenis), `@adawy/i18n` (locales and direction),
+  `@adawy/site` (identity, routes, metadata) and `@adawy/holding`. Own apps are
+  for flagship brands; the long tail is served by one multi-tenant app
+  ([ADR-008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app)).
 - **Consequences:** A fix in a shared package ships to every brand from one
   PR; Turborepo rebuilds only affected apps. Each brand deploys independently —
   a bad deploy on one site cannot take down the others, and flagships keep
@@ -68,17 +71,36 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   is versioned and reviewed. Trade-off: content edits require a developer in
   the loop until a CMS decision is made.
 
-## ADR-005 — Custom e-commerce instead of Shopify/WooCommerce
+## ADR-005 — Aladawy Shop ships as a quote request, not a checkout
 
-- **Context:** Aladawy Shop runs on WooCommerce; the group may eventually sell
-  across multiple storefronts sharing one inventory, one customer base, one
-  Odoo integration. Shopify means a subscription + transaction fees per store.
-- **Decision:** Custom commerce on the platform stack — catalog in PostgreSQL
-  synced from Odoo, Paymob (cards) + Fawry (cash on delivery).
-- **Consequences:** No per-store fees or vendor lock-in; storefronts for new
-  brands (or ecosystem members, Phase 3–4) ship in days. Cost: we own cart,
-  checkout, and payment-integration code — using well-established Next.js
-  commerce patterns, not from scratch.
+- **Context:** Aladawy Shop is a **client** of the department
+  ([ADR-010](#adr-010--group-brands-share-a-monorepo-client-projects-get-their-own-repo)),
+  not a Group brand. It ran on WooCommerce. The obvious brief was "rebuild the
+  store", but the business does not actually sell at a list price: packaging is
+  quoted by grade, and the final figure is settled by a human against live
+  stock. A cart and a checkout would have modelled a transaction that does not
+  exist, and a hosted platform (Shopify) would have charged a subscription plus
+  transaction fees for a checkout nobody uses.
+- **Decision:** Build a custom storefront whose checkout is a **quote
+  request** — no account, no payment, no database. Every product carries a
+  price band per grade (economy / standard / premium); the running figure is
+  always a range, never a single number. The catalogue is committed TypeScript;
+  submissions leave through one delivery seam.
+- **Consequences:** The site matches how the business actually sells, and there
+  is no payment surface to secure or subscription to pay. The code is shaped so
+  commerce can arrive without a rewrite: the quote slice already carries
+  everything an order needs, and the API route already validates the full
+  payload server-side. Trade-off: this is deliberately *not* the reusable
+  commerce engine the group might one day want for its own brands — that
+  remains an open decision, to be made when a Group brand actually needs to
+  take payment.
+
+> **Superseded scope.** An earlier version of this record committed the group
+> to a shared custom-commerce platform (catalog synced from Odoo, Paymob +
+> Fawry) with Aladawy Shop as its first tenant. That framing was wrong on the
+> premise: Aladawy Shop is a client project, so it cannot be the group's
+> commerce platform. Group commerce is unscheduled and will get its own ADR
+> when a Group brand needs it.
 
 ## ADR-006 — Every brand keeps its own domain, cross-linked to the group
 
@@ -114,8 +136,8 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   change genuinely affects all of them), and the team would manage ~110 Vercel
   projects, domain configs, and env setups. Realistically, brands #10–#110 are
   templated marketing sites — same sections, different tokens and content.
-- **Decision:** Two tiers inside the same monorepo. A brand gets **its own
-  app** (`apps/group`, `apps/studio`, `apps/pack`, `apps/shop`, …) when it
+- **Decision:** Two tiers inside the same monorepo. A Group brand gets **its
+  own app** (`apps/group`, `apps/studio`, `apps/pack`, …) when it
   needs unique routes, custom sections, or bespoke motion. Everything else
   lives in **one multi-tenant app** (`apps/sites`) that maps hostname → brand
   config (tokens, content, section composition). Both tiers consume the same
@@ -136,7 +158,42 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   frontend and backend share TypeScript contracts (API types, Zod schemas).
 - **Decision:** The backend lives in the monorepo as `apps/api`, deployed to
   its own host (Railway → DigitalOcean) rather than Vercel.
-- **Consequences:** Shared types between portal/shop frontends and the API are
+- **Consequences:** Shared types between portal frontends and the API are
   imported, not duplicated; one CI setup; one place to look. If a dedicated
   backend team ever needs its own repo, extracting one later is far easier
   than merging repos later.
+
+## ADR-010 — Group brands share a monorepo; client projects get their own repo
+
+- **Context:** The department builds two different kinds of software. **Group
+  work** is Adawy Group's own brands, where a shared design system pays for
+  itself across dozens of sites ([ADR-001](#adr-001--one-monorepo-a-thin-app-per-brand-on-shared-packages)).
+  **Client work** is software built for other businesses — Aladawy Pack,
+  Aladawy Shop, Baron. Early on these were treated as the same thing, which
+  put client sites on the Group roadmap and made the monorepo rules look like
+  they applied to everything.
+- **Decision:** Two patterns, chosen by *who owns the outcome*.
+  - **Group brands** live in `adawy-platform` as apps on shared `@adawy/*`
+    packages. ADR-001 and [ADR-008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app)
+    apply here and nowhere else.
+  - **Client projects** get a **standalone repository each**, with no
+    dependency on `@adawy/*`. They share the department's *standards* — strict
+    TypeScript, bilingual with real RTL, WCAG 2.1 AA, the same review and
+    deploy discipline — but no code.
+- **Consequences:** A client's site cannot be broken by a Group refactor, and
+  a Group refactor is not held hostage by a client's release schedule. The
+  client owns a repository that is complete on its own, which is what makes
+  handover possible at all. The Group roadmap describes Group products only,
+  so a phase plan stops competing with client delivery dates.
+
+  Trade-off: patterns get re-implemented per client rather than imported —
+  `lib/enquiry.ts`, the content/messages split, and the `PRODUCTION_HOST`
+  switch all exist twice already. That is accepted. Coupling a client's
+  deliverable to an internal package the client does not own would trade a
+  little duplication for a dependency nobody can maintain after handover; the
+  shared knowledge is documented in [Client Projects](/how-we-work/client-projects)
+  instead of shared in code.
+
+  **Naming hazard:** *Adawy* Pack (a Group brand, `apps/pack`) and *Aladawy*
+  Pack (a client, `aladawy-pack`) are different companies one letter apart.
+  See [the repository map](/repositories).

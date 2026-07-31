@@ -17,6 +17,9 @@ software department: **what we build, why we build it, and how we work.**
 - **New here?** Start with [About Adawy Group](/about) to understand the
   business, then go straight to [Onboarding](/onboarding) for your day-1
   checklist. Goal: **first PR merged within your first week.**
+- **Where is the code?** [The Repository Map](/repositories) — five
+  repositories, which one to clone for the work in front of you, and the
+  difference between Group work and client work.
 - **What are we building?** [Products & Architecture](/architecture) covers
   the monorepo platform, the tech stack, and the reasoning behind every
   technical decision.
@@ -24,7 +27,28 @@ software department: **what we build, why we build it, and how we work.**
   workflow, the Trello board, code review, and deployment.
 - **Writing code right now?** [Standards](/standards) and [Guides](/guides)
   are your daily references.
-- **Stuck?** Check [Help & FAQ](/help) — including who to ask for what.
+- **Stuck?** Check [Help & FAQ](/help) — including
+  [who to ask](/help/who-to-ask) and a [glossary](/help/glossary) of the terms
+  this department uses oddly.
+
+## The two worlds
+
+The department builds two kinds of software, and almost every rule here applies
+to one of them rather than both:
+
+| | **Group work** | **Client work** |
+| --- | --- | --- |
+| For | Adawy Group's own brands | Other businesses |
+| Lives in | One monorepo, `adawy-platform` | One standalone repo per client |
+| Shares | The `@adawy/*` packages | Standards only — never code |
+| Today | `apps/group`, `apps/studio`, `apps/pack` | `aladawy-pack`, `aladawy-shop`, `baron-menu` |
+
+[ADR-010](/architecture/adrs) records why, and
+[Client Projects](/how-we-work/client-projects) covers how client work runs.
+
+> **Adawy** Pack (a Group brand) and **Alad**awy Pack (a client) are different
+> companies one letter apart. This catches everyone once —
+> [the repository map](/repositories) has the details.
 
 ## The one-paragraph context
 
@@ -35,7 +59,8 @@ department exists to build the **digital infrastructure** of that ecosystem:
 first the websites (one monorepo platform powering every brand site), then
 the client portal that makes ecosystem membership a daily product rather than
 a marketing claim, then the employee portal that brings the same clarity to
-the group's own teams.
+the group's own teams. Alongside that roadmap, the department also **delivers
+software for clients** — the same standards, separate repositories.
 
 ## Our documentation principles
 

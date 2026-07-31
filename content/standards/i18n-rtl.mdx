@@ -1,0 +1,136 @@
+---
+title: i18n & RTL
+description: How every project handles languages and direction — the locale list, the content split, the lint rule that enforces RTL, and the traps that only appear in Arabic.
+---
+
+# i18n & RTL
+
+Arabic is not a translation layer bolted onto an English site. **It is the
+market.** Every project in the org is bilingual from its first commit, and
+right-to-left is a first-class layout, not a variant.
+
+This page is the shared rule set. It applies to Group apps and client projects
+alike — it is one of the few things that genuinely carries across both worlds.
+
+## The locales
+
+| Project | Locales | Default |
+| ------- | ------- | ------- |
+| `adawy-platform` | `en`, `ar`, **`fr`** | `en` |
+| `aladawy-pack` | `en`, `ar` | `en` |
+| `aladawy-shop` | `ar`, `en` | **`ar`** |
+| `baron-menu` | `en`, `ar` | auto-detected from the phone |
+
+Two things people get wrong here:
+
+**There are three locales in the platform, not two.** `@adawy/i18n` exports
+`["en", "ar", "fr"]` and `apps/group` has a complete `messages/fr.json`.
+Anything that enumerates locales must import that list — never a hand-written
+array, or French silently disappears from a sitemap, a language switcher, or a
+set of `hreflang` alternates.
+
+**The default locale is per project.** Aladawy Shop redirects `/` to `/ar`,
+because its customers are Egyptian buyers. Assuming English default will send
+you looking for a routing bug that is not there.
+
+Direction comes from one helper (`getDirection`), which sets `dir` on `<html>`.
+Arabic is the only RTL locale today; write code that asks the helper rather
+than comparing to `"ar"` yourself.
+
+## Every human-readable string lives in a message file
+
+No exceptions, including single words and `aria-label`s. A string in a
+component is a string that cannot be translated.
+
+The corollary is a **two-tree content model** used by every content-driven
+project:
+
+```
+lib/content/*      only what does NOT translate — slugs, SKUs, units,
+                   image names, dimensions, price bands
+messages/*.json    every name, description and label, keyed by the same slug
+```
+
+A new product is one entry in the content file plus one block in **each**
+message file. This split is what makes a catalogue translatable without
+duplicating its structure, and it is the same pattern in `aladawy-pack` and
+`aladawy-shop`.
+
+### The parity test is a merge gate
+
+Every project with a `messages/` directory has a `messages/parity.test.ts` that
+asserts all locale files share an **identical key tree**. It fails the build.
+
+*Why:* a missing Arabic key is not a compile error and not a visible bug in
+development — it is a runtime hole that appears for Arabic visitors only,
+which is the audience least likely to report it. Caught at build, not in
+production.
+
+When you add a locale, extend the test rather than working around it.
+
+### Message key casing
+
+| Level | Case | Example |
+| ----- | ---- | ------- |
+| Locale code and file | lowercase | `ar`, `en.json` |
+| Namespace | `PascalCase` | `HomePage`, `Metadata`, `Products` |
+| Leaf key | `camelCase` | `installTitle`, `quoteCta` |
+
+## Layout: logical properties, enforced
+
+**Physical direction classes are a lint error.** Not a warning, not a review
+comment — the build fails and the message tells you the replacement.
+
+| Never | Always |
+| ----- | ------ |
+| `ml-4`, `mr-4` | `ms-4`, `me-4` |
+| `pl-6`, `pr-6` | `ps-6`, `pe-6` |
+| `left-0`, `right-0` | `start-0`, `end-0` |
+| `text-left`, `text-right` | `text-start`, `text-end` |
+
+The rule matches both plain strings and template literals inside `className`,
+so there is no way around it that is not deliberate.
+
+In hand-written CSS the same applies: `margin-inline-start`, not
+`margin-left`; `inset-inline-end`, not `right`.
+
+**Animation axes must be direction-agnostic too.** A reveal that slides in from
+`x: -40` slides in from the wrong side in Arabic. The lint rule cannot see
+that — it is on you.
+
+## The traps that only appear in Arabic
+
+**`overflow-x-clip`, never `overflow-x-hidden`.** An element wider than the
+frame is real layout overflow, and in RTL the browser moves the origin so the
+whole page slides sideways. `overflow-x-hidden` fixes the slide *and* silently
+turns the element into a scroll container, so every `position: sticky` child
+inside it stops sticking. `overflow-x-clip` clips without creating a scroll
+container.
+
+**Numbers and prices need bidi isolation.** A price range dropped into Arabic
+text without isolation renders with its bounds swapped — `34–48` becomes
+`48–34`. Both client storefronts use Latin numerals in both locales and isolate
+numeric runs.
+
+**Arabic text runs longer, and headings wrap further.** A layout that fits in
+English can push a pinned section's content below the fold in Arabic. This is
+why the platform's type scale caps its display sizes against viewport height:
+a heading cannot outgrow the fold no matter how long the translation runs.
+
+**Never concatenate translated strings.** `t("greeting") + name` assumes word
+order that does not survive translation. Use interpolation with named
+placeholders, and let the message file own the whole sentence.
+
+**Fonts are per script.** Latin and Arabic faces are separate, loaded per
+locale so each language ships only its own script's fonts. The Arabic face is
+swapped by a `html:lang(ar)` override on the brand font tokens, not by a
+conditional in a component.
+
+## Testing and review
+
+- `messages/parity.test.ts` runs in CI on every project.
+- **Review the Arabic build, not just the English one.** Open `/ar` on the
+  preview URL before approving anything that touches layout. The preview
+  deploy exists so this costs thirty seconds.
+- On a real phone, once, before launch. RTL bugs that survive desktop review
+  rarely survive a thumb.

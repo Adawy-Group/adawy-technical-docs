@@ -4,17 +4,26 @@ title: Our Systems
 
 # Our Systems
 
+This page covers **Adawy Group's own systems**. Software the department builds
+for clients is a separate track with separate rules — see
+[Client Projects](/how-we-work/client-projects) and
+[ADR-010](/architecture/adrs).
+
 ## The unified platform (what we are building)
 
 | System | What it is | Status |
 | ------ | ---------- | ------ |
 | **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand (`apps/group`, `apps/studio`, `apps/pack`) plus one multi-tenant `apps/sites` for the long tail ([ADR-008](/architecture/adrs)), all on shared `@adawy/*` packages, each app deployed to its own domain(s) | Phase 1 — in build |
-| **Shared design system** | The `@adawy/*` packages: `ui` (shadcn primitives + sections), `design` (Tailwind v4 design tokens), `motion` (GSAP + Lenis), `i18n` (next-intl + RTL), `seo`, `utils` — themeable per brand via tokens | Phase 1 — the most important technical deliverable |
+| **Shared design system** | The `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 design tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell) — themeable per brand via tokens | Phase 1 — the most important technical deliverable |
 | **Backend service** | Node.js (NestJS) in the same monorepo as `apps/api` ([ADR-009](/architecture/adrs)): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 — first build of the phase |
-| **Aladawy Shop (rebuild)** | Custom e-commerce on the same stack; catalog synced from Odoo; Paymob (cards) + Fawry (cash on delivery) | Phase 2 |
 | **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | Phase 2 — the flagship |
 | **Employee portal** | One internal home: internal AI assistant, search across all company systems, operational dashboards, content engine | Phase 3 |
 | **AI solutions** | Member-facing assistants and lead scoring (Phase 2); internal assistant, search, content engine, manufacturing intelligence (Phase 3) | Phases 2–3 |
+
+Everything below Phase 1 is **direction, not built code**. Nothing in the org
+today runs NestJS, Better Auth, Prisma, Meilisearch or pgvector — those are
+choices recorded in advance on [Tech Stack & Why](/architecture/tech-stack),
+not dependencies you will find in a repository.
 
 ## What runs where
 
@@ -44,15 +53,18 @@ status in the portal, surfaced from Odoo via our cache. Odoo's current API is
 deprecated in Odoo 22 (late 2028), so the integration sits behind an
 abstraction layer — migrating is one or two sprints, not a rewrite.
 
-## The legacy systems (what we are replacing, and why)
+## The legacy system (what we are replacing, and why)
 
 | Site | Old stack | Verdict from the technical audit |
 | ---- | --------- | -------------------------------- |
 | adawygroup.com | WordPress 6.9 + Semplice page builder | Lighthouse mobile ~32; 4K background videos; stock photography; CMS-default page titles; no meta/OG tags; no structured data; English only. 20 documented findings. |
-| aladawypack.com | WordPress | Separate theme/plugins, no shared code |
-| aladawyshop.com | WordPress + WooCommerce + Woodmart | Demo content still visible; stack never designed for multi-brand commerce |
 
-The audit's conclusion — accepted by leadership — was that these are problems
+The audit's conclusion — accepted by leadership — was that this is a problem
 of **platform fit, not execution**: no amount of WordPress optimization makes
 a page-builder deliver the cinematic, bilingual, brand-driven experience the
 group's positioning requires. Hence the rebuild ([ADR-002](/architecture/adrs)).
+
+The same verdict drove the client rebuilds of `aladawypack.com` and
+`aladawyshop.com` — both were WordPress, both are now Next.js. They are client
+deliverables rather than Group systems, so they are documented under
+[Repositories](/repositories) rather than here.
