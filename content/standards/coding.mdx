@@ -128,10 +128,12 @@ message namespaces are `PascalCase` (`HomePage`, `Metadata`); leaf keys are
 ESLint + Prettier run in CI; `@adawy/eslint-config` in the platform repo is
 the source of truth. Don't argue style in review — the formatter wins.
 
-> **`format:check` is a separate gate from `lint`.** The per-package lint
-> scripts only reach `.ts`/`.tsx`, and README and CSS files drift too, so
-> Prettier runs at the repo root. A green `turbo lint` locally does not mean CI
-> passes — run `pnpm format:check` as well.
+<Callout type="important">
+  **`format:check` is a separate gate from `lint`.** The per-package lint
+  scripts only reach `.ts`/`.tsx`, and README and CSS files drift too, so
+  Prettier runs at the repo root. A green `turbo lint` locally does not mean CI
+  passes — run `pnpm format:check` as well.
+</Callout>
 
 The lint philosophy: **a rule is an error or it is not enabled.** No
 warnings — they scroll past and never get fixed, and with one developer per

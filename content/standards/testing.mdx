@@ -111,8 +111,10 @@ pnpm turbo lint typecheck test build --filter=group
 pnpm format:check
 ```
 
-> Run **both** lines. `turbo ... --filter=group` skips the packages, and
-> `format:check` is not a turbo task. Each has let a red CI through on its own.
+<Callout type="important">
+  Run **both** lines. `turbo ... --filter=group` skips the packages, and
+  `format:check` is not a turbo task. Each has let a red CI through on its own.
+</Callout>
 
 Then open the preview URL and click the thing you changed — in Arabic as well
 as English. Reviewers review working pages, not promises

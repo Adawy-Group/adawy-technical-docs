@@ -28,9 +28,11 @@ npm run dev      # http://localhost:3000
 npm run build    # must pass before any PR
 ```
 
-> This repo uses **npm**, not pnpm. It is standalone and has no workspace, so
-> it keeps a `package-lock.json`. `adawy-platform` is the pnpm one — check
-> which repo you are in before installing.
+<Callout type="warning">
+  This repo uses **npm**, not pnpm. It is standalone and has no workspace, so
+  it keeps a `package-lock.json`. `adawy-platform` is the pnpm one — check
+  which repo you are in before installing.
+</Callout>
 
 ## Layout
 
@@ -66,10 +68,33 @@ not need permission to fix docs.
   not a formality.
 - **Link across sections** with absolute paths (`/standards/coding`), not
   relative ones.
-- **Use blockquotes for callouts.** The Nextra `<Callout>` component is not
-  registered in `mdx-components.tsx`; a `>` blockquote is the house style and
-  cannot break the build.
 - **Mermaid diagrams** render from ` ```mermaid ` fences.
+
+### Components available in MDX
+
+`Callout`, `Cards`, `FileTree`, `Steps` and `Tabs` are registered globally in
+`mdx-components.tsx` — use them without an import.
+
+```mdx
+<Callout type="warning">
+  Urgent information the reader must not miss.
+</Callout>
+```
+
+`Callout` takes `type="info" | "warning" | "error" | "important"`, or no type
+for a neutral tip. Pick by what the reader loses by skipping it:
+
+| Type | Use for |
+| ---- | ------- |
+| *(none)* | A helpful tip — nothing breaks if it is missed |
+| `info` | Scope or context that prevents a misreading |
+| `important` | Something they must do, or CI fails |
+| `warning` | A trap that costs real time or money |
+| `error` | A risk with a silent or expensive failure mode |
+
+**Keep a blockquote for actual quotations** — brand statements, taglines, and
+lines quoted from another document. A callout is an aside from the page to its
+reader; a blockquote is someone else speaking.
 
 ## Known traps
 

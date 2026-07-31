@@ -64,10 +64,12 @@ about the transport. Swapping a provider is one function body.
 In an unlaunched project the seam writes a structured log line and nothing
 else. This looks unfinished and is intentional:
 
-> A half-wired mail transport **fails silently in production**. The form
-> submits, the user sees a success state, and the enquiry goes nowhere — for
-> weeks, because nothing errors. A stub that obviously does nothing is safer
-> than a provider that might not be configured.
+<Callout type="error">
+  A half-wired mail transport **fails silently in production**. The form
+  submits, the user sees a success state, and the enquiry goes nowhere — for
+  weeks, because nothing errors. A stub that obviously does nothing is safer
+  than a provider that might not be configured.
+</Callout>
 
 Wiring the real provider is part of the [launch
 checklist](/how-we-work/client-projects#launch-checklist), and it is not

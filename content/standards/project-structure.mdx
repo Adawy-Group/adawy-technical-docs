@@ -31,16 +31,18 @@ adawy-platform/
     └── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
 ```
 
-> **Today** all three apps and all eight packages exist. `apps/studio` and
-> `apps/pack` are **holding pages** — one branded screen each, sharing
-> `@adawy/holding` — which is why a change to `packages/ui` verifies and
-> deploys three apps rather than one. `apps/sites` and `apps/api` are planned.
->
-> `@adawy/seo` and `@adawy/utils` were once planned and **were never
-> extracted**. `@adawy/site` took the metadata and routing role instead, and
-> the utility surface stayed small enough to live in each app. That is rule 5
-> below working as intended — extraction happens on the third use, not on the
-> plan.
+<Callout type="info">
+  **Today** all three apps and all eight packages exist. `apps/studio` and
+  `apps/pack` are **holding pages** — one branded screen each, sharing
+  `@adawy/holding` — which is why a change to `packages/ui` verifies and
+  deploys three apps rather than one. `apps/sites` and `apps/api` are planned.
+
+  `@adawy/seo` and `@adawy/utils` were once planned and **were never
+  extracted**. `@adawy/site` took the metadata and routing role instead, and
+  the utility surface stayed small enough to live in each app. That is rule 5
+  below working as intended — extraction happens on the third use, not on the
+  plan.
+</Callout>
 
 This is the **Group** monorepo. Client projects are standalone repositories
 with a different structure entirely — see

@@ -62,11 +62,13 @@ remembered on the phone, and Arabic-language phones start in Arabic.
 vercel deploy --prod --yes
 ```
 
-> **The deploy URL must never change.** The QR code is printed on physical
-> table cards. `baron-menu.vercel.app` is baked into every one of them — a new
-> URL means reprinting the whole restaurant. Add a custom domain in the Vercel
-> dashboard if the client wants one; the `.vercel.app` link keeps working
-> alongside it.
+<Callout type="warning">
+  **The deploy URL must never change.** The QR code is printed on physical
+  table cards. `baron-menu.vercel.app` is baked into every one of them — a new
+  URL means reprinting the whole restaurant. Add a custom domain in the Vercel
+  dashboard if the client wants one; the `.vercel.app` link keeps working
+  alongside it.
+</Callout>
 
 Preview locally with any static server:
 

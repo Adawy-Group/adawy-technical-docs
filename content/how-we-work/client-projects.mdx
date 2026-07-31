@@ -89,11 +89,13 @@ export const PRODUCTION_HOST = "" // empty until launch
 Setting it flips, together: `robots.txt`, the `noindex` meta tag, the
 `X-Robots-Tag` header, and the sitemap host.
 
-> **Set the same value in `next.config.ts` as well.** It is restated there on
-> purpose: Next loads that config file outside the app bundle, where the `@/`
-> alias does not resolve. Setting one and not the other is the failure mode —
-> you get a live site that still says `noindex`, or a staging deploy that is
-> suddenly indexable.
+<Callout type="warning">
+  **Set the same value in `next.config.ts` as well.** It is restated there on
+  purpose: Next loads that config file outside the app bundle, where the `@/`
+  alias does not resolve. Setting one and not the other is the failure mode —
+  you get a live site that still says `noindex`, or a staging deploy that is
+  suddenly indexable.
+</Callout>
 
 **Why this matters more than it sounds:** an indexable staging deployment
 competes with the client's real domain in search results. Losing a client's

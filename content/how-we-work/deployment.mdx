@@ -44,10 +44,12 @@ Two asymmetries are deliberate:
 Unchanged packages come back from Turborepo's remote cache, so verifying
 everything costs roughly what verifying the changed app alone would.
 
-> The **accessibility gate is a merge gate**, not a checklist item. A contrast
-> failure or a missing label fails the build exactly like a type error. This is
-> the single most common surprise for someone whose previous team treated
-> accessibility as a review opinion.
+<Callout type="important">
+  The **accessibility gate is a merge gate**, not a checklist item. A contrast
+  failure or a missing label fails the build exactly like a type error. This is
+  the single most common surprise for someone whose previous team treated
+  accessibility as a review opinion.
+</Callout>
 
 ## Deploy safety rails
 

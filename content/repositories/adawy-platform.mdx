@@ -66,10 +66,12 @@ pnpm --filter=group exec vitest run -t "message parity"
 pnpm --filter=group exec vitest                          # watch mode
 ```
 
-> `pnpm format:check` is a **separate CI gate** from `turbo lint`. The
-> per-package lint scripts only reach `.ts`/`.tsx`; README and CSS files drift
-> too, so Prettier runs at the root. A green `turbo lint` does not mean CI will
-> pass.
+<Callout type="important">
+  `pnpm format:check` is a **separate CI gate** from `turbo lint`. The
+  per-package lint scripts only reach `.ts`/`.tsx`; README and CSS files drift
+  too, so Prettier runs at the root. A green `turbo lint` does not mean CI will
+  pass.
+</Callout>
 
 ## Things that will surprise you
 
