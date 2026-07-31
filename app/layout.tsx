@@ -42,7 +42,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           search={<Search placeholder="Search the handbook…" />}
           editLink="Edit this page on GitHub"
           feedback={{ content: 'Questions? Open an issue' }}
-          sidebar={{ defaultMenuCollapseLevel: 1 }}
+          // autoCollapse keeps only the open section expanded — with eight
+          // top-level sections the sidebar is otherwise longer than the page.
+          sidebar={{ defaultMenuCollapseLevel: 1, autoCollapse: true }}
         >
           {children}
         </Layout>

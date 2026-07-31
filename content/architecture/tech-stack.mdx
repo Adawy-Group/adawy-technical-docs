@@ -8,16 +8,35 @@ Every tool here was chosen for a reason, and the reasons matter more than the
 names. The governing principle: **choose tools the group owns and controls,
 avoiding subscription dependencies that compound at 110-brand scale.**
 
+<Callout type="info">
+  **Frontend is built; backend is decided but not built.** Everything in the
+  Frontend table below is running in a repository today. The Backend and
+  Platform-services tables are **choices recorded in advance** for Phase 2 and
+  Phase 3 — nothing in the org currently runs NestJS, Prisma, Better Auth,
+  Meilisearch, Redis or pgvector. Recording them early is deliberate (it stops
+  each decision being re-litigated), but do not go looking for them in a clone.
+</Callout>
+
 ## Frontend
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Monorepo | **Turborepo** — `apps/` per brand + shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `seo`, `utils`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
-| Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team |
+| Monorepo | **Turborepo + pnpm** — `apps/` per brand + shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team. Note: middleware is `proxy.ts` in this version |
 | Styling | **Tailwind CSS v4 + shadcn/ui** (`@adawy/ui`, `@adawy/design`) | Tokens are CSS-first (`@theme`): `@adawy/design` defines the token structure, each brand overrides the values — accessible, owned by the team, no component library subscription |
 | Motion | **GSAP + Lenis** (`@adawy/motion`) | The brand guidelines require cinematic, scroll-driven motion; GSAP is the industry standard and Lenis provides smooth scrolling, driven by GSAP's ticker so they share one clock. Wired once in `@adawy/motion` — the package ships primitives, brands own choreography |
-| i18n | **next-intl** (`@adawy/i18n`) | Bilingual (ar/en) with RTL by design; locale routing and direction handling wired once, used by every brand |
-| Forms | **React Hook Form + Zod** | Type-safe forms with validation shared between client and server |
+| 3D | **three.js**, plus **Rapier** for the physics playground | One WebGL context serves the whole page as a set of passes ([platform architecture](/architecture/platform-architecture)) |
+| i18n | **next-intl** (`@adawy/i18n`) | `en` / `ar` / `fr` with RTL by design; locale routing and direction handling wired once, used by every brand |
+| Forms | **React Hook Form + Zod** | Type-safe forms with one validation schema shared between client and server ([forms & enquiries](/guides/forms-and-enquiries)) |
+| Transactional email | **Resend** | Contact and quote submissions; reached through a single delivery seam so the provider is swappable |
+| Testing | **Vitest**, colocated | Pure logic is extracted specifically so it can be tested without a DOM ([testing](/standards/testing)) |
+
+Client projects run the **same frontend stack minus the monorepo** — Next.js
+16, Tailwind v4, shadcn, next-intl, GSAP + Lenis, react-hook-form + zod,
+Vitest — with no `@adawy/*` dependency
+([ADR-010](/architecture/adrs)). `aladawy-shop` additionally uses **Redux
+Toolkit**, justified by a quote that persists across routes and reloads; that
+is a project-specific choice, not a house pattern.
 
 ## Backend
 

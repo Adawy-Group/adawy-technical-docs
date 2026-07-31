@@ -1,0 +1,126 @@
+---
+title: adawy-platform
+description: The Turborepo monorepo behind every Adawy Group brand site — apps, shared packages, commands, and where the deep mechanics are documented.
+---
+
+# `adawy-platform`
+
+**The brand-sites monorepo for Adawy Group.** A thin Next.js app per Group
+brand, built entirely from shared `@adawy/*` packages. This is the department's
+largest and most active codebase, and the one every Group standard is written
+about.
+
+Private · Turborepo + pnpm · TypeScript
+
+## What is in it today
+
+```
+apps/
+├── group/     Adawy Group  → adawygroup.com   (the full site)
+├── studio/    Adawy Studio → holding page, no domain yet
+└── pack/      Adawy Pack   → holding page, no domain yet
+
+packages/
+├── ui/                 @adawy/ui       shadcn primitives, vendored and ours to edit
+├── design/             @adawy/design   Tailwind v4 token structure (CSS-first)
+├── motion/             @adawy/motion   GSAP + Lenis primitives, registered once
+├── i18n/               @adawy/i18n     locale list, direction, next-intl helpers
+├── site/               @adawy/site     identity, routes, alternates, request config
+├── holding/            @adawy/holding  the shared holding-page shell
+├── eslint-config/      the architecture-enforcing lint rules
+└── typescript-config/  shared tsconfig bases
+```
+
+`apps/studio` and `apps/pack` are **holding pages** — a single branded screen
+each, sharing `@adawy/holding`, waiting for their real builds. They are real
+apps with real deploys, which is why a change to `packages/ui` verifies and
+deploys three apps rather than one.
+
+Planned but not built: `apps/sites` (the multi-tenant long tail,
+[ADR-008](/architecture/adrs)) and `apps/api` (the Phase-2 backend,
+[ADR-009](/architecture/adrs)).
+
+## Commands
+
+Everything runs from the repo root. **This repo is pnpm-only** — `npm install`
+will produce a tree the lockfile does not describe.
+
+```bash
+pnpm install
+pnpm turbo dev --filter=group    # http://localhost:3000 → redirects to /en
+
+# what CI gates on
+pnpm turbo lint typecheck test build
+pnpm format:check
+```
+
+`--filter=group` scopes a task to one app; workspace names are `group`,
+`studio`, `pack`, `@adawy/ui`, `@adawy/motion`, `@adawy/i18n`, `@adawy/design`,
+`@adawy/site`, `@adawy/holding`.
+
+Running a single test means working inside the app:
+
+```bash
+pnpm --filter=group exec vitest run lib/ease.test.ts
+pnpm --filter=group exec vitest run -t "message parity"
+pnpm --filter=group exec vitest                          # watch mode
+```
+
+<Callout type="important">
+  `pnpm format:check` is a **separate CI gate** from `turbo lint`. The
+  per-package lint scripts only reach `.ts`/`.tsx`; README and CSS files drift
+  too, so Prettier runs at the root. A green `turbo lint` does not mean CI will
+  pass.
+</Callout>
+
+## Things that will surprise you
+
+**Middleware is `proxy.ts`.** Next.js 16 renamed it; `middleware.ts` does not
+exist here. More generally, this is not the Next.js in most people's heads —
+read the relevant guide in `node_modules/next/dist/docs/` before writing
+framework code.
+
+**There is a third locale.** `@adawy/i18n` ships `en`, `ar` **and `fr`**, and
+`apps/group` has a complete `messages/fr.json`. Anything that enumerates
+locales must come from the package, never a hand-written array
+([i18n & RTL](/standards/i18n-rtl)).
+
+**The whole page is one WebGL canvas.** Every 3D element on adawygroup.com is a
+pass on a single `three.js` context, driven by scroll through a strict
+three-layer split. Do not add a second canvas — see
+[Platform Architecture](/architecture/platform-architecture).
+
+**shadcn components are ours to edit.** Everything under
+`packages/ui/src/components` was vendored by the CLI. When a consumer needs
+different geometry, you change the component; out-specifying it from the call
+site does not work, for reasons the repo's `AGENTS.md` explains in full.
+
+**Baked assets are committed and currently un-reproducible.** `public/` holds
+generated `.glb`, `.webp` and audio files produced by hand-run scripts whose
+source artwork lives outside the repo. Do not delete one expecting to rebake
+it — see `docs/shipping.md` in the repo.
+
+## Where the deep documentation lives
+
+Policy lives in this handbook. The mechanics that change when the code changes
+live in the repo, in `docs/`:
+
+| File | Covers |
+| ---- | ------ |
+| `docs/pitfalls.md` | The bug ledger — read before your first scroll take |
+| `docs/stage.md` | The one canvas and the driver → channel → stage split |
+| `docs/perf.md` | The performance tier and what a new effect owes it |
+| `docs/shipping.md` | What is tracked, what is generated, what never ships |
+
+Also at the root: `README.md` (the tour and the commands), `AGENTS.md` (the
+shadcn contract), `PRODUCT.md` (brand personality and design principles).
+
+[Platform Architecture](/architecture/platform-architecture) explains that
+split and summarizes what each of those files is for.
+
+## Deployment
+
+One Vercel project per app, driven by `.github/workflows/deploy.yml` — not
+Vercel's dashboard Git integration. Every commit verifies **all** apps and
+packages; only the apps a change actually reaches get deployed. Full detail on
+[Deployment](/how-we-work/deployment).

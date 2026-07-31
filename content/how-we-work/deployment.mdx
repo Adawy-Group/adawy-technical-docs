@@ -17,15 +17,59 @@ FTP uploads, no editing on production, no exceptions.
 | **Preview** | A unique URL per pull request | The `deploy` job runs `vercel deploy` on every push to a PR branch |
 | **Production** | The brand's live site — today the Vercel project URL (the "staging link" leadership reviews) until the custom domain attaches | The `deploy` job runs `vercel deploy --prod` on merge to `main` |
 
-Every PR first runs a **`verify` job** (`turbo lint typecheck test build`); the
-deploy only runs after it passes. From week one there is a **live link** that
-fills with real pages — anyone in leadership can open it at any time. Progress
-is something you can click, not a status claim in a report.
+From week one there is a **live link** that fills with real pages — anyone in
+leadership can open it at any time. Progress is something you can click, not a
+status claim in a report.
+
+## What `verify` actually runs
+
+The deploy only runs after `verify` passes, and `verify` is more than the four
+turbo tasks:
+
+| Step | What it does |
+| ---- | ------------ |
+| **Resolve affected apps** | Works out which apps a change reaches, through the dependency graph. Runs *first*, so a failing run still reports what it would have deployed |
+| **Verify** | `turbo lint typecheck test build` across **every** app and package — deliberately unfiltered |
+| **Check formatting** | `pnpm format:check` at the root. Runs even when Verify failed, so one push reports every problem it has |
+| **Accessibility** | Serves the production build and runs axe-core over every route, asserting **zero WCAG A/AA violations** |
+
+Two asymmetries are deliberate:
+
+- **Verification is never filtered; deployment always is.** Over-verifying
+  costs a cache hit. Under-deploying ships stale code. Every fallback in the
+  affected check deploys *everything*.
+- **A change to `packages/ui` deploys all three apps**, because it genuinely
+  reaches all three. A change under `apps/group` deploys one.
+
+Unchanged packages come back from Turborepo's remote cache, so verifying
+everything costs roughly what verifying the changed app alone would.
+
+<Callout type="important">
+  The **accessibility gate is a merge gate**, not a checklist item. A contrast
+  failure or a missing label fails the build exactly like a type error. This is
+  the single most common surprise for someone whose previous team treated
+  accessibility as a review opinion.
+</Callout>
+
+## Deploy safety rails
+
+- **A preflight step resolves each project id against the Vercel API** before
+  deploying, and fails loudly if the project's root directory is not
+  `apps/<app>`. Both ways a project id can be wrong are silent at the CLI: a
+  project from another Vercel team returns `Project not found` with both ids
+  masked, and a wrong root directory uploads green and then builds the wrong
+  thing.
+- **Deploys are remote builds, not `--prebuilt`.** Vercel's system environment
+  variables drive `metadataBase` and the OG image URLs; a local prebuilt build
+  lacks them and bakes a broken URL.
+- **Each PR gets one previews comment**, rewritten in place rather than piling
+  up, and each deploy is registered with GitHub so the PR carries a native
+  "View deployment" link.
 
 ## The path to production
 
-1. PR opened → `verify` (lint, types, tests, build) runs, then a **preview**
-   deploy. Review happens on the running preview, not screenshots.
+1. PR opened → `verify` runs, then a **preview** deploy. Review happens on the
+   running preview, not screenshots.
 2. PR merged to `main` → `verify` runs again, then an automatic **production**
    deploy (`vercel deploy --prod`). The merge is the release — there is no
    separate manual promotion step today.
@@ -44,6 +88,18 @@ is something you can click, not a status claim in a report.
 - **Vercel Analytics / PageSpeed** — Core Web Vitals are watched after each
   meaningful change; the performance budget (Lighthouse mobile ≥ 90s) is part
   of "no regressions".
+
+## Client projects deploy the same way
+
+Client repositories run the same Git-based pipeline on their own Vercel
+projects, with one addition that matters more than anything above: a client
+site is **`noindex`-ed until launch**, flipped by a single `PRODUCTION_HOST`
+switch. An indexable staging deployment competes with the client's real domain
+in search — see [Client Projects](/how-we-work/client-projects#the-go-live-switch).
+
+`baron-menu` is the exception: it has no CI and deploys with
+`vercel deploy --prod --yes` from the folder. Its URL must never change,
+because the QR code is printed on physical table cards.
 
 ## Launch weeks
 

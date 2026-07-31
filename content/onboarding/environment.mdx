@@ -4,60 +4,112 @@ title: Dev Environment Setup
 
 # Dev Environment Setup
 
-Every repo in the `adawy-group` org follows the same pattern — if you can set
-up one, you can set up all of them.
+Five repositories, two package managers, one set of habits. Start with the
+handbook — it is the smallest clone and it proves your toolchain before
+anything harder depends on it.
 
-## The standard sequence
+## Prerequisites
 
-```bash
-# 1. Clone
-git clone git@github.com:adawy-group/<repo>.git
-cd <repo>
+- **Node.js 22** (CI runs 22; the platform requires ≥ 20). Install it through a
+  version manager — `fnm` or `nvm` — not a system package.
+- **pnpm** — every repo except this handbook uses it. `corepack enable` is the
+  simplest way to get the right version.
+- **Git**, configured with your name and work email.
+- An editor with TypeScript, ESLint and Prettier integration.
 
-# 2. Use the right Node version (LTS; .nvmrc/.node-version in the repo wins)
-fnm use   # or: nvm use
+## Which package manager, per repo
 
-# 3. Install
-npm install
+Getting this wrong produces a dependency tree the lockfile does not describe,
+and errors that make no sense.
 
-# 4. Environment variables — never copied from chat
-vercel env pull .env.local   # for Vercel-linked frontends
-# (backend repos: values come from the team password manager)
+| Repo | Manager |
+| ---- | ------- |
+| `adawy-platform` | **pnpm** (workspace, `pnpm@10.33.4`) |
+| `aladawy-pack` | **pnpm** |
+| `aladawy-shop` | **pnpm** |
+| `baron-menu` | none — no build step |
+| `adawy-technical-docs` | **npm** (standalone, `package-lock.json`) |
 
-# 5. Run
-npm run dev
-```
-
-**In the platform monorepo** (`adawy-platform/` — Turborepo + pnpm), install
-once at the root, then run a single brand app:
-
-```bash
-pnpm install               # root — installs all apps and @adawy/* packages
-turbo dev --filter=group   # or studio, pack, …
-```
-
-## Verify your setup with this docs site
-
-The lowest-risk first clone is this handbook itself:
+## Start here: the handbook
 
 ```bash
-git clone git@github.com:adawy-group/adawy-technical-docs.git
+git clone git@github.com:Adawy-Group/adawy-technical-docs.git
 cd adawy-technical-docs
 npm install
-npm run dev    # → http://localhost:3000
-npm run build  # must pass before any PR
+npm run dev      # → http://localhost:3000
+npm run build    # must pass before any PR
 ```
 
 If the build passes locally, your toolchain is correct.
+
+## The platform monorepo
+
+Install once at the root, then run a single app. Everything runs from the repo
+root; `--filter` scopes a task to one workspace.
+
+```bash
+git clone git@github.com:Adawy-Group/adawy-platform.git
+cd adawy-platform
+
+pnpm install                       # installs all apps and @adawy/* packages
+pnpm turbo dev --filter=group      # → http://localhost:3000, redirects to /en
+
+# what CI gates on — run both lines before pushing
+pnpm turbo lint typecheck test build
+pnpm format:check
+```
+
+Workspace names: `group`, `studio`, `pack`, `@adawy/ui`, `@adawy/design`,
+`@adawy/motion`, `@adawy/i18n`, `@adawy/site`, `@adawy/holding`.
+
+A single test runs from inside the app:
+
+```bash
+pnpm --filter=group exec vitest run lib/ease.test.ts
+pnpm --filter=group exec vitest                       # watch mode
+```
+
+## Client projects
+
+Both Next.js client repos follow the same shape — no workspace, no filters.
+
+```bash
+pnpm install
+pnpm dev                  # aladawy-pack → /en   ·   aladawy-shop → /ar
+pnpm lint typecheck test
+pnpm format:check
+```
+
+`baron-menu` needs no install at all — serve the folder:
+
+```bash
+python3 -m http.server 8848   # → http://localhost:8848
+```
+
+## Environment variables
+
+Never copied from chat, never committed.
+
+```bash
+vercel env pull .env.local    # for Vercel-linked projects
+```
+
+The platform documents its variables in `apps/group/.env.example` — the only
+committed env template. Anything not covered there comes from the team
+password manager or the lead; **never invent a value**
+([security](/standards/security)).
 
 ## Common issues
 
 | Symptom | Cause → fix |
 | ------- | ----------- |
+| Dependency errors that make no sense in a platform or client repo | You ran `npm install` in a pnpm repo. Delete `node_modules` and `package-lock.json`, then `pnpm install` |
 | Wrong Node version errors | You skipped the version manager — `fnm use` / `nvm use` in the repo root |
-| Build fails on a page that renders fine in dev | MDX/prerender error — run `npm run build` and read the first failing page; dev mode shows the real error message |
-| `Invalid input: expected nonoptional` (this repo) | A dependency override drifted — `zod` must stay pinned to the version in `package.json` `overrides` (Nextra 4.6 compatibility) |
-| Missing env vars | `vercel env pull` again, or ask the lead — never invent values |
+| CI fails on formatting after a green local `turbo lint` | `pnpm format:check` is a separate gate and is not a turbo task. Run it too |
+| A class exists in your source but not in the served CSS | Stale Turbopack CSS chunk — `rm -rf apps/<app>/.next` and restart. A plain restart is not enough |
+| Build fails on a page that renders fine in dev | Prerender error — run the dev server and open that route; dev shows the real message the build hides |
+| `Invalid input: expected nonoptional` (handbook repo) | The `zod` override drifted — keep the pin in `package.json` and `npm install` again |
+| A shared-package change doesn't appear in the running app | Restart the filtered dev task; if it persists, `pnpm turbo build --force` the package |
 
-Anything not covered here belongs in [Troubleshooting](/help/troubleshooting)
-— and adding it is a perfect first PR.
+Anything not covered here belongs in [Troubleshooting](/help/troubleshooting) —
+and adding it is a perfect first PR.
