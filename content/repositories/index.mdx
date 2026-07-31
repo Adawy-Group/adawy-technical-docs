@@ -1,0 +1,91 @@
+---
+title: The Repository Map
+description: Every repository in the adawy-group organization — what it is, which world it belongs to, and which one to clone for the work in front of you.
+---
+
+# The Repository Map
+
+Five repositories, in **two worlds**. Knowing which world a repo belongs to
+tells you which rules apply to it before you open a single file.
+
+| Repository | World | What it is | Stack |
+| ---------- | ----- | ---------- | ----- |
+| [`adawy-platform`](/repositories/adawy-platform) | Group | The monorepo behind every Adawy Group brand site | Turborepo + pnpm, Next.js 16 |
+| [`aladawy-pack`](/repositories/aladawy-pack) | Client | Website for Aladawy Pack for Printing & Packaging | Next.js 16, standalone |
+| [`aladawy-shop`](/repositories/aladawy-shop) | Client | Quote-request storefront for Aladawy Shop | Next.js 16 + Redux, standalone |
+| [`baron-menu`](/repositories/baron-menu) | Client | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
+| [`adawy-technical-docs`](/repositories/adawy-technical-docs) | Internal | This handbook | Nextra 4 |
+
+## The two worlds
+
+**Group work** is Adawy Group's own brands — Adawy Group, Adawy Studio, Adawy
+Pack, and the rest of the portfolio. It all lives in **one monorepo**,
+`adawy-platform`, on shared `@adawy/*` packages. This is where
+[ADR-001](/architecture/adrs) and [ADR-008](/architecture/adrs) apply, and it
+is the only place they apply.
+
+**Client work** is software the department builds *for other businesses*.
+Aladawy Pack, Aladawy Shop and Baron are customers of the department, not
+Group brands. Each gets **its own standalone repository**, deliberately not
+coupled to `@adawy/*` — see [ADR-010](/architecture/adrs) for why, and
+[Client Projects](/how-we-work/client-projects) for how to run one.
+
+Both worlds share the department's *standards* — TypeScript strict, bilingual
+and RTL from day one, accessibility, the same review and deployment
+discipline. What they do not share is **code**.
+
+<Callout type="warning">
+  **Adawy Pack and Aladawy Pack are two different companies**, one letter
+  apart.
+
+  - **Adawy** Pack is a Group brand. It lives at `apps/pack` inside
+    `adawy-platform`.
+  - **Alad**awy Pack (Aladawy Pack for Printing & Packaging, est. 1971) is a
+    client. It lives in the `aladawy-pack` repository.
+
+  They have different owners, different domains, different codebases, and
+  different rules. When someone says "the pack site", ask which one.
+</Callout>
+
+## Which repo do I clone?
+
+| The work | The repo |
+| -------- | -------- |
+| Anything on adawygroup.com | `adawy-platform` → `apps/group` |
+| A shared component, token, or motion primitive | `adawy-platform` → `packages/` |
+| A new Adawy Group brand site | `adawy-platform` → a new `apps/<brand>` ([guide](/guides/launch-new-brand)) |
+| The Aladawy Pack website | `aladawy-pack` |
+| The Aladawy Shop storefront | `aladawy-shop` |
+| Baron's menu — a price, an item, a photo | `baron-menu` |
+| Fixing this handbook | `adawy-technical-docs` |
+
+If you are new, clone [`adawy-technical-docs`](/repositories/adawy-technical-docs)
+first. It is the smallest repo, it builds in under a minute, and getting it
+running proves your toolchain before anything harder depends on it.
+
+## What every repo has in common
+
+Whatever world it belongs to, every repository in the org follows the same
+conventions — this is what makes moving between them cheap:
+
+- **`main` is the deployable branch.** Work lands through reviewed pull
+  requests ([git workflow](/how-we-work/git-workflow)).
+- **An `AGENTS.md` at the root** recording the architectural constraints and
+  the traps already hit in that codebase. Read it before your first change —
+  see [Working with AI](/how-we-work/working-with-ai).
+- **A `README.md`** covering what the project is, how to run it, and what
+  ships. The README is the tour; `AGENTS.md` is the contract.
+- **Bilingual with real RTL** (`baron-menu` included), and every human-readable
+  string in a message file rather than in a component
+  ([i18n & RTL](/standards/i18n-rtl)).
+- **Prettier + ESLint gate CI.** Formatting is never a review conversation.
+
+## What is deliberately *not* a repo
+
+- **No per-brand repositories for Group brands.** Adawy Studio and Adawy Pack
+  are apps inside `adawy-platform`, not repos of their own. Splitting them
+  would recreate the ×38 maintenance problem the monorepo exists to solve.
+- **No backend repository yet.** The Phase-2 NestJS service joins the platform
+  monorepo as `apps/api` when it is built ([ADR-009](/architecture/adrs)).
+- **No shared package repository.** `@adawy/*` are workspace packages inside
+  the monorepo, published nowhere and versioned with the apps that use them.

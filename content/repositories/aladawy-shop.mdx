@@ -1,0 +1,125 @@
+---
+title: aladawy-shop
+description: Client storefront for Aladawy Shop — why nothing has a price, how the quote builder works, and the two content trees that must stay in sync.
+---
+
+# `aladawy-shop`
+
+**Client project.** The storefront for **Aladawy Shop**, a packaging,
+disposables and kitchen-supply house serving restaurants, bakeries, groceries
+and households in Egypt.
+
+Private · standalone Next.js 16 app · not part of the monorepo
+
+Bilingual Arabic/English with real RTL, **Arabic-default** (`/` redirects to
+`/ar`, not `/en`). 57 catalogue lines across 6 categories. No account, no
+payment: the checkout is a **quote request**.
+
+## The domain fact that shapes the whole codebase
+
+**Nothing has a price.** Packaging is not sold at a list price — it is quoted
+by *grade*. Every product carries a **price band per grade** (economy /
+standard / premium) in EGP. The customer picks a grade and a quantity; the
+running figure is a **range** that a human later settles against live stock.
+
+```
+Foil Plates · code 0301 · sold by the pack · min 10, in steps of 5
+  Economy    34–48 EGP / pack
+  Standard   48–66 EGP / pack
+  Premium    66–92 EGP / pack
+```
+
+Three consequences you must respect when editing:
+
+1. **A range is never collapsed** to a midpoint or an average. A single figure
+   reads as a price, which is the one thing it must not do.
+2. **`lib/store/quote-slice.ts` is a quote, not a cart.** Grade *and* option
+   are part of a line's identity (`slug::band::option`) — the same foil plate
+   in economy and in premium are two different things to quote.
+3. **Payment is absent by design, not by omission.** The business does not take
+   online payment today. The code is shaped so it can arrive without a
+   rewrite: the quote slice already carries everything an order needs, and
+   `app/api/quote/route.ts` already validates the full payload server-side.
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Turbopack, React 19) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4, shadcn/ui (radix base, RTL) |
+| State | Redux Toolkit — quote, saved lines, recently viewed |
+| Forms | react-hook-form + zod, schemas shared with the API routes |
+| i18n | next-intl, `ar` (default) + `en` |
+| Motion | GSAP + Lenis, all of it reduced-motion aware |
+| Images | sharp, baked to AVIF/WebP ahead of build |
+| Tests | Vitest |
+
+This is the only repo in the org using **Redux Toolkit** — justified by a
+quote that persists across routes and reloads, which is genuinely
+cross-cutting client state. Do not take it as a house pattern.
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev              # http://localhost:3000 → redirects to /ar
+pnpm build && pnpm start
+
+pnpm lint             # React Compiler rules are errors here
+pnpm typecheck
+pnpm test
+pnpm test messages/parity     # single file
+pnpm format:check
+
+ALADAWY_SOURCE_DIR=/path/to/jpgs pnpm assets:bake   # manual; output is committed
+pnpm og:bake                                        # re-cuts public/og.png
+```
+
+Run `format:check → lint → typecheck → test → build` before calling work done.
+
+## Layout
+
+```
+app/[locale]/           home, shop, product, quote, wishlist, about, contact
+app/api/                quote + contact endpoints
+components/             brand, layout, home, shop, product, quote, motion, ui
+lib/content/            the catalogue — slugs, SKUs, units, price bands
+lib/store/              Redux slices, selectors, localStorage persistence
+lib/schemas/            zod schemas shared by forms and routes
+lib/shop/               filter parsing, matching and sorting
+messages/               en.json, ar.json + the parity test that keeps them honest
+scripts/bake-assets.ts  image pipeline
+```
+
+## Content lives in two trees, and they must stay in sync
+
+`lib/content/catalog.ts` holds **only what does not translate** — slugs, SKUs,
+categories, units, minimums, price bands. Every human-readable string lives in
+`messages/{en,ar}.json` under `Products.items.<slug>`, keyed by the same slug.
+
+`messages/parity.test.ts` fails the build when the two locales diverge. This is
+the same pattern as [`aladawy-pack`](/repositories/aladawy-pack) — see
+[i18n & RTL](/standards/i18n-rtl) for the rule and the reasoning.
+
+## Features worth knowing about before you change something
+
+- **Catalogue filtering lives in the URL** and is applied on the server, so a
+  filtered view is shareable and arrives in the HTML. Do not move it to client
+  state.
+- **Search folds Arabic orthography** — `اطباق` finds `أطباق` — and matches SKU
+  codes as well as names.
+- **Quote and wishlist persist to localStorage** and are **re-validated against
+  the catalogue on read**, so a retired product can never strand a line.
+- **Prices are bidi-isolated** and use Latin numerals in both locales. A price
+  range inside Arabic text without isolation renders with its bounds swapped.
+
+## Going live
+
+`lib/enquiry.ts` is the single delivery seam — today a structured log line,
+and wiring a real provider is one function body
+([forms & enquiries](/guides/forms-and-enquiries)). It is deliberately not
+half-wired: a misconfigured mail transport fails silently in production.
+
+The `PRODUCTION_HOST` publishing switch works the same way as in
+`aladawy-pack` — see [Client Projects](/how-we-work/client-projects).

@@ -1,0 +1,121 @@
+---
+title: Testing
+description: What we test and what we deliberately do not — Vitest colocated with pure logic, the parity gate, the accessibility gate, and why there is no component test layer.
+---
+
+# Testing
+
+The department's testing strategy is narrow on purpose. We test the things that
+break silently and are cheap to cover; we do not test markup.
+
+## Vitest, colocated
+
+Tests sit next to the code they cover as `<module>.test.ts`. No separate test
+tree, no config file — defaults only.
+
+```bash
+# platform monorepo
+pnpm turbo test                                     # everything
+pnpm --filter=group exec vitest run lib/ease.test.ts
+pnpm --filter=group exec vitest run -t "message parity"
+pnpm --filter=group exec vitest                     # watch mode
+
+# client projects
+pnpm test
+pnpm test messages/parity
+```
+
+*Why colocated:* a test beside its source is found and updated with it. A
+distant test rots, and a rotted test is worse than no test — it fails on
+intended change and passes on real regressions.
+
+## Test behavior and logic, not declarative UI
+
+**What gets tests:**
+
+- Pure functions — easing, scroll beats, layout math, filters, sorting
+- Domain rules — quote line identity, price band handling, minimums and steps
+- Boundary parsing — every zod schema, with the inputs that should fail
+- Locale handling — key parity, direction, formatting
+- Anything with an edge case somebody had to think about
+
+**What does not:**
+
+- Snapshots of markup. They fail on intended change and pass on real
+  regressions, which inverts the signal a test exists to give.
+- Components whose only job is to render props.
+- Anything a type already guarantees.
+
+## There is no component or browser test layer
+
+This is a deliberate architectural choice, not a gap in coverage — and the
+answer to "this driver is untested" is **not** to add one.
+
+Choreography math, scroll beats and policy live in `lib/` precisely so they are
+testable without three.js, GSAP, or a DOM. If a `.tsx` driver or a render pass
+contains logic worth testing, **extract that logic into `lib/` and test it
+there.** The component keeps only the wiring.
+
+*Why:* the alternative is a browser-driven suite whose slowest, flakiest tests
+cover the code that changes most often. The extraction rule gets the same
+coverage from tests that run in milliseconds and never flake.
+
+## The gates that block a merge
+
+Four checks run in CI, and all four must be green.
+
+| Gate | What it catches |
+| ---- | --------------- |
+| `lint` | Architecture violations — physical RTL classes, banned imports, filename case, `console` calls |
+| `typecheck` | Type errors, including `scripts/` under its own tsconfig |
+| `test` | Everything above |
+| `build` | Prerender failures a dev server hides |
+
+Plus two the platform runs that are easy to forget:
+
+**`format:check`** is separate from `turbo lint`. Per-package lint scripts only
+reach `.ts`/`.tsx`; README and CSS files drift too, so Prettier runs at the
+root. A green `turbo lint` locally does not mean CI passes — run
+`pnpm format:check` before pushing.
+
+**The accessibility gate.** CI serves the production build and runs axe-core
+across **every route**, asserting **zero WCAG A/AA violations**. A11y is not a
+review opinion here; it fails the build like a type error.
+
+```bash
+pnpm --filter=group start &
+pnpm --filter=group a11y:check
+```
+
+*Why a gate rather than a checklist:* the accessibility findings on the old
+site were all things a checklist was supposed to catch. A rule that only exists
+in a document gets skipped on the busy week.
+
+## The parity test
+
+Every project with a `messages/` directory asserts that all locale files share
+an identical key tree. It is a build failure. See
+[i18n & RTL](/standards/i18n-rtl#the-parity-test-is-a-merge-gate) for why a
+missing Arabic key is worse than an obvious crash.
+
+## Before you call it done
+
+```bash
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build
+```
+
+In the platform monorepo:
+
+```bash
+pnpm turbo lint typecheck test build --filter=group
+pnpm format:check
+```
+
+<Callout type="important">
+  Run **both** lines. `turbo ... --filter=group` skips the packages, and
+  `format:check` is not a turbo task. Each has let a red CI through on its own.
+</Callout>
+
+Then open the preview URL and click the thing you changed — in Arabic as well
+as English. Reviewers review working pages, not promises
+([code review](/how-we-work/code-review)).

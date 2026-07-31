@@ -15,26 +15,39 @@ app ([ADR-008](/architecture/adrs)).
 ```
 adawy-platform/
 ├── apps/
-│   ├── group/      Adawy Group   → adawygroup.com   (flagship — own app; the only app today)
-│   ├── studio/     Adawy Studio  → adawystudio.com  (flagship — own app, planned)
-│   ├── pack/       Adawy Pack    → adawypack.com    (flagship — own app, planned)
+│   ├── group/      Adawy Group   → adawygroup.com   (the full site)
+│   ├── studio/     Adawy Studio  → holding page, no domain yet
+│   ├── pack/       Adawy Pack    → holding page, no domain yet
 │   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config (planned, ADR-008)
 │   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
-    ├── ui/                 @adawy/ui                (shadcn primitives + sections)
+    ├── ui/                 @adawy/ui                (shadcn primitives, vendored and ours)
     ├── design/             @adawy/design            (Tailwind v4 token structure, CSS-first)
     ├── motion/             @adawy/motion            (GSAP + Lenis primitives)
-    ├── i18n/               @adawy/i18n              (next-intl routing, RTL helpers)
+    ├── i18n/               @adawy/i18n              (locale list, direction)
+    ├── site/               @adawy/site              (identity, routes, alternates, request config)
+    ├── holding/            @adawy/holding           (the shared holding-page shell)
     ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules)
-    ├── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
-    ├── seo/                @adawy/seo               (metadata + sitemap helpers — planned)
-    └── utils/              @adawy/utils             (shared utilities — planned)
+    └── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
 ```
 
-> **Today** only `apps/group` and the packages it uses (`ui`, `design`,
-> `motion`, `i18n`, `eslint-config`, `typescript-config`) exist. The other apps
-> and the `seo`/`utils` packages are added as the platform grows — extraction
-> is deliberate, on the third use (rule 5 below), not up front.
+<Callout type="info">
+  **Today** all three apps and all eight packages exist. `apps/studio` and
+  `apps/pack` are **holding pages** — one branded screen each, sharing
+  `@adawy/holding` — which is why a change to `packages/ui` verifies and
+  deploys three apps rather than one. `apps/sites` and `apps/api` are planned.
+
+  `@adawy/seo` and `@adawy/utils` were once planned and **were never
+  extracted**. `@adawy/site` took the metadata and routing role instead, and
+  the utility surface stayed small enough to live in each app. That is rule 5
+  below working as intended — extraction happens on the third use, not on the
+  plan.
+</Callout>
+
+This is the **Group** monorepo. Client projects are standalone repositories
+with a different structure entirely — see
+[Client Projects](/how-we-work/client-projects) and
+[the repository map](/repositories).
 
 A new brand is a **config entry in `apps/sites`** by default. It gets its own
 folder under `apps/` only when it needs unique routes, custom sections, or
@@ -54,9 +67,10 @@ bespoke motion — the decision rule lives in the
    - Visual primitives and composed sections → `@adawy/ui`
    - Design tokens, theme structure, Tailwind base → `@adawy/design`
    - Animation primitives and scroll machinery → `@adawy/motion`
-   - Locale routing, direction handling, next-intl config → `@adawy/i18n`
-   - Metadata, Open Graph, sitemap/robots helpers → `@adawy/seo`
-   - Everything shared and unglamorous → `@adawy/utils`
+   - The locale list and direction handling → `@adawy/i18n`
+   - Site identity, routes, alternates, metadata plumbing → `@adawy/site`
+   - The holding-page shell → `@adawy/holding`
+   - Anything shared that fits none of these → a new package, on the third use
 3. **Brand identity lives in tokens, not forks.** A brand customizes by
    overriding token values from `@adawy/design` — never by copying a
    shared component into its app and editing it. Genuinely custom sections are
@@ -64,7 +78,7 @@ bespoke motion — the decision rule lives in the
 4. **Shared means machinery, not appearance.** Fonts, colors, SEO content,
    and motion *choreography* are per-brand by design: `@adawy/design` defines
    the token slots (`--brand-font-display`, `--brand`, …) and each brand
-   assigns its own values; `@adawy/seo` is plumbing fed with brand content;
+   assigns its own values; `@adawy/site` is plumbing fed with brand content;
    `@adawy/motion` ships primitives that brands compose into their own feel.
    The system exists to make brands siblings, not clones.
 5. **Generalize on the third use, not the first.** A section used by one app
@@ -74,16 +88,33 @@ bespoke motion — the decision rule lives in the
    PR that touches `@adawy/ui` shows every affected app's preview, because
    that change ships to all of them.
 
+## A standalone project (client work)
+
+Client projects have no workspace and no shared packages, but the internal
+shape is deliberately the same in each — learn one and you can navigate the
+others.
+
+```
+app/[locale]/     one route per page; [locale] is the topmost layout
+app/api/          intake endpoints (POST only)
+components/       grouped by area — layout, home, forms, ui
+lib/content/      structural data only: slugs, SKUs, units, dimensions
+lib/schemas/      zod schemas, shared by each form and its API route
+lib/seo/          metadata + JSON-LD builders
+lib/enquiry.ts    the single delivery seam
+messages/         en.json / ar.json + the parity test
+scripts/          hand-run asset bakes; output is committed
+```
+
+Two rules carry across every one of them:
+
+- **Content splits in two** — `lib/content/*` holds only what does not
+  translate; every string lives in `messages/` under the same slug
+  ([i18n & RTL](/standards/i18n-rtl)).
+- **One delivery seam** — submissions leave through exactly one module
+  ([forms & enquiries](/guides/forms-and-enquiries)).
+
 ## This documentation site
 
-```
-adawy-technical-docs/
-├─ app/                  # Nextra app shell ([[...mdxPath]] catch-all + layout)
-├─ content/              # All handbook pages (MDX) — sidebar mirrors folders
-│  └─ <section>/_meta.ts # Sidebar order & titles per section
-├─ next.config.mjs       # Nextra config
-└─ mdx-components.tsx
-```
-
-To add a page: create the `.mdx` file in the right section folder, add it to
-that folder's `_meta.ts`, open a PR.
+Structure, page conventions and the known traps are on its own page:
+[`adawy-technical-docs`](/repositories/adawy-technical-docs).

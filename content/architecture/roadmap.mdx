@@ -9,6 +9,12 @@ ships a complete product surface and proves the foundation the next one
 builds on. **Phase 1 is the firm commitment** — later phases are direction,
 reviewed against actual delivery before continuing.
 
+This roadmap covers **Adawy Group's own products**. Client projects
+([ADR-010](/architecture/adrs)) run on their own timelines against client
+commitments and are deliberately not sequenced here — a client's launch date
+does not move because a Group phase slipped, and vice versa. See
+[Client Projects](/how-we-work/client-projects).
+
 ```mermaid
 flowchart LR
     P1["Phase 1\nThe Websites\nadawygroup.com + every brand site"] --> P2["Phase 2\nThe Client Portal\nthe ecosystem membership product"] --> P3["Phase 3\nThe Employee Portal\nthe internal operations product"]
@@ -27,14 +33,17 @@ delivery, priority first:
 
 1. **adawygroup.com** (`apps/group`) — the corporate site and the first app
    in the monorepo. Building it builds the permanent foundation: the
-   `@adawy/*` packages (ui, design, motion, i18n, seo, utils), hosting,
+   `@adawy/*` packages (ui, design, motion, i18n, site, holding), hosting,
    domains, and the deployment pipeline. Committed dates:
    [kickoff 14 June → launch 23 July 2026](/about/timeline).
 2. **Adawy Studio** (`apps/studio`) — the creative flagship; sets the design
    bar and hardens the shared packages against a second, very different
-   brand identity.
+   brand identity. *A branded holding page is live today; the full build is
+   next.*
 3. **Adawy Pack** (`apps/pack`) — the industrial flagship; establishes the
-   industrial patterns that Print, Production, and Supplies reuse.
+   industrial patterns that Print, Production, and Supplies reuse. *Holding
+   page live today.* Not to be confused with the client project
+   [`aladawy-pack`](/repositories/aladawy-pack).
 4. **Adawy Print, Adawy Supplies, Adawy Marketing Solutions, Adawy Business
    Development, Adawy Media Production, Adawy Production, and the rest** —
    each a thin new app composed from the mature packages
@@ -56,15 +65,12 @@ claim; with it, it is a product members use every day — and the most
 defensible thing the group can build, because no regional competitor operates
 the integrated stack that makes it possible.
 
-Phase 2 starts with the infrastructure the portal needs, which also unlocks
-the shop:
+Phase 2 starts with the infrastructure the portal needs:
 
 - **The shared backend service** (Node.js/NestJS): authentication (Better
   Auth), business logic, background jobs, real-time updates.
 - **Odoo integration** — read products, inventory, orders, invoices; write
   back through APIs behind an abstraction layer ([ADR-003](/architecture/adrs)).
-- **Aladawy Shop rebuilt** on the platform — custom commerce, Paymob + Fawry
-  ([ADR-005](/architecture/adrs)).
 
 Then the portal itself. What members can do:
 

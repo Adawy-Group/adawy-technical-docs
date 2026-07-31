@@ -16,9 +16,9 @@ flowchart TD
             UI["@adawy/ui\nshadcn primitives"]
             TW["@adawy/design\ndesign tokens"]
             MO["@adawy/motion\nGSAP + Lenis"]
-            IN["@adawy/i18n\nnext-intl + RTL"]
-            SEOP["@adawy/seo\nmetadata + sitemaps"]
-            UT["@adawy/utils"]
+            IN["@adawy/i18n\nlocales + direction"]
+            SEOP["@adawy/site\nidentity · routes · metadata"]
+            UT["@adawy/holding\nholding-page shell"]
         end
         subgraph APPS["apps/ — a thin app per flagship + one multi-tenant app"]
             G["group"]
@@ -69,5 +69,15 @@ department.
 - **[Roadmap & Phases](/architecture/roadmap)** — the three product phases:
   the websites → the client portal → the employee portal, with AI woven
   through.
+- **[Platform Architecture](/architecture/platform-architecture)** — how
+  `apps/group` is actually built: one WebGL canvas, the scroll-take split, and
+  the quality governor.
 - **[Decision Records](/architecture/adrs)** — the significant decisions,
   their context, and their trade-offs.
+
+<Callout type="info">
+  This section describes **Adawy Group's own products**. The department also
+  builds software for clients, in standalone repositories with different rules
+  — see [Client Projects](/how-we-work/client-projects) and
+  [the repository map](/repositories).
+</Callout>

@@ -1,0 +1,115 @@
+---
+title: aladawy-pack
+description: Client website for Aladawy Pack for Printing & Packaging — a standalone Next.js 16 build, its content model, and its go-live switch.
+---
+
+# `aladawy-pack`
+
+**Client project.** The website for **Aladawy Pack for Printing & Packaging**,
+a flexible-packaging manufacturer in Egypt founded in 1971. A rebuild of
+`aladawypack.com`.
+
+Private · standalone Next.js 16 app · not part of the monorepo
+
+<Callout type="warning">
+  Not to be confused with **Adawy** Pack, the Group brand at `apps/pack` inside
+  [`adawy-platform`](/repositories/adawy-platform). Different company,
+  different codebase. See [the repository map](/repositories).
+</Callout>
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript, strict |
+| Styling | Tailwind CSS v4 + shadcn/ui |
+| Motion | GSAP (ScrollTrigger, SplitText) + Lenis |
+| Forms | react-hook-form + zod |
+| i18n | next-intl — `/en`, `/ar`, full RTL |
+
+Statically prerendered, deployed on Vercel.
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev                 # http://localhost:3000 → redirects to /en
+pnpm build && pnpm start
+
+pnpm lint typecheck test # what CI gates on
+pnpm format
+pnpm assets:bake         # re-encode photography (manual, commits its output)
+```
+
+## Layout
+
+```
+app/[locale]/          one route per page; [locale] is the topmost layout
+app/api/               contact + quote intake (POST only)
+components/home/       the home page's scroll set-pieces, one file per section
+components/motion/     reusable primitives (Reveal, KineticText, Counter)
+components/ui/         shadcn primitives — unmodified here
+lib/content/           catalogue and capability data (structure only)
+lib/schemas/           zod schemas, shared by each form and its API route
+lib/seo/               metadata + JSON-LD builders
+messages/              en.json / ar.json — every human-readable string
+scripts/bake-assets.ts photography → AVIF/WebP into public/
+```
+
+## The three rules to know before editing
+
+**1. Content is split in two.** `lib/content/*` holds only what does *not*
+translate — slugs, image names, `1270 mm`. Every name, description and label
+lives in `messages/<locale>.json` under the same slug. A new product is one
+entry in `products.ts` plus one block in each message file, and
+`messages/parity.test.ts` fails the build if the two locales drift apart. The
+same pattern runs in [`aladawy-shop`](/repositories/aladawy-shop) — learn it
+once, use it twice.
+
+**2. Colour comes from content, never from chrome.** The palette is strictly
+monochrome (R=G=B everywhere). Sections alternate between `.surface-field`
+(black) and `.surface-paper` (white), and both re-declare the same semantic
+slots — `--ink`, `--line`, `--surface` — so a component reads those and works
+on either surface without knowing which it landed on.
+
+Those aliases live in **`@theme inline`**, and that is load-bearing: a plain
+`@theme` resolves a `var()` once into `:root`, which would freeze
+`text-ink-faint` at its dark-surface value and leave it white on a paper
+section. Anything that must invert per surface belongs in the `inline` block.
+
+The only colour on the site is the product photography, and a partner logo
+blooming from its ink mask to real colour on hover.
+
+**3. Reduced motion means no ScrollTrigger at all.** Every scroll driver
+early-exits on `prefers-reduced-motion`, so the authored CSS state must
+*already* be the finished layout — never a start-of-animation state waiting to
+play. Import `gsap` from `@/lib/motion/gsap`, never from the package: that
+module is where plugins are registered, and registration order matters for
+`useGSAP`.
+
+## Assets
+
+`pnpm assets:bake` reads originals from outside the repo and writes optimized
+files into `public/`. Point it at your own copies:
+
+```bash
+ALADAWY_SOURCE_DIR=...   # factory + product photography
+ALADAWY_PARTNER_DIR=...  # partner logo set (colour + -mask pairs)
+```
+
+Its output is committed, so a fresh clone builds without the sources. One
+product shot is flagged `approximate` in the script — `slider-zipper-lock-bag`
+has no true photograph and wants re-shooting.
+
+## Going live
+
+The site is **not indexable** while it lives on `*.vercel.app`, which is
+deliberate: staging must never outrank the client's real site. Enquiries
+currently land in the server log — `lib/enquiry.ts` is the single delivery
+seam ([forms & enquiries](/guides/forms-and-enquiries)).
+
+To publish, set `PRODUCTION_HOST` in **both** `lib/site.ts` and
+`next.config.ts`. That one switch flips `robots.txt`, the `noindex` meta, the
+`X-Robots-Tag` header and the sitemap host together. Full procedure and the
+reason for the duplication: [Client Projects](/how-we-work/client-projects).

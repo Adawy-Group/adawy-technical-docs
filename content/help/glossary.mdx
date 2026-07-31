@@ -1,0 +1,124 @@
+---
+title: Glossary
+description: The words this department uses that do not mean what you would guess — company names, platform vocabulary, and process terms.
+---
+
+# Glossary
+
+Terms you will hear in reviews and on cards, in the order they are most likely
+to confuse you.
+
+## Company and product names
+
+**Adawy Group** — the parent group. 38 companies today, planned past 100. Its
+site is `adawygroup.com`, built from `apps/group`.
+
+**Adawy Pack** — a **Group brand**. Lives at `apps/pack` in the
+[platform monorepo](/repositories/adawy-platform). Currently a holding page.
+
+**Aladawy Pack** — a **client**: Aladawy Pack for Printing & Packaging, a
+flexible-packaging manufacturer founded in 1971. Lives in its own repository,
+[`aladawy-pack`](/repositories/aladawy-pack).
+
+<Callout type="warning">
+  These are two different companies, one letter apart. When someone says "the
+  pack site", ask which one. The same trap exists for **Adawy** vs **Aladawy**
+  generally.
+</Callout>
+
+**Aladawy Shop** — a **client**: a packaging and kitchen-supply house. Its
+storefront is [`aladawy-shop`](/repositories/aladawy-shop).
+
+**Baron** — a **client**: "The Lord of Fried Chicken", a restaurant whose QR
+menu is [`baron-menu`](/repositories/baron-menu).
+
+**Group work / client work** — the two worlds the department builds in. Group
+work is Adawy Group's own brands, in one monorepo. Client work is built for
+other businesses, one standalone repo each
+([ADR-010](/architecture/adrs), [client projects](/how-we-work/client-projects)).
+
+**Holding page** — a single branded screen standing in for an unbuilt site.
+`apps/studio` and `apps/pack` are holding pages today. They are real apps with
+real deploys, which is why a shared-package change verifies three apps.
+
+## Platform vocabulary
+
+**Take** — one scroll-driven section of the narrative on `adawygroup.com`
+(the hero take, the why take). Adding a take is a specific three-edit
+procedure ([platform architecture](/architecture/platform-architecture)).
+
+**Pass** — a module that mutates its own slice of the 3D scene each frame.
+There is one WebGL canvas and many passes; a new 3D element is a pass, never a
+second canvas.
+
+**Channel** — a module-singleton value carrying normalized scroll progress
+`p ∈ [0,1]` from a driver to the render loop. Neither side imports the other.
+
+**Driver** — a `*-scroll-driver.tsx` component that renders nothing. It wires a
+ScrollTrigger and publishes to a channel.
+
+**Stage** — the single `three.js` context serving the whole page, plus the rAF
+loop that reads every channel once per frame and hands one frame object to
+every pass.
+
+**Anchor** — a typed handle for a DOM element (`anchor("data-why")`) used
+instead of a raw selector string, so renaming one fails the build everywhere
+instead of silently matching nothing.
+
+**Perf tier** — the site-wide quality governor, `"full"` or `"lite"`.
+Downgrade-only, session-sticky. Lite sheds pixels, never choreography.
+
+**Bake** — a hand-run script that generates a committed asset (`pnpm
+partners:bake`, `pnpm assets:bake`). Bakes are not part of any build; CI cannot
+produce their output, which is why the results are committed.
+
+**Seam** — a single module that everything upstream routes through, so a
+provider can be swapped in one function body. `lib/enquiry.ts` is the canonical
+one ([forms & enquiries](/guides/forms-and-enquiries)).
+
+**Space ramp / type scale** — the named padding and font-size steps that own
+the page's rhythm. Hand-written numeric padding on a `<section>` is a lint
+error because the ramp is supposed to answer that question.
+
+## Stack terms with local meaning
+
+**`proxy.ts`** — Next.js 16's middleware file. `middleware.ts` does not exist
+in this version; searching for it is a common few-minutes-lost.
+
+**Token / slot** — a CSS custom property that carries brand identity
+(`--brand`, `--brand-font-display`). A brand is a set of token *values*; it is
+never a forked component.
+
+**Thin app** — an app that contributes only routes, content and token values.
+Everything else comes from `@adawy/*`. "Keep apps thin" is the rule that makes
+one fix reach every brand.
+
+**Parity test** — the test asserting every locale's message file has an
+identical key tree. It fails the build
+([i18n & RTL](/standards/i18n-rtl)).
+
+**Logical properties** — direction-agnostic CSS and Tailwind classes
+(`ms-`/`me-`/`start-`/`text-start`) that mirror correctly in Arabic. The
+physical equivalents are lint errors.
+
+## Process terms
+
+**Ready for Dev** — a board state meaning design approved *and* fully
+specified. Work does not start before it, even small work
+([definition of done](/how-we-work/definition-of-done)).
+
+**WIP limit** — the cap on how many cards may be in the build stage at once.
+The single most important rule on the board: it forces work to be finished
+before new work starts.
+
+**ADR** — Architecture Decision Record. Context → Decision → Consequences,
+added via PR. [The records](/architecture/adrs) are the fastest way to absorb
+how this team thinks.
+
+**Verify job** — the CI job running lint, typecheck, test and build across
+every app and package, unfiltered on purpose so one app's change cannot break a
+sibling.
+
+**Affected** — the Turborepo resolution deciding which apps a change actually
+reaches, and therefore which get deployed. Verification is never filtered;
+deployment always is.

@@ -1,0 +1,109 @@
+---
+title: Forms & Enquiries
+description: The pattern every project uses for intake — one zod schema for form and server, spam defences, and a single delivery seam.
+---
+
+# Forms & Enquiries
+
+Almost every site the department ships has one job at the end of the scroll:
+**capture an enquiry**. Contact forms, quote requests, project briefs. The
+pattern is the same in all of them, and it exists in four repositories now — so
+it is worth learning once.
+
+## One schema, both sides
+
+A form and the endpoint it posts to share **one zod schema**, defined in
+`lib/schemas/`.
+
+```ts
+// lib/schemas/quote-request.ts
+export const quoteRequestSchema = z.object({ … })
+export type QuoteRequest = z.infer<typeof quoteRequestSchema>
+```
+
+The form validates with it through the react-hook-form resolver; the route
+validates the parsed body with the same object.
+
+*Why both:* client validation is **UX** — it tells someone their phone number
+is short before they wait for a round trip. Server validation is **security**.
+A client that skipped validation is not a hypothetical; it is a `curl` command.
+Sharing the schema means the two can never drift.
+
+*Why zod at the boundary:* types are erased at runtime. The boundary is exactly
+where runtime reality enters, so it is the one place a type annotation is not
+enough ([coding conventions](/standards/coding)).
+
+## Spam defences, in order of value
+
+1. **A honeypot field** — hidden from humans, filled by naive bots. Discard the
+   submission silently; do not return an error that tells a bot it was caught.
+2. **Rate limiting** per IP. `lib/rate-limit.ts` in the client repos; the
+   platform additionally runs **BotID** on its contact route.
+3. **Server-side validation** — a schema that rejects nonsense is itself a
+   filter.
+
+Deliberately absent: CAPTCHA. It taxes every real user to stop a class of bot
+the three measures above already handle at this volume.
+
+## One delivery seam
+
+**Every project routes submissions through a single module** — `lib/enquiry.ts`
+in the client projects, the mailer module in the platform. One function, one
+place.
+
+```ts
+// lib/enquiry.ts — the only place a submission leaves the app
+export async function deliverEnquiry(enquiry: Enquiry) { … }
+```
+
+Everything upstream — both forms, both API routes — calls it and knows nothing
+about the transport. Swapping a provider is one function body.
+
+### Leave it logging until launch
+
+In an unlaunched project the seam writes a structured log line and nothing
+else. This looks unfinished and is intentional:
+
+<Callout type="error">
+  A half-wired mail transport **fails silently in production**. The form
+  submits, the user sees a success state, and the enquiry goes nowhere — for
+  weeks, because nothing errors. A stub that obviously does nothing is safer
+  than a provider that might not be configured.
+</Callout>
+
+Wiring the real provider is part of the [launch
+checklist](/how-we-work/client-projects#launch-checklist), and it is not
+complete until a **test submission has arrived in the client's actual inbox**.
+
+The platform delivers through **Resend**, configured with `RESEND_API_KEY`,
+`INQUIRY_TO` and `INQUIRY_FROM`. Those are declared in `turbo.json` so a
+changed value busts the right build cache, and documented in
+`apps/group/.env.example` — the only committed env template
+([security](/standards/security)).
+
+## Form UX rules
+
+- **Never trust the client for anything that matters**, including prices and
+  totals. A quote submission carries line identities and quantities; the
+  figures are re-derived server-side.
+- **Errors belong next to the field**, and are translated like any other string
+  ([i18n & RTL](/standards/i18n-rtl)).
+- **The success state must be unmistakable.** A form that clears itself with no
+  confirmation reads as a failure, and the user submits again.
+- **Disable the submit button while in flight**, and make double submission
+  harmless on the server anyway.
+- **Every field has a real `<label>`.** A placeholder is not a label — it
+  disappears on focus and screen readers do not announce it reliably. The
+  accessibility gate will catch this, but late.
+
+## Where to look
+
+| Repo | Files |
+| ---- | ----- |
+| `aladawy-shop` | `lib/schemas/quote-request.ts`, `lib/enquiry.ts`, `lib/rate-limit.ts`, `app/api/quote/route.ts` |
+| `aladawy-pack` | `lib/schemas/`, `lib/enquiry.ts`, `app/api/contact/route.ts` |
+| `adawy-platform` | `apps/group/lib/contact/` — schema, service, mailer, rate limit, and the multi-step inquiry form |
+
+The platform's version is the most developed: a multi-step form with country
+and industry fields, a typed email template, and its own tests. Read it before
+building a complex intake from scratch.

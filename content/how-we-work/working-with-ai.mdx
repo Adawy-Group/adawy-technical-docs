@@ -1,0 +1,102 @@
+---
+title: Working with AI
+description: The AGENTS.md convention every repo carries, how AI-assisted work is reviewed, and the rules about what may never be pasted into a model.
+---
+
+# Working with AI
+
+AI coding assistants are part of how this department works. A two-person team
+maintaining five repositories is only possible with them. They are also the
+fastest way to fill a codebase with confident, plausible, wrong code — so the
+practice is written down rather than left to taste.
+
+## Every repo carries an `AGENTS.md`
+
+Open it before your first change. It is the **architectural contract** for that
+codebase: the constraints that are load-bearing, and the traps somebody has
+already paid for.
+
+| Repo | What its `AGENTS.md` covers |
+| ---- | --------------------------- |
+| `adawy-platform` | The shadcn contract — why you edit the vendored component instead of out-specifying it from the call site, and which registry components were deliberately *not* adopted |
+| `aladawy-shop` | The quote-not-cart domain model, the two content trees, the commands to run before calling work done |
+| `aladawy-pack` | The content/messages split, the monochrome surface system, the motion rules |
+
+Some repos also have a `CLAUDE.md`. Where both exist, `CLAUDE.md` is usually
+one line — `@AGENTS.md` — pointing at the same file, so there is one document
+and not two that disagree.
+
+**`AGENTS.md` is written as you go, in the PR that earns the entry.** A trap
+ledger written at the end of a project is written from memory, and the detail
+that made the bug expensive is the first thing to go.
+
+<Callout type="warning">
+  One warning from the platform repo's own audit: a `CLAUDE.md` that is
+  `.gitignore`d holds knowledge on exactly one person's disk. If an AI
+  instruction file contains something the team needs, it belongs in a tracked
+  file — `AGENTS.md`, the repo's `docs/`, or this handbook.
+</Callout>
+
+## The rules
+
+**1. You own the diff.** "The AI wrote it" is not a review answer. If you
+cannot explain why a line is there, it does not go in the PR. This is the whole
+rule; everything below follows from it.
+
+**2. Read the framework docs, not the model's memory.** Next.js 16 is not the
+Next.js in any model's training data — middleware is `proxy.ts`, and APIs and
+conventions moved. Every repo's `AGENTS.md` opens by saying so. When an
+assistant writes framework code confidently, check it against
+`node_modules/next/dist/docs/`.
+
+**3. Never paste production or client data into a model** — client data,
+credentials, Odoo exports, real customer submissions — unless the tool is
+approved for it. This is the same rule as
+[Security Basics](/standards/security), and it is the one with legal weight.
+
+**4. Generated code meets the same bars.** Strict types, no `any`, logical
+Tailwind classes, tokens instead of hard-coded colour, tests where behavior
+changed. The lint rules do not care who typed the line, and neither does
+review.
+
+**5. Prefer the codebase's pattern over the model's.** Assistants reach for
+generic solutions — a `<Button>` where the app has `ActionButton`, a physical
+`ml-4` where the lint rule demands `ms-4`, a new utility that already exists in
+`lib/`. Search before you accept.
+
+**6. Comments are for constraints, not narration.** House style is sparse,
+human-voiced comments that record *why* something is load-bearing. Assistants
+tend to produce dense per-function documentation that restates the signature.
+Cut it. See [Coding Conventions](/standards/coding#comments).
+
+## What AI is genuinely good at here
+
+Worth knowing, because the failure mode is using it for the wrong half:
+
+- **Reading an unfamiliar repo** — "where does the quote total get computed?"
+  is answered in seconds and is easy to verify.
+- **Mechanical migrations** — a rename across 40 files, a codemod, a locale
+  key move.
+- **Test cases for pure functions** — the `lib/` layers in every repo exist
+  precisely because they are testable in isolation, which is also what makes
+  them easy to generate tests for.
+- **First-draft bilingual copy**, always human-reviewed. Arabic copy in
+  particular ships only after a native reader has passed it — `data/menu.js`
+  in Baron still carries a "please review the wording, it's a draft" note for
+  exactly this reason.
+
+And where it is weak: choreography and motion feel, anything depending on how a
+page *looks* while moving, and any decision whose reasoning is in someone's
+head rather than in the repo.
+
+## In review
+
+Reviewers do not review differently because a change was AI-assisted — the
+[code review](/how-we-work/code-review) checklist is the same. But two
+questions earn their place on larger generated diffs:
+
+- **Is this reusing what exists?** Duplicated helpers are the most common
+  artifact of generated code.
+- **Is the diff bigger than the change?** Assistants reformat, re-comment and
+  restructure code they were only asked to fix. Noise in a diff hides the
+  actual change from the next reader.

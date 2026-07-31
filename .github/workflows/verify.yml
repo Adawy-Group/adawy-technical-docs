@@ -1,0 +1,47 @@
+name: Verify
+
+# The handbook deploys through Vercel's Git integration, which only reports
+# whether the build compiled. Two classes of breakage compile fine and ship:
+# a link to a page that does not exist, and a page missing from its _meta.ts
+# (invisible in the sidebar). This job catches both before review.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nextra reads each page's last-modified date from git history. A
+          # shallow clone has none, which is what the "Failed to get the last
+          # modified timestamp" build warnings are.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Runs before the build: it needs no build output, and a broken link
+      # should be reported even when a page fails to prerender.
+      - name: Check links, anchors and sidebar entries
+        run: node scripts/check-links.mjs
+
+      # A page can render in dev and still fail to prerender, so the build is
+      # the real gate on content.
+      - name: Build
+        run: npm run build
