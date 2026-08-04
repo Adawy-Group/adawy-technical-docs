@@ -1,0 +1,85 @@
+---
+title: Vocabulary & Map
+---
+
+# Vocabulary & Map
+
+Two things future-you needs in one page: **where code lives**, and **what the
+words mean**. The layout rule is one sentence:
+
+> **Routes in `app/`, things you can see in `features/`, machinery in `platform/`.**
+
+## Route → feature map (apps/group)
+
+| You are looking at…                          | It lives in                     |
+| -------------------------------------------- | ------------------------------- |
+| `/` hero (headline, CTA, shake cue)          | `features/hero`                 |
+| `/` persistent 3D world (crane, coins, mark, crystal) | `features/stage` — one feature on purpose: its objects travel across sections |
+| `/` "Why choose us"                          | `features/why-us`               |
+| `/` legacy & growth timeline                 | `features/timeline`             |
+| `/` ecosystem card-belt section              | `features/ecosystem-belt`       |
+| `/` stats arc-gauges                         | `features/stats`                |
+| `/` partners logo wall                       | `features/partners`             |
+| `/` closing section                          | `features/closer`               |
+| `/` scroll through-line indicator            | `features/story-line`           |
+| `/ecosystem` page (physics hero + relay takes) | `features/ecosystem`          |
+| `/ecosystem/<brand>` pages (pack, print, room, column) | `features/brands`     |
+| `/about` (cube, founder, values)             | `features/about`                |
+| `/contact` (glass arrow, inquiry form)       | `features/contact`              |
+| Sound toggle / equalizer chip                | `features/sound` (UI only — the engine is `platform/sound`) |
+| Splash preloader                             | `features/preloader`            |
+| PWA install prompt + service worker          | `features/pwa`                  |
+| Header, footer, nav, mobile menu             | `platform/chrome`               |
+
+Machinery: `platform/scroll` (scrub drivers, take writers, journey profiles,
+the anchors registry), `platform/sound` (the audio engine), `platform/gl`
+(canvas host, renderer boot, frame policy), `platform/scene` (shared three.js:
+light rig, studio env, geometry utils), `platform/seo`, `platform/brand`
+(group data: members, marks, patterns, industries), `platform/theme`,
+`platform/perf`, `platform/boot` (entrance/page-ready/splash-session
+signals), `platform/math`, `platform/tokens`, `platform/ui` (ActionButton,
+popup surface), `platform/transition`, `platform/backdrop`, `platform/tilt`,
+`platform/invite`, `platform/haptics`, `platform/color`, `platform/env`,
+`platform/markdown`.
+
+## The boundary law
+
+1. `platform/` never imports `features/`.
+2. A feature imports another feature **only** through its barrel
+   (`@/features/<name>`).
+3. `app/` composes feature UI via barrels; feature `lib/` stays importable
+   (pages need metadata fragments, server actions need domain logic).
+4. `lib/` has no React and no three.js; `scene/` has no React.
+
+Enforced by generated `no-restricted-imports` blocks in
+`apps/group/eslint.config.js`. If two features need the same pure module, it
+is platform by definition — move it. That is how `platform/scroll` and
+`platform/sound` came to exist.
+
+## The film vocabulary
+
+The site is built like a production, and the code speaks that language:
+
+- **stage** — a persistent WebGL world behind the DOM. The home stage carries
+  the crane, coins, mark and crystal across sections.
+- **scene** — the three.js layer of a feature (`features/<f>/scene`), built
+  by a `create-*` factory returning a handle with `dispose()`.
+- **take** — one continuous scroll-driven shot (the coin ring recede, the
+  cube solve, the fold of the burger box).
+- **driver** — the component wiring scroll progress to a take
+  (`*-scroll-driver.tsx`, all built on `useScrubDriver`).
+- **writer** — the style-writing cache behind a take; each take owns its
+  writer so hand-offs invalidate cleanly.
+- **journey** — the home page's composed scroll choreography; per-section
+  profiles live in `platform/scroll`.
+- **beat / cue** — a visible moment inside a take, and the sound fired where
+  that motion starts.
+- **closer** — the final section of a page, film-credits sense.
+- **belt** — the home ecosystem section's card conveyor.
+- **relay** — the `/ecosystem` page's ball-passes-the-baton choreography
+  (an internal take name — the *feature* is named `ecosystem`).
+- **chrome** — the persistent shell around pages: header, nav, footer.
+- **invite** — the proximity affordance that makes an interactive 3D toy
+  beckon (`platform/invite`: invite-gate + lean).
+- **latch** — a scroll trigger armed with a dead-band so it fires once,
+  forward-only (`platform/sound/latch`).

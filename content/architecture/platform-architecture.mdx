@@ -21,14 +21,14 @@ positioned `fixed inset-0`. Everything 3D is a *pass* on that one renderer —
 the Why-Choose crystal is a second pass on the same context, not a second
 canvas.
 
-- `components/gl/gl-canvas.tsx` is the only WebGL host: canvas element,
+- `platform/gl/gl-canvas.tsx` is the only WebGL host: canvas element,
   create/dispose, theme pushes. A scene is a `create` function returning
   `{ dispose, applyTheme? }`.
-- `scene/stage/runtime.ts` builds the kernel — renderer, scene, image-based
+- `features/stage/scene/runtime.ts` builds the kernel — renderer, scene, image-based
   lighting, camera, lights, group hierarchy.
-- `scene/stage/create-stage.ts` is wire-up only: framing, resize, theme, and
+- `features/stage/scene/create-stage.ts` is wire-up only: framing, resize, theme, and
   the rAF loop.
-- `scene/stage/stage-pass.ts` is the contract.
+- `features/stage/scene/stage-pass.ts` is the contract.
 
 Each frame, the stage reads **every progress channel once** into a `StageFrame`
 and hands that same object to every pass. Passes never read channels
@@ -51,12 +51,12 @@ one.
 
 ```mermaid
 flowchart LR
-    A["lib/&lt;section&gt;/\npure math — beats and easing\nno React, no three.js"] --> B["progress channel\nmodule singleton\nclamped to 0..1"]
+    A["features/&lt;section&gt;/lib/\npure math — beats and easing\nno React, no three.js"] --> B["progress channel\nmodule singleton\nclamped to 0..1"]
     B --> C["the render loop\nreads every channel once per frame"]
     D["*-scroll-driver.tsx\nrenders nothing\nwires a ScrollTrigger"] --> B
 ```
 
-1. **Pure math in `lib/<section>/`** — beat thresholds and easing as plain
+1. **Pure math in `features/<section>/lib/`** — beat thresholds and easing as plain
    functions of normalized progress `p ∈ [0,1]`, importing no React and no
    three.js. This is the only layer with unit tests, and it is where the
    choreography actually lives.
@@ -74,7 +74,7 @@ test will tell you, because there is nothing to test.
 
 ### Two rules the tests enforce
 
-**Address elements through `lib/stage/anchors.ts`, never a raw selector
+**Address elements through `platform/scroll/lib/anchors.ts`, never a raw selector
 string.** JSX spreads `{...anchor("data-why")}`; drivers call
 `query("data-why")`. Both sides take the same union, so renaming an anchor
 fails the build at every use instead of silently matching nothing. A test fails
@@ -89,7 +89,7 @@ wrote the branch remembered.
 
 ## 3. The performance tier
 
-`lib/perf/perf-tier.ts` is a site-wide quality governor with two states,
+`platform/perf/lib/perf-tier.ts` is a site-wide quality governor with two states,
 `"full"` and `"lite"`. It exists so "this device is struggling" is answered
 **once**, rather than by each effect inventing its own answer.
 
