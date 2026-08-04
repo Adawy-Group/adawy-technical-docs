@@ -199,3 +199,46 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   **Naming hazard:** *Adawy* Pack (a Group brand, `apps/pack`) and *Aladawy*
   Pack (a client, `aladawy-pack`) are different companies one letter apart.
   See [the repository map](/repositories).
+
+## ADR-011 — Feature-first app layout: `features/` + `platform/`
+
+- **Context:** `apps/group` grew to ~60k lines organised as four parallel
+  layer trees (`components/`, `lib/`, `scene/`, `hooks/`). Every feature was
+  sliced across three or four places under drifting names (contact lived in
+  four spots under three names; the brand pages nested differently in every
+  tree), `lib/` — 280 files — mixed feature logic, app machinery and generic
+  utilities in one namespace, and the load-bearing import rules ("lib is
+  pure", "scene has no React") were prose, not lint. The public
+  site's language and the code's names had diverged: the `/ecosystem` page
+  was built from folders named `ecosystem-hero` and `relay`, while
+  `ecosystem` named a *home* section.
+- **Decision:** One sentence, meant to still be obvious in five years:
+  **routes in `app/`, things you can see in `features/`, machinery in
+  `platform/`.** A feature is one thing a visitor can point at, named after
+  the public site (`features/ecosystem` is the `/ecosystem` page,
+  `features/ecosystem-belt` the home card-belt, `features/brands` the
+  `/ecosystem/<brand>` pages, `features/stage` the persistent home 3D world —
+  deliberately one feature, because its crane/coins/mark travel across
+  sections). Each feature is `{components, scene, lib, index.ts}`.
+  Cross-cutting machinery is a `platform/` module (`chrome`, `scroll`,
+  `sound`, `gl`, `scene`, `seo`, `brand`, `theme`, `perf`, `boot`, `math`,
+  `tokens`, `ui`, …). A four-line boundary law is machine-enforced by
+  generated `no-restricted-imports` blocks: platform never imports features;
+  a feature imports another feature only through its barrel; `app/` composes
+  UI via barrels (feature `lib/` stays importable); `lib/` has no React and
+  no three.js, `scene/` has no React. Domain-driven design is adopted only
+  where it pays: the vocabulary is written down ([glossary](/architecture/glossary)),
+  IO keeps its ports (the Mailer), and tactical DDD waits for the Phase-2
+  backend where real bounded contexts live.
+- **Consequences:** A file's place is guessable from what it is — "the thing
+  on the ecosystem page" has one folder — and renaming or deleting a feature
+  touches that folder alone. The layer rules now fail CI instead of relying
+  on review memory. Forcing the law to hold with zero exceptions surfaced
+  every mislabeled shared piece: the scrub/take driver kit and the journey's
+  per-section scroll profiles moved to `platform/scroll`, the sound engine to
+  `platform/sound`, group data (members, marks, industries) to
+  `platform/brand`, five private `lerp`s and three incompatible `clamp`s
+  collapsed into `platform/math`, and eight hand-rolled renderer boots into
+  one `bootRenderer`. Trade-offs: a cross-feature convenience import is now
+  an error whose fix is a deliberate move to platform, and `git blame`
+  crosses one large rename boundary (use `--follow`).
