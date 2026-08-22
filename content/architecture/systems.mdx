@@ -1,5 +1,7 @@
 ---
 title: Our Systems
+description: Every system the group runs or is replacing — the platform, the planned backend, Odoo as the system of record, and the WordPress estate being retired.
+tags: ['Explanation', 'Reference']
 ---
 
 # Our Systems
@@ -13,12 +15,13 @@ for clients is a separate track with separate rules — see
 
 | System | What it is | Status |
 | ------ | ---------- | ------ |
-| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand (`apps/group`, `apps/studio`, `apps/pack`) plus one multi-tenant `apps/sites` for the long tail ([ADR-008](/architecture/adrs)), all on shared `@adawy/*` packages, each app deployed to its own domain(s) | Phase 1 — in build |
-| **Shared design system** | The `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 design tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell) — themeable per brand via tokens | Phase 1 — the most important technical deliverable |
-| **Backend service** | Node.js (NestJS) in the same monorepo as `apps/api` ([ADR-009](/architecture/adrs)): authentication, business logic, Odoo integration, background jobs, real-time | Phase 2 — first build of the phase |
-| **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | Phase 2 — the flagship |
-| **Employee portal** | One internal home: internal AI assistant, search across all company systems, operational dashboards, content engine | Phase 3 |
-| **AI solutions** | Member-facing assistants and lead scoring (Phase 2); internal assistant, search, content engine, manufacturing intelligence (Phase 3) | Phases 2–3 |
+| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand — `apps/group`, `apps/studio`, `apps/pack` today — all on shared `@adawy/*` packages, each deployed to its own domain(s) | <Badge tone="live">Built</Badge> Phase 1 |
+| **The multi-tenant app** | One `apps/sites` mapping hostname → brand config, for the long tail ([ADR-008](/architecture/adrs)) | <Badge tone="planned">Decided, not built</Badge> |
+| **Shared design system** | The eight `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell), plus `eslint-config` and `typescript-config`, which machine-enforce the rules the others assume | <Badge tone="live">Built</Badge> the most important technical deliverable |
+| **Backend service** | Node.js (NestJS) in the same monorepo as `apps/api` ([ADR-009](/architecture/adrs)): authentication, business logic, Odoo integration, background jobs, real-time | <Badge tone="planned">Phase 2</Badge> first build of the phase |
+| **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | <Badge tone="planned">Phase 2</Badge> the flagship |
+| **Employee portal** | One internal home: internal AI assistant, search across all company systems, operational dashboards, content engine | <Badge tone="planned">Phase 3</Badge> |
+| **AI solutions** | Member-facing assistants and lead scoring; internal assistant, search, content engine, manufacturing intelligence | <Badge tone="planned">Phases 2–3</Badge> |
 
 Everything below Phase 1 is **direction, not built code**. Nothing in the org
 today runs NestJS, Better Auth, Prisma, Meilisearch or pgvector — those are

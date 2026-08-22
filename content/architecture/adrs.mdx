@@ -1,12 +1,47 @@
 ---
 title: Decision Records (ADRs)
+description: Every significant technical decision the department has made, with the context it was made in, the trade-off accepted, and whether it is built yet.
+tags: ['Explanation', 'Reference', 'Start here']
 ---
 
 # Architecture Decision Records
 
 Significant technical decisions, recorded so future team members understand
 not just *what* we decided but *why* — and what we knew at the time. Format:
-**Context → Decision → Consequences.** New ADRs are added via PR.
+**Context → Decision → Consequences.**
+
+## The index
+
+Most of the time you need the sentence, not the argument. Scan this; click
+through for the 10% of occasions where the reasoning matters.
+
+| # | The decision, in one sentence | State | Applies to |
+| - | ----------------------------- | ----- | ---------- |
+| [001](#adr-001--one-monorepo-a-thin-app-per-brand-on-shared-packages) | Group brand sites are thin apps in one monorepo, on shared `@adawy/*` packages | <Badge tone="live">Built</Badge> | Group work |
+| [002](#adr-002--rebuild-on-a-code-first-stack-instead-of-patching-wordpress) | Rebuild on Next.js rather than optimise WordPress | <Badge tone="live">In progress</Badge> | Everything |
+| [003](#adr-003--keep-odoo-as-the-system-of-record) | Keep Odoo permanently; build the differentiating layer on its APIs | <Badge tone="planned">Phase 2</Badge> | Backend |
+| [004](#adr-004--defer-the-cms-content-is-managed-in-the-repo-for-now) | Defer the CMS; content lives in the repo and ships by PR | <Badge tone="building">Deferred</Badge> | Group work |
+| [005](#adr-005--aladawy-shop-ships-as-a-quote-request-not-a-checkout) | Aladawy Shop's checkout is a quote request — no cart, no payment | <Badge tone="live">Built</Badge> | One client |
+| [006](#adr-006--every-brand-keeps-its-own-domain-cross-linked-to-the-group) | Every brand keeps its own domain, cross-linked both ways | <Badge tone="live">Built</Badge> | Group work |
+| [007](#adr-007--documentation-lives-in-this-repo-public-docs-as-code) | This handbook is public, English-only, and changes by PR | <Badge tone="live">Built</Badge> | The department |
+| [008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app) | Flagships get their own app; the long tail shares `apps/sites` | <Badge tone="planned">Not built</Badge> | Group work |
+| [009](#adr-009--the-phase-2-backend-joins-the-same-monorepo) | The Phase-2 backend joins the monorepo as `apps/api` | <Badge tone="planned">Not built</Badge> | Backend |
+| [010](#adr-010--group-brands-share-a-monorepo-client-projects-get-their-own-repo) | Group brands share the monorepo; each client project gets its own repo | <Badge tone="live">Built</Badge> | Everything |
+| [011](#adr-011--architectural-rules-are-lint-rules-not-review-conventions) | Architectural rules are lint rules and tests, not review conventions | <Badge tone="live">Built</Badge> | Everything |
+
+## How to add one
+
+**The trigger:** a decision that closes off a plausible alternative, and that
+someone will question again in a year. Anything smaller is a
+[standards](/standards) page or a code comment — an ADR set that records
+routine choices stops being read, which costs more than the missing record
+would have.
+
+Write it in the same three parts, add it to the index above, and open a PR.
+State the trade-off you accepted in **Consequences**; a record with no cost in
+it is a record nobody believes. If a later decision changes one, do not delete
+it — mark it superseded and say what replaced it, because the reasoning that
+was wrong is the most useful thing in the file.
 
 ## ADR-001 — One monorepo: a thin app per brand on shared packages
 
@@ -171,9 +206,9 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   work** is Adawy Group's own brands, where a shared design system pays for
   itself across dozens of sites ([ADR-001](#adr-001--one-monorepo-a-thin-app-per-brand-on-shared-packages)).
   **Client work** is software built for other businesses — Aladawy Pack,
-  Aladawy Shop, Baron. Early on these were treated as the same thing, which
-  put client sites on the Group roadmap and made the monorepo rules look like
-  they applied to everything.
+  Aladawy Shop, Jumeira Catering, Zad Al-Hkoul and Baron. Early on these were
+  treated as the same thing, which put client sites on the Group roadmap and
+  made the monorepo rules look like they applied to everything.
 - **Decision:** Two patterns, chosen by *who owns the outcome*.
   - **Group brands** live in `adawy-platform` as apps on shared `@adawy/*`
     packages. ADR-001 and [ADR-008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app)
@@ -199,3 +234,37 @@ not just *what* we decided but *why* — and what we knew at the time. Format:
   **Naming hazard:** *Adawy* Pack (a Group brand, `apps/pack`) and *Aladawy*
   Pack (a client, `aladawy-pack`) are different companies one letter apart.
   See [the repository map](/repositories).
+
+  **Open case:** [`adawy-group-links`](/repositories/adawy-group-links) is
+  Group-owned and standalone, which this record does not cover. It is a
+  microsite rather than a brand site, and nothing in it records why it sits
+  outside the platform. Until that is decided the rule reads *Group brand
+  **sites** live in the monorepo*, and the microsite is one open case rather
+  than a precedent.
+## ADR-011 — Architectural rules are lint rules, not review conventions
+
+- **Context:** The department's rules — keep apps thin, never import GSAP
+  directly, never use a physical direction class, keep locale files in step —
+  were written down and reviewed by hand. The 2026 audit of the old site found
+  that its accessibility failures were, without exception, things a checklist
+  had been supposed to catch. With one reviewer and eight repositories, a rule
+  that lives only in a document is a rule that gets skipped on the busy week.
+- **Decision:** Any architectural rule that can be machine-checked **is**
+  machine-checked, and fails the build rather than waiting for a reviewer.
+  Concretely: `apps/group/eslint.config.js` *generates* its
+  `no-restricted-imports` blocks from the app's layering, so the layering and
+  its enforcement cannot drift apart; physical Tailwind classes, direct `gsap`
+  imports and locale-unaware `next/link` imports are errors; message parity, a
+  `tel:` matching its displayed number, and the Arabic spelling of the brand
+  are tests; accessibility is an axe-core gate over every route. The lint
+  philosophy that follows: **a rule is an error or it is not enabled** — no
+  warnings, because a warning-only lint is no lint at all.
+- **Consequences:** The rules in this handbook are, for the most part, not
+  advice — the build tells you. Review time goes to the things no rule can
+  catch: naming, structure, whether a section earns its place. Two costs are
+  accepted. Adding a rule is slower than writing a sentence, so only rules
+  worth that cost get written; and a badly scoped rule blocks legitimate work,
+  which is why every restriction here carries the replacement in its own error
+  message. The decision rule for what to enforce is on
+  [Design Patterns](/architecture/patterns#6-enforce-it-do-not-document-it):
+  **would this mistake look like a mistake?** If not, it belongs in a test.

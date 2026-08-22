@@ -37,7 +37,14 @@ function toRoute(file) {
   return route === "" ? "/" : route
 }
 
-/** Mirrors the GitHub-style slug Nextra generates for heading anchors. */
+/**
+ * Mirrors the GitHub-style slug Nextra generates for heading anchors.
+ *
+ * Each whitespace character becomes its own hyphen — runs are NOT collapsed.
+ * "Linting & formatting" loses the ampersand and keeps both spaces, so the
+ * real anchor is `linting--formatting` with two hyphens. Collapsing here would
+ * reject that valid link and accept the single-hyphen one that 404s.
+ */
 function slugify(heading) {
   return heading
     .trim()
@@ -45,7 +52,7 @@ function slugify(heading) {
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
+    .replace(/\s/g, "-")
 }
 
 const routes = new Set(mdxFiles.map(toRoute))
@@ -70,8 +77,15 @@ const LINK_PATTERNS = [
   /href="(\/[^"\s]*)"/g //        <Cards.Card href="/route" />
 ]
 
+// Same-page anchors: [text](#heading). They carry no route, so they are
+// resolved against the file they appear in. The long slugs the ADR page links
+// between are exactly the kind that rot on an unrelated heading edit.
+const SAME_PAGE_PATTERN = /\]\((#[^)\s]+)\)/g
+
 for (const file of mdxFiles) {
   const src = fs.readFileSync(file, "utf8")
+  const own = toRoute(file)
+
   for (const pattern of LINK_PATTERNS) {
     for (const m of src.matchAll(pattern)) {
       const [target, hash] = m[1].split("#")
@@ -81,6 +95,13 @@ for (const file of mdxFiles) {
       } else if (hash && !anchors.get(route).has(hash)) {
         problems.push(`${file}: link to ${m[1]} — no such heading on that page`)
       }
+    }
+  }
+
+  for (const m of src.matchAll(SAME_PAGE_PATTERN)) {
+    const hash = m[1].slice(1)
+    if (!anchors.get(own).has(hash)) {
+      problems.push(`${file}: link to ${m[1]} — no such heading on this page`)
     }
   }
 }
