@@ -9,8 +9,14 @@ The department builds two kinds of software. **Group work** is Adawy Group's
 own brands, in the [`adawy-platform`](/repositories/adawy-platform) monorepo.
 **Client work** is software built for other businesses — today
 [Aladawy Pack](/repositories/aladawy-pack),
-[Aladawy Shop](/repositories/aladawy-shop) and
+[Aladawy Shop](/repositories/aladawy-shop),
+[Jumeira Catering](/repositories/jumeira),
+[Zad Al-Hkoul](/repositories/zad-alhkoul) and
 [Baron](/repositories/baron-menu).
+
+Five client repositories is already more than the Group side has, which is why
+the patterns below matter more than they look: everything learned on one is
+paid for again on the next unless it is written down here.
 
 The rule is one line: **one client, one standalone repository, no `@adawy/*`
 dependency.** [ADR-010](/architecture/adrs) records why.
@@ -58,7 +64,9 @@ take its **code**.
    client, not the deliverable (`aladawy-shop`, not `packaging-store`).
 2. **Scaffold from the closest existing client repo**, not from the monorepo.
    `aladawy-pack` is the reference for a marketing site; `aladawy-shop` for
-   anything with a catalogue and client-side state.
+   anything with a catalogue and client-side state; `zad-alhkoul` for a build
+   that starts as a holding page on a real design system; `jumeira` only if the
+   page's content genuinely is a film.
 3. **Write `README.md` and `AGENTS.md` on day one.** README is the tour;
    `AGENTS.md` is the architectural contract and the trap ledger
    ([working with AI](/how-we-work/working-with-ai)). Both grow with the
@@ -93,9 +101,27 @@ Setting it flips, together: `robots.txt`, the `noindex` meta tag, the
   **Set the same value in `next.config.ts` as well.** It is restated there on
   purpose: Next loads that config file outside the app bundle, where the `@/`
   alias does not resolve. Setting one and not the other is the failure mode —
-  you get a live site that still says `noindex`, or a staging deploy that is
-  suddenly indexable.
+  you get a live site that still says `noindex`, or a pre-launch deploy that is
+  suddenly indexable. In `jumeira`, a colocated test holds the two copies
+  together, which is the only thing that catches it
+  ([why that pattern](/architecture/patterns#6-enforce-it-do-not-document-it)).
 </Callout>
+
+### The switch is not spelled the same in every repo
+
+`PRODUCTION_HOST` is the pattern in `aladawy-pack`, `aladawy-shop` and
+`jumeira`. [`zad-alhkoul`](/repositories/zad-alhkoul) uses an **environment
+variable**, `NEXT_PUBLIC_ALLOW_INDEXING`, set in the Vercel production
+environment at launch.
+
+**Read the repo before you follow this checklist literally** — setting
+`PRODUCTION_HOST` in a repo that does not use it launches a site that stays
+invisible to search, which is the expensive direction of that mistake.
+
+*Why the variance is tolerated rather than standardised:* an env-var switch is
+flipped in the Vercel dashboard without a deploy, and a constant is flipped in
+a reviewed PR. Both are defensible; what is not defensible is a launch
+checklist that assumes one and meets the other.
 
 **Why this matters more than it sounds:** an indexable staging deployment
 competes with the client's real domain in search results. Losing a client's

@@ -1,5 +1,7 @@
 ---
 title: Your First Week
+description: The day-by-day plan for week one, the people to meet, and what a good question looks like here.
+tags: ['Tutorial', 'Week 1']
 ---
 
 # Your First Week
@@ -14,22 +16,29 @@ when the handbook fails you, fix it.
 The [Day-1 Checklist](/onboarding/day-one). Accounts, machine, and the three
 context reads (About, How We Work, Architecture).
 
-**Day 2 — The code.**
+**Day 2 — The code.** *(~5 hours)*
 Read [The Repository Map](/repositories) — eight repos in two worlds, and the
-`Adawy` / `Aladawy` naming trap that catches everyone once. Then
-[Tech Stack & Why](/architecture/tech-stack) and the
-[ADRs](/architecture/adrs); the ADRs are the fastest way to absorb how this
-team thinks. Finally, explore the platform monorepo: run `apps/group` locally,
-and walk the `@adawy/*` packages — `ui`, `design`, `motion`, `i18n`, `site`,
-`holding` — to see where the engineering actually lives.
+`Adawy` / `Aladawy` naming trap that catches everyone once *(~10 min)*. Then
+[Tech Stack & Why](/architecture/tech-stack) *(~15 min)* and the
+[ADRs](/architecture/adrs) — the index table, then the records that touch your
+work *(~30 min)*. They are the fastest way to absorb how this team thinks.
 
-**Day 3 — The workflow, hands on.**
+Then [Design Patterns](/architecture/patterns) *(~20 min)*: seven shapes that
+recur in every repo, which is what makes the next unfamiliar codebase readable
+in an afternoon rather than a week.
+
+Finally, explore the platform monorepo *(the rest of the day)*: run
+`apps/group` locally, and walk the `@adawy/*` packages — `ui`, `design`,
+`motion`, `i18n`, `site`, `holding`, and the two config packages that enforce
+the rules — to see where the engineering actually lives.
+
+**Day 3 — The workflow, hands on.** *(~2 hours of reading, then watch)*
 Read [The Board & Labels](/how-we-work/the-board),
 [Git Workflow](/how-we-work/git-workflow), and
 [Definition of Done](/how-we-work/definition-of-done). Watch the board for a
 day: see how cards move, how PRs link to cards, how the WIP limit behaves.
 
-**Day 4 — Standards + first card.**
+**Day 4 — Standards + first card.** *(~3 hours)*
 Read all of [Standards](/standards) — [i18n & RTL](/standards/i18n-rtl) and
 [Testing](/standards/testing) are the two that decide whether your first PR
 passes CI. Pick your first card from *This Week*
@@ -37,12 +46,26 @@ passes CI. Pick your first card from *This Week*
 Maintenance card, or a fix to this handbook).
 
 **Day 5 — Ship it.**
-Take the card through the full cycle: branch → PR linked to the card →
-preview → review → merge → verified on staging → Done. That full loop, not the
-size of the change, is the point — see [Your First PR](/onboarding/first-pr).
+Take the card through the full cycle: branch → gates run locally → PR linked to
+the card → preview → review → merge → **verified on the live URL** → Done. That
+full loop, not the size of the change, is the point — see
+[Your First PR](/onboarding/first-pr).
 
 ## People to talk to this week
 
-- **The lead** — 30 minutes on the roadmap and where you fit.
+- **The CTO** — 30 minutes on the roadmap and where you fit.
 - **The designer** — how design hands off to development, where the Figma
   source of truth lives, how design tokens map to code.
+
+Both are named on the [Team Map](/about/team), and
+[Who to Ask](/help/who-to-ask) is organized by problem rather than by role.
+
+## What a good question looks like here
+
+Asking is expected. Two habits make it cheap for everyone:
+
+- **Search the handbook first** — ⌘K / Ctrl-K, from any page. If the answer was
+  here and you missed it, that is a finding about the page, and worth saying.
+- **When the handbook fails you, fix it in the same week.** A question you had
+  to ask twice is a page that needs writing, and you are the only person who
+  can still see what was missing.

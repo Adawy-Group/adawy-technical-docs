@@ -1,5 +1,7 @@
 ---
 title: Help & FAQ
+description: The questions people actually ask, answered once - why we rebuilt, why one monorepo, why no checkout, and who to go to for what.
+tags: ['Explanation', 'FAQ']
 ---
 
 # Help & FAQ
@@ -29,6 +31,24 @@ Group brand, built at `apps/pack` inside the platform monorepo. **Alad**awy
 Pack is a *client* — a flexible-packaging manufacturer founded in 1971 — with
 its own repository. Same for Aladawy Shop. See
 [the repository map](/repositories) and [the glossary](/help/glossary).
+
+## Who are the department's clients?
+
+Five today: [Aladawy Pack](/repositories/aladawy-pack),
+[Aladawy Shop](/repositories/aladawy-shop),
+[Jumeira Catering](/repositories/jumeira),
+[Zad Al-Hkoul](/repositories/zad-alhkoul) and
+[Baron](/repositories/baron-menu) — one standalone repository each
+([ADR-010](/architecture/adrs)). That is more repositories than the Group side
+has, which surprises people who assume client work is the sideline.
+
+## Why is there a Group site outside the monorepo?
+
+[`adawy-group-links`](/repositories/adawy-group-links) is Adawy Group's own
+link-in-bio page in a standalone repo, which fits neither world. The repository
+records no reason for it, so the handbook does not invent one: the rule reads
+*Group brand **sites** live in the monorepo*, and the microsite is an open
+placement decision rather than a precedent.
 
 ## Why don't client projects use the `@adawy/*` packages?
 

@@ -1,5 +1,7 @@
 ---
 title: Deployment
+description: How code reaches production - the CLI-driven pipeline, what CI actually gates on, the safety rails, and what "live" means before a custom domain is attached.
+tags: ['Reference', 'Pipeline']
 ---
 
 # Deployment
@@ -15,7 +17,19 @@ FTP uploads, no editing on production, no exceptions.
 | Environment | What it is | When it updates |
 | ----------- | ---------- | --------------- |
 | **Preview** | A unique URL per pull request | The `deploy` job runs `vercel deploy` on every push to a PR branch |
-| **Production** | The brand's live site — today the Vercel project URL (the "staging link" leadership reviews) until the custom domain attaches | The `deploy` job runs `vercel deploy --prod` on merge to `main` |
+| **Production** | The project's live URL | The `deploy` job runs `vercel deploy --prod` on merge to `main` |
+
+**There is no third environment.** Where this handbook says "staging", it means
+the production deployment *before its custom domain is attached* — the Vercel
+project URL that leadership reviews. Same build, same pipeline, different
+address.
+
+*Why that is worth stating:* people arriving from a three-environment setup go
+looking for a staging server, and there is not one. The pipeline is
+deliberately two-stage — a per-PR preview and a production deploy on merge —
+because a third environment needs its own data, its own variables and its own
+drift, and a two-person team maintaining eight repositories cannot pay for that
+eight times over.
 
 From week one there is a **live link** that fills with real pages — anyone in
 leadership can open it at any time. Progress is something you can click, not a
@@ -59,9 +73,17 @@ everything costs roughly what verifying the changed app alone would.
   project from another Vercel team returns `Project not found` with both ids
   masked, and a wrong root directory uploads green and then builds the wrong
   thing.
-- **Deploys are remote builds, not `--prebuilt`.** Vercel's system environment
-  variables drive `metadataBase` and the OG image URLs; a local prebuilt build
-  lacks them and bakes a broken URL.
+- **In the platform, deploys are remote builds, not `--prebuilt`.** Vercel's
+  system environment variables drive `metadataBase` and the OG image URLs; a
+  local prebuilt build lacks them and bakes a broken URL.
+
+  **That is scoped to the platform, not a house rule.** `jumeira`,
+  `zad-alhkoul` and `adawy-group-links` all run `vercel build` then
+  `vercel deploy --prebuilt` on purpose: each resolves its public origin in its
+  own `lib/site.ts` with an explicit fallback chain, so nothing depends on a
+  variable the runner does not have. **The rule underneath is: never let a
+  build environment decide a URL you publish.** Prebuilt is safe once the
+  origin is resolved in your own code, and unsafe when it is not.
 - **Each PR gets one previews comment**, rewritten in place rather than piling
   up, and each deploy is registered with GitHub so the PR carries a native
   "View deployment" link.
@@ -82,12 +104,22 @@ everything costs roughly what verifying the changed app alone would.
 
 ## Monitoring
 
-- **Sentry** — error tracking and performance; a spike after deploy is treated
-  as a blocked release.
-- **Better Stack** — uptime monitoring and alerting on every production domain.
-- **Vercel Analytics / PageSpeed** — Core Web Vitals are watched after each
-  meaningful change; the performance budget (Lighthouse mobile ≥ 90s) is part
-  of "no regressions".
+<Callout type="warning">
+  **Sentry and Better Stack are chosen, not installed.** No repository in the
+  org carries either SDK today
+  ([the ledger](/architecture/tech-stack#built-decided-deferred--read-this-first)).
+  Until they do, "monitoring is clean" means *somebody opened the deployed page
+  and it worked* — which is why the verify-it-live step is not optional.
+</Callout>
+
+- **Vercel Analytics / PageSpeed** — the only telemetry actually running. Core
+  Web Vitals are watched after each meaningful change, and the
+  [performance budget](/guides/performance-checklist#the-numbers-and-which-one-blocks-a-merge)
+  is part of "no regressions".
+- **Sentry** <Badge tone="planned">Chosen</Badge> — error tracking and
+  performance. Once it exists, a spike after a deploy is a blocked release.
+- **Better Stack** <Badge tone="planned">Chosen</Badge> — uptime monitoring and
+  alerting on every production domain.
 
 ## Client projects deploy the same way
 
@@ -97,9 +129,15 @@ site is **`noindex`-ed until launch**, flipped by a single `PRODUCTION_HOST`
 switch. An indexable staging deployment competes with the client's real domain
 in search — see [Client Projects](/how-we-work/client-projects#the-go-live-switch).
 
-`baron-menu` is the exception: it has no CI and deploys with
-`vercel deploy --prod --yes` from the folder. Its URL must never change,
-because the QR code is printed on physical table cards.
+Two repos deploy differently, and both are worth knowing before you push:
+
+- **`baron-menu` has no CI** and deploys with `vercel deploy --prod --yes` from
+  the folder. Its URL must never change, because the QR code is printed on
+  physical table cards.
+- **`aladawy-shop` has no CI either.** It has tests and a `test` script, and
+  nothing runs them on a push. Until that is fixed its gates are yours to run
+  by hand before you merge — a gap, not a design
+  ([the matrix](/repositories#what-the-repos-actually-share)).
 
 ## Launch weeks
 

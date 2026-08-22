@@ -1,42 +1,92 @@
 ---
 title: Day-1 Checklist
+description: Accounts, access, machine setup and the four reads that make everything else make sense — the whole of your first day, in order.
+tags: ['Tutorial', 'Day 1', '~1 day']
 ---
 
 # Day-1 Checklist
 
-Work through this top to bottom. Every access item is granted by the **lead &
-technical owner** ([who to ask](/help/who-to-ask)) — request them all in one
-message.
+Work through this top to bottom. **Every access item is granted by the CTO**
+([who to ask](/help/who-to-ask)) — request them all in one message rather than
+one at a time, because each one is a round trip.
+
+<Callout type="info">
+  Ticks below are saved in your own browser and go nowhere else. They are a
+  bookmark for a day that spans several sittings, not a report anyone reads.
+</Callout>
 
 ## Accounts & access
 
-- [ ] **GitHub** — invitation to the `adawy-group` organization
-- [ ] **Trello** — the department board (read [The Board & Labels](/how-we-work/the-board) first)
-- [ ] **Figma** — the Adawy design files and design system
-- [ ] **Vercel** — team access (preview/staging/production visibility)
-- [ ] **Sentry & Better Stack** — error tracking and uptime dashboards
-- [ ] **Notion** — internal documentation workspace
-- [ ] **Team password manager** — this is the only place credentials live;
-      [never in chat or git](/standards/security)
-- [ ] Company email / communication channels
+<Checklist id="day-one-access">
+  <Task>**GitHub** — an invitation to the `Adawy-Group` organization, and an SSH key on your own account ([why](/onboarding/environment#prerequisites))</Task>
+  <Task>**Trello** — the department board. Read [The Board & Labels](/how-we-work/the-board) before you open it</Task>
+  <Task>**Figma** — the Adawy design files and the design system</Task>
+  <Task>**Vercel** — team access, so you can see preview and production deployments</Task>
+  <Task>**Notion** — the company-wide documentation workspace. Engineering's source of truth is this handbook, not Notion ([ADR-007](/architecture/adrs))</Task>
+  <Task>**The team password manager** — the only place credentials live, [never chat or git](/standards/security)</Task>
+  <Task>**Company email and the requests channel** — where work reaches the department ([how](/how-we-work/communication))</Task>
+</Checklist>
 
 ## Machine setup
 
-- [ ] **Node.js 22** via a version manager — `fnm` or `nvm`
-- [ ] **pnpm** (`corepack enable`) — every repo except this handbook uses it
-- [ ] **Git**, configured with your name and work email
-- [ ] An editor with TypeScript, ESLint, and Prettier integration
-- [ ] Clone this docs repo first, then the platform (see
-      [Dev Environment Setup](/onboarding/environment))
+<Checklist id="day-one-machine">
+  <Task>**Node.js 22** through `fnm` or `nvm` — not a system package</Task>
+  <Task>**pnpm** via `corepack enable`. Every repo except this handbook uses it</Task>
+  <Task>**Git**, configured with your name and work email</Task>
+  <Task>**The Vercel CLI**, then `vercel login`</Task>
+  <Task>**An editor** with TypeScript, ESLint and Prettier integration</Task>
+  <Task>Clone this handbook and get `npm run build` passing — that is the proof your toolchain is right ([full setup](/onboarding/environment))</Task>
+</Checklist>
 
-## Context (read in this order)
+## Context — read in this order
 
-- [ ] [About Adawy Group](/about) — what the business is and why software exists in it
-- [ ] [The Repository Map](/repositories) — the eight repos, and the difference
-      between Group work and client work. Read this before you clone anything
-      second.
-- [ ] [How We Work](/how-we-work) — the workflow you'll live in from today
-- [ ] [Products & Architecture](/architecture) — what we're building and why
+Roughly two hours, and it is the difference between following instructions and
+understanding them.
 
-By the end of day one you should be able to run a project locally and explain
-to a friend what Adawy Group does and what the department builds for it.
+<Checklist id="day-one-reading">
+  <Task>[About Adawy Group](/about) — what the business is, and why software exists inside a manufacturing group *(~10 min)*</Task>
+  <Task>[The Repository Map](/repositories) — the eight repos, the two worlds, and the `Adawy` / `Aladawy` naming trap that catches everyone once. **Read this before you clone anything second** *(~10 min)*</Task>
+  <Task>[How We Work](/how-we-work) — the workflow you will live in from today *(~15 min)*</Task>
+  <Task>[Products & Architecture](/architecture) — what we are building and why *(~20 min)*</Task>
+  <Task>[Decision Records](/architecture/adrs) — at minimum the index table. The ADRs are the fastest way to absorb how this team thinks *(~30 min for all eleven)*</Task>
+</Checklist>
+
+**Done when:** you can run at least one project locally, and explain to a
+friend what Adawy Group does and what this department builds for it.
+
+## Copy this into your onboarding issue
+
+If you would rather track the day somewhere the CTO can see it, paste this into
+a GitHub issue — the copy button is on the top right of the block.
+
+```markdown
+### Access
+- [ ] GitHub org invite + SSH key
+- [ ] Trello board
+- [ ] Figma
+- [ ] Vercel team
+- [ ] Notion
+- [ ] Password manager
+- [ ] Email + requests channel
+
+### Machine
+- [ ] Node 22 via fnm/nvm
+- [ ] pnpm via corepack
+- [ ] Git configured
+- [ ] Vercel CLI + vercel login
+- [ ] Editor with TS/ESLint/Prettier
+- [ ] adawy-technical-docs builds locally
+
+### Context
+- [ ] /about
+- [ ] /repositories
+- [ ] /how-we-work
+- [ ] /architecture
+- [ ] /architecture/adrs
+```
+
+<Callout>
+  Anything on this page that was wrong, missing or out of date when you did it
+  — fix it. That is the ideal [first PR](/onboarding/first-pr), and the only
+  moment anyone will ever see this page with fresh eyes is right now.
+</Callout>

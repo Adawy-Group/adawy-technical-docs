@@ -1,5 +1,7 @@
 ---
 title: How We Work
+description: Agile with Kanban on one Trello board - how work arrives, how it moves, how it gets reviewed, and how it reaches production.
+tags: ['Reference', 'Start here']
 ---
 
 # How We Work
@@ -51,17 +53,36 @@ flowchart LR
 
 ## In this section
 
-- **[The Board & Labels](/how-we-work/the-board)** — the Trello lists, what a
-  card carries, and the color system.
-- **[Git Workflow](/how-we-work/git-workflow)** — branches, commits, PRs.
-- **[Code Review](/how-we-work/code-review)** — what gets checked and by whom.
-- **[Deployment](/how-we-work/deployment)** — previews, staging, production,
-  and what CI actually gates on.
-- **[Client Projects](/how-we-work/client-projects)** — how work for clients
-  differs from Group work, and the go-live switch.
-- **[Working with AI](/how-we-work/working-with-ai)** — the `AGENTS.md`
-  convention and the rules for AI-assisted code.
-- **[Requests, Meetings & Reporting](/how-we-work/communication)** — how work
-  reaches us and how status flows out.
-- **[Definition of Done](/how-we-work/definition-of-done)** — when work is
-  actually finished.
+<Cards num={2}>
+  <Cards.Card title="The Board & Labels" href="/how-we-work/the-board" arrow>
+    The Trello lists, what every card carries, and a colour system where each
+    colour means exactly one thing.
+  </Cards.Card>
+  <Cards.Card title="Git Workflow" href="/how-we-work/git-workflow" arrow>
+    Branches, commits and pull requests — GitHub Flow, because the pipeline
+    does the heavy lifting.
+  </Cards.Card>
+  <Cards.Card title="Code Review" href="/how-we-work/code-review" arrow>
+    What reviewers check, in order, and what authors owe them before asking.
+  </Cards.Card>
+  <Cards.Card title="Deployment" href="/how-we-work/deployment" arrow>
+    Previews, production, what CI actually gates on, and the safety rails on
+    the deploy itself.
+  </Cards.Card>
+  <Cards.Card title="Definition of Done" href="/how-we-work/definition-of-done" arrow>
+    The two gates: one before building starts, one before work is called
+    finished.
+  </Cards.Card>
+  <Cards.Card title="Client Projects" href="/how-we-work/client-projects" arrow>
+    How work for clients differs from Group work, the go-live switch, and
+    handover.
+  </Cards.Card>
+  <Cards.Card title="Working with AI" href="/how-we-work/working-with-ai" arrow>
+    The contract file every repo should carry, and the rules for AI-assisted
+    code.
+  </Cards.Card>
+  <Cards.Card title="Requests & Reporting" href="/how-we-work/communication" arrow>
+    How work reaches the department, and how status flows back out without a
+    status meeting.
+  </Cards.Card>
+</Cards>
