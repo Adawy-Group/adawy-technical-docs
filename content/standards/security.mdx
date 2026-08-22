@@ -1,5 +1,7 @@
 ---
 title: Security Basics
+description: The non-negotiables — secrets, untrusted input, response headers, dependency hygiene, and what to do in the first ten minutes of an incident.
+tags: ['Reference', 'Non-negotiable']
 ---
 
 # Security Basics
@@ -9,29 +11,60 @@ operations through our systems — these rules protect that trust.
 
 ## Secrets and credentials
 
-- **Never commit secrets.** Environment variables live in Vercel/Railway and a
-  team password manager — never in git, never in chat, never in Trello cards.
+- **Never commit secrets.** Environment variables live in Vercel and a team
+  password manager — never in git, never in chat, never in Trello cards.
+- **`NEXT_PUBLIC_` means public.** Anything with that prefix is inlined into
+  the JavaScript bundle and readable by every visitor. It is a publishing
+  instruction, not a naming convention, and nothing will warn you
+  ([Next.js & React](/standards/nextjs#environment-variables-and-configuration)).
 - **Never paste production data** (client data, credentials, Odoo exports)
   into third-party tools, including AI tools, unless the tool is approved for
   it.
 - Access is granted per person, per system, by the lead. When someone leaves,
   access is revoked the same day.
 
-## Application security
+## Application security — today
 
 - **All input is untrusted.** Validate on the server with Zod schemas — client
-  validation is UX, not security.
-- **Permissions are enforced at every layer.** The backend verifies on every
-  request that the authenticated user may see the requested data, and the
-  database uses **row-level security** so a code defect cannot leak one
+  validation is UX, not security. A client that skipped validation is not
+  hypothetical; it is a `curl` command
+  ([forms & enquiries](/guides/forms-and-enquiries)).
+- **Never trust the client for anything that matters**, prices and totals
+  included. A quote submission carries line identities and quantities; the
+  figures are re-derived server-side.
+- **Every public POST route is rate limited**, and carries a honeypot rather
+  than a CAPTCHA — which taxes every real user to stop a class of bot the other
+  measures already handle at this volume.
+- **Set the response-header floor** on every project:
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and
+  `poweredByHeader: false`. The current state across repos is inconsistent, and
+  the reasoning — including why CSP is deliberately deferred — is on
+  [Next.js & React](/standards/nextjs#security-headers).
+- **A pre-launch site must be `noindex` and must be *verified* `noindex`.**
+  Check the live URL, not the code: the switch is duplicated across two files
+  in most repos and is a different mechanism in one
+  ([client projects](/how-we-work/client-projects#the-go-live-switch)).
+
+## Application security — Phase 2 <Badge tone="planned">Decided, not built</Badge>
+
+Nothing below exists yet. There is no backend, no database and no
+authentication in any repository today
+([the ledger](/architecture/tech-stack#built-decided-deferred--read-this-first)) —
+these are the rules the client portal will be built to, recorded now so they
+are not re-argued under delivery pressure.
+
+- **Permissions will be enforced at every layer.** The backend verifies on
+  every request that the authenticated user may see the requested data, **and**
+  the database uses row-level security so a code defect cannot leak one
   member's data to another. *Why both:* the client portal serves competing
-  businesses from one database; defense must not depend on a single check.
-- **Authentication is Better Auth**, self-hosted: email + password, two-factor
-  support, organization-based permissions. User data stays in our database.
+  businesses from one database; defence must not depend on a single check.
+- **Authentication will be Better Auth**, self-hosted: email + password,
+  two-factor support, organization-based permissions. User data stays in our
+  database ([tech stack](/architecture/tech-stack)).
 
 ## Dependencies and updates
 
-- Keep dependencies updated; treat `npm audit` findings as cards on the board
+- Keep dependencies updated; treat `pnpm audit` findings as cards on the board
   (Maintenance/grey), not as noise to silence.
 - Pin versions where an upstream is known-unstable, and record the reason in
   the lockfile commit (see this repo's zod pin for Nextra as an example).

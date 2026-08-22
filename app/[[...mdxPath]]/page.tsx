@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { generateStaticParamsFor, importPage } from 'nextra/pages'
+import { PageMeta } from '../../components/page-meta'
 import { buildPageMetadata, pagePath } from '../../lib/seo'
 import { useMDXComponents as getMDXComponents } from '../../mdx-components'
 
@@ -32,8 +33,23 @@ const Wrapper = getMDXComponents().wrapper as React.ComponentType<{
 export default async function Page(props: PageProps) {
   const params = await props.params
   const { default: MDXContent, toc, metadata, sourceCode } = await importPage(params.mdxPath)
+
+  // Rendered here rather than per page: reading time and the git timestamp are
+  // derived, so every page gets the strip for free and none of them can carry a
+  // stale hand-written version of it.
+  const meta = metadata as {
+    readingTime?: { text?: string; minutes?: number; words?: number }
+    timestamp?: number
+    tags?: string[]
+  }
+
   return (
     <Wrapper toc={toc} metadata={metadata} sourceCode={sourceCode}>
+      <PageMeta
+        readingTime={meta.readingTime}
+        timestamp={meta.timestamp}
+        tags={meta.tags}
+      />
       <MDXContent {...props} params={params} />
     </Wrapper>
   )

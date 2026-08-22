@@ -1,22 +1,105 @@
 ---
 title: Onboarding
+description: From a fresh laptop to your first merged pull request — what to do, in what order, with a time budget and a done-when for each step.
+tags: ['Tutorial', 'Start here', 'Week 1']
 ---
 
 # Onboarding — Start Here
 
-Welcome aboard! This section takes you from a fresh laptop to your first merged
-pull request. Work through it in order:
+Welcome aboard. This section takes you from a fresh laptop to your first merged
+pull request, in one week.
 
-1. **[Day-1 Checklist](/onboarding/day-one)** — accounts, access, and tools you
-   need before anything else.
-2. **[The Repository Map](/repositories)** — the five repos, which one to clone
-   for the work in front of you, and the difference between Group work and
-   client work.
-3. **[Dev Environment Setup](/onboarding/environment)** — get the codebases
-   running locally.
-4. **[Your First Week](/onboarding/first-week)** — what to read, who to meet,
-   what's expected.
-5. **[Your First PR](/onboarding/first-pr)** — ship something small, end to end.
+<Stats>
+  <Stat value="1 day" label="setup and context" hint="accounts, machine, four reads" />
+  <Stat value="1 week" label="to a merged PR" hint="the goal, not a stretch" />
+  <Stat value="8" label="repositories" hint="you will clone two" />
+  <Stat value="12" label="decision records" hint="the fastest way in" />
+</Stats>
 
-**Goal: your first PR merged within your first week.** If anything in this
-section is wrong or unclear, fixing the docs is a great first PR.
+## The week
+
+Each step has a time budget and a **done when** — an observable outcome, so you
+never have to ask whether you are behind.
+
+<Steps>
+
+### Day 1 — accounts, machine, context
+
+Work the [Day-1 Checklist](/onboarding/day-one) top to bottom: access requested
+in one message, the toolchain installed, and the four orientation reads.
+
+**Done when:** `npm run build` passes in your clone of this handbook, and you
+can explain what the department builds and why it exists inside a manufacturing
+group.
+
+### Day 2 — the code
+
+[The Repository Map](/repositories) — eight repos in two worlds, and the
+`Adawy` / `Aladawy` naming trap. Then [Tech Stack & Why](/architecture/tech-stack)
+and the [ADRs](/architecture/adrs) (the index table first; read the ones that
+touch your work in full).
+
+Get [`apps/group`](/repositories/adawy-platform) running locally and walk the
+`@adawy/*` packages to see where the engineering actually lives.
+
+**Done when:** the platform monorepo runs on your machine at `/en`, and you can
+say which repo a given piece of work belongs in without looking it up.
+
+### Day 3 — the workflow, watched live
+
+[The Board & Labels](/how-we-work/the-board),
+[Git Workflow](/how-we-work/git-workflow) and
+[Definition of Done](/how-we-work/definition-of-done). Then watch the board for
+a day: how cards move, how PRs link to cards, how the WIP limit behaves.
+
+**Done when:** you can read a card's colours and tell what kind of work it is,
+who owns it and what stage it is at, without reading the description.
+
+### Day 4 — standards, and pick a card
+
+Read [Standards](/standards) — [i18n & RTL](/standards/i18n-rtl) and
+[Testing](/standards/testing) are the two that decide whether your first PR
+passes CI, and [Design Patterns](/architecture/patterns) is what makes an
+unfamiliar repo readable.
+
+Pick your first card from *This Week*.
+
+**Done when:** a card is assigned to you and you can state, in one sentence,
+what "done" means for it.
+
+### Day 5 — ship it
+
+Take the card through the whole loop: branch → gates run locally → PR linked to
+the card → preview → review → merge → **verified live** → Done.
+[Your First PR](/onboarding/first-pr) walks each step.
+
+**Done when:** the change is live and you have opened it yourself. Merged is
+not shipped.
+
+</Steps>
+
+## The pages, on their own
+
+<Cards num={2}>
+  <Cards.Card title="Day-1 Checklist" href="/onboarding/day-one" arrow>
+    Accounts, access, machine setup and the four reads — with tickable
+    progress.
+  </Cards.Card>
+  <Cards.Card title="Dev Environment Setup" href="/onboarding/environment" arrow>
+    Prerequisites, every repo's install-and-run in one table, and the errors
+    you will hit.
+  </Cards.Card>
+  <Cards.Card title="Your First Week" href="/onboarding/first-week" arrow>
+    The same week in more detail, plus who to talk to and what to ask them.
+  </Cards.Card>
+  <Cards.Card title="Your First PR" href="/onboarding/first-pr" arrow>
+    Card to Done, the gates to run before pushing, and what each red check
+    means.
+  </Cards.Card>
+</Cards>
+
+<Callout>
+  **If anything in this section is wrong or unclear, fixing it is a great first
+  PR** — and it needs no card. You are the only person who will ever read these
+  pages without already knowing the answers.
+</Callout>

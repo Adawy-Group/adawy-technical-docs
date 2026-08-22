@@ -1,5 +1,7 @@
 ---
 title: Project Structure
+description: How the monorepo and the standalone client repos are laid out, and the six rules the layout exists to enforce.
+tags: ['Reference', 'Architecture']
 ---
 
 # Project Structure
@@ -104,9 +106,12 @@ bespoke motion — the decision rule lives in the
 
 ## A standalone project (client work)
 
-Client projects have no workspace and no shared packages, but the internal
-shape is deliberately the same in each — learn one and you can navigate the
-others.
+Client projects have no workspace and no shared packages, but the Next.js ones
+share an internal shape deliberately — learn one and you can navigate the
+others. Two deviate: [`zad-alhkoul`](/repositories/zad-alhkoul) puts the whole
+application under `src/`, and [`baron-menu`](/repositories/baron-menu) has no
+framework at all. Neither changes the rules below; they just move where the
+folders sit.
 
 ```
 app/[locale]/     one route per page; [locale] is the topmost layout

@@ -1,21 +1,57 @@
 ---
 title: Standards
+description: The conventions that let anyone work in any repo — coding style, App Router decisions, project structure, bilingual layout, testing, security and brand.
+tags: ['Reference', 'Daily']
 ---
 
 # Standards
 
-Conventions that keep our codebases consistent so anyone can work in any repo:
+Conventions that keep our codebases consistent, so anyone can work in any repo.
 
-- **[Coding Conventions](/standards/coding)** — TypeScript style, naming,
-  comments, and the lint rules that fail the build.
-- **[Project Structure](/standards/project-structure)** — how the monorepo and
-  the standalone client repos are organized.
-- **[i18n & RTL](/standards/i18n-rtl)** — locales, the content split, and the
-  traps that only appear in Arabic.
-- **[Testing](/standards/testing)** — what we test, what we deliberately do
-  not, and the four gates that block a merge.
-- **[Security Basics](/standards/security)** — the non-negotiables.
-- **[UI & Brand Standards](/standards/ui)** — design system and component rules.
+<Cards num={2}>
+  <Cards.Card title="Coding Conventions" href="/standards/coding" arrow>
+    TypeScript style, comment discipline, naming, the quality bars, and the
+    lint rules that fail the build.
+  </Cards.Card>
+  <Cards.Card title="Next.js & React" href="/standards/nextjs" arrow>
+    Where the client boundary goes, locale routing, the special files every app
+    owes, and environment variables.
+  </Cards.Card>
+  <Cards.Card title="Project Structure" href="/standards/project-structure" arrow>
+    How the monorepo and the standalone client repos are laid out, and the
+    rules behind the layout.
+  </Cards.Card>
+  <Cards.Card title="i18n & RTL" href="/standards/i18n-rtl" arrow>
+    Locales, the two-tree content split, and the traps that only appear in
+    Arabic.
+  </Cards.Card>
+  <Cards.Card title="Testing" href="/standards/testing" arrow>
+    What we test, what we deliberately do not, and the gates that block a
+    merge.
+  </Cards.Card>
+  <Cards.Card title="Security Basics" href="/standards/security" arrow>
+    Secrets, untrusted input, headers, and what to do in the first ten minutes
+    of an incident.
+  </Cards.Card>
+  <Cards.Card title="UI & Brand Standards" href="/standards/ui" arrow>
+    Palette, typography, motion, imagery, microcopy — and the component rules
+    that keep brands siblings rather than clones.
+  </Cards.Card>
+  <Cards.Card title="Design Patterns" href="/architecture/patterns" arrow>
+    The seven shapes that recur across every repo, each with the failure it
+    exists to prevent.
+  </Cards.Card>
+</Cards>
 
-Every standard here states **why it exists**. A rule without a reason is a
-candidate for deletion.
+## How to read a standard here
+
+**Every rule states its *why*.** That is house style, not decoration: a rule
+without a reason cannot be argued with, cannot be applied to a case its author
+did not foresee, and cannot be retired when its reason expires. **A rule
+without a reason is a candidate for deletion** — including the ones already
+written.
+
+**Most of these rules are not advice.** Where a rule can be machine-checked it
+is, and the build tells you rather than a reviewer
+([ADR-012](/architecture/adrs)). When a page says something is an error, it
+means the build fails.

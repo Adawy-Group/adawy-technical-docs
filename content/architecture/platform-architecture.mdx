@@ -1,18 +1,64 @@
 ---
 title: Platform Architecture
-description: How apps/group is actually built — one WebGL canvas, the driver-channel-stage split, and the performance tier — and where each fact is documented.
+description: How apps/group is actually built — three enforced layers, one WebGL canvas, the driver-channel-stage split, and the performance tier.
+tags: ['Explanation', 'Platform', 'Deep']
 ---
 
 # Platform Architecture
 
 `apps/group` is the most technically dense thing the department has built: a
-single scroll narrative where most sections drive 3D. Three ideas hold it
+single scroll narrative where most sections drive 3D. Four ideas hold it
 together, and knowing them is the difference between adding a section in an
 afternoon and breaking the whole page.
 
 This page is the **orientation**. The file-level detail lives in the platform
 repo, and deliberately not here — see [where each fact lives](#where-each-fact-lives)
 at the bottom.
+
+## 0. The layout, drawn
+
+**Routes in `app/`, things you can see in `features/`, machinery in
+`platform/`.** That one sentence is the whole layout;
+[ADR-011](/architecture/adrs) carries the decision, what it replaced and what
+it cost, and [Vocabulary & Map](/architecture/glossary) maps every route to its
+feature. This is the picture — because the arrow that is **not** allowed is the
+part prose keeps losing.
+
+The dotted edge below is a `no-restricted-imports` error: the eslint config
+*generates* those blocks from the layering, so the rule and the structure
+cannot drift apart, and CI fails on a breach.
+
+```mermaid
+flowchart TD
+    APP["app/<br/>routes only — composes feature UI through barrels"]
+    FEAT["features/&lt;name&gt;<br/>one per thing a visitor can point at"]
+    PLAT["platform/<br/>app-wide machinery — chrome · scroll · gl · sound · seo"]
+    C["components/<br/>React"]
+    S["scene/<br/>three.js, no React"]
+    L["lib/<br/>pure functions — no React, no three.js"]
+    APP --> FEAT
+    APP --> PLAT
+    FEAT --> PLAT
+    FEAT --> C
+    FEAT --> S
+    FEAT --> L
+    C --> L
+    S --> L
+    PLAT -.->|"never"| FEAT
+```
+
+The four-line boundary law is stated in full in
+[ADR-011](/architecture/adrs). What is worth carrying in your head while you
+work:
+
+- **`platform/` never imports `features/`.** Machinery that knows about a
+  specific section is no longer machinery, and this is the edge that decays
+  first.
+- **`app/` composes feature *UI* through barrels — but a feature's `lib/`
+  stays importable.** Pages need metadata fragments and actions need domain
+  logic; routing those through a UI barrel would be ceremony.
+- **`lib/` is the only layer with unit tests,** and it is testable precisely
+  because it imports neither React nor three.js.
 
 ## 1. One canvas, many passes
 
@@ -51,9 +97,9 @@ one.
 
 ```mermaid
 flowchart LR
-    A["features/&lt;section&gt;/lib/\npure math — beats and easing\nno React, no three.js"] --> B["progress channel\nmodule singleton\nclamped to 0..1"]
-    B --> C["the render loop\nreads every channel once per frame"]
-    D["*-scroll-driver.tsx\nrenders nothing\nwires a ScrollTrigger"] --> B
+    A["features/&lt;section&gt;/lib/<br/>pure math — beats and easing<br/>no React, no three.js"] --> B["progress channel<br/>module singleton<br/>clamped to 0..1"]
+    B --> C["the render loop<br/>reads every channel once per frame"]
+    D["*-scroll-driver.tsx<br/>renders nothing<br/>wires a ScrollTrigger"] --> B
 ```
 
 1. **Pure math in `features/<section>/lib/`** — beat thresholds and easing as plain

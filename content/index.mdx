@@ -1,35 +1,56 @@
 ---
 title: Adawy Group Software Department Handbook
 description: Technical documentation and onboarding handbook for the Adawy Group software department — what we build, why we build it, and how we work.
+tags: ['Start here']
 ---
 
 # Adawy Group — Software Department Handbook
 
-Welcome to the team. This handbook is the single source of truth for the
-software department: **what we build, why we build it, and how we work.**
+The single source of truth for the software department: **what we build, why we
+build it, and how we work.** If it is not written here, it is not the process.
 
-> **Move As One.** Businesses grow better when everything works together —
-> that is the core belief behind Adawy Group, and it is also how this
-> department operates: one platform, one board, one team.
+## Start here
 
-## How to use this handbook
+<Cards num={3}>
+  <Cards.Card title="It's my first day" href="/onboarding" arrow>
+    Accounts, machine, and the four reads — through to a merged pull request by
+    the end of the week.
+  </Cards.Card>
+  <Cards.Card title="I'm writing code today" href="/standards" arrow>
+    The conventions, the App Router decisions, and the lint rules that fail the
+    build rather than the review.
+  </Cards.Card>
+  <Cards.Card title="Where does this work live?" href="/repositories" arrow>
+    Eight repositories in two worlds, and which one to clone for the task in
+    front of you.
+  </Cards.Card>
+  <Cards.Card title="Why is it built this way?" href="/architecture/adrs" arrow>
+    Twelve decision records — the fastest way to absorb how this team thinks.
+  </Cards.Card>
+  <Cards.Card title="How do we ship?" href="/how-we-work" arrow>
+    The board, the branch, the review, and what happens between merge and live.
+  </Cards.Card>
+  <Cards.Card title="I'm stuck" href="/help" arrow>
+    The FAQ, the glossary of terms we use oddly, troubleshooting, and who to
+    ask.
+  </Cards.Card>
+</Cards>
 
-- **New here?** Start with [About Adawy Group](/about) to understand the
-  business, then go straight to [Onboarding](/onboarding) for your day-1
-  checklist. Goal: **first PR merged within your first week.**
-- **Where is the code?** [The Repository Map](/repositories) — five
-  repositories, which one to clone for the work in front of you, and the
-  difference between Group work and client work.
-- **What are we building?** [Products & Architecture](/architecture) covers
-  the monorepo platform, the tech stack, and the reasoning behind every
-  technical decision.
-- **How do we ship?** [How We Work](/how-we-work) explains our Agile/Kanban
-  workflow, the Trello board, code review, and deployment.
-- **Writing code right now?** [Standards](/standards) and [Guides](/guides)
-  are your daily references.
-- **Stuck?** Check [Help & FAQ](/help) — including
-  [who to ask](/help/who-to-ask) and a [glossary](/help/glossary) of the terms
-  this department uses oddly.
+<Callout>
+  Press **⌘K** (**Ctrl-K**) from any page to search the whole handbook. Every
+  page also has an *"Edit this page on GitHub"* link in its footer — if
+  something here is wrong, that link is the shortest path to fixing it, and you
+  do not need permission.
+</Callout>
+
+## The department, in numbers
+
+<Stats>
+  <Stat value="8" label="repositories" hint="1 Group monorepo · 5 client · 2 other" />
+  <Stat value="38" label="companies today" hint="planned to grow past 100" />
+  <Stat value="3" label="locales" hint="en · ar · fr, RTL by design" />
+  <Stat value="12" label="decision records" hint="every rule states its why" />
+</Stats>
 
 ## The two worlds
 
@@ -41,10 +62,12 @@ to one of them rather than both:
 | For | Adawy Group's own brands | Other businesses |
 | Lives in | One monorepo, `adawy-platform` | One standalone repo per client |
 | Shares | The `@adawy/*` packages | Standards only — never code |
-| Today | `apps/group`, `apps/studio`, `apps/pack` | `aladawy-pack`, `aladawy-shop`, `baron-menu` |
+| Today | `apps/group`, `apps/studio`, `apps/pack` | `aladawy-pack`, `aladawy-shop`, `jumeira`, `zad-alhkoul`, `baron-menu` |
 
 [ADR-010](/architecture/adrs) records why, and
 [Client Projects](/how-we-work/client-projects) covers how client work runs.
+One repository sits in neither —
+[the open case](/repositories#the-third-case-and-the-open-question).
 
 <Callout type="warning">
   **Adawy** Pack (a Group brand) and **Alad**awy Pack (a client) are different
@@ -53,6 +76,8 @@ to one of them rather than both:
 </Callout>
 
 ## The one-paragraph context
+
+> **Move As One.** Businesses grow better when everything works together.
 
 Adawy Group is an integrated industrial and business ecosystem — 38 companies
 today, planned to grow past 100 — connecting manufacturing, packaging,
@@ -64,14 +89,23 @@ a marketing claim, then the employee portal that brings the same clarity to
 the group's own teams. Alongside that roadmap, the department also **delivers
 software for clients** — the same standards, separate repositories.
 
-## Our documentation principles
+Read it properly: [About Adawy Group](/about) →
+[The Software Department](/about/the-department) →
+[Roadmap & Phases](/architecture/roadmap).
+
+## How this handbook works
 
 1. **Why before what.** Every rule and decision documents its business reason.
-2. **Docs as code.** Everything here lives in git; fix anything via a pull request.
-3. **If it's not written here, it's not the process.** Found tribal knowledge?
-   Add it.
-
-<Callout>
-  Spotted something wrong or outdated? Edit the page (link in the footer of
-  every page) and open a PR.
-</Callout>
+   A rule without a reason is a candidate for deletion — including the ones
+   already here.
+2. **Docs as code.** Everything lives in git, ships by pull request, and is
+   gated by the same CI discipline as the products
+   ([ADR-007](/architecture/adrs)).
+3. **One fact, one home.** Mechanics that change when the code changes live
+   *beside the code*, in each repo's `AGENTS.md` and `docs/`. This handbook
+   holds the *why* and the *policy* — because a page here that duplicated a
+   file path would go stale silently, since nothing here fails when a
+   repository is refactored.
+4. **If it's not written here, it's not the process.** Found tribal knowledge?
+   Add it. That is a legitimate card, and for documentation it does not even
+   need one.

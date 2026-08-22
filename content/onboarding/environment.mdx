@@ -1,34 +1,32 @@
 ---
 title: Dev Environment Setup
+description: Everything needed to get any of the eight repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
+tags: ['Tutorial', 'Day 1', '~45 min']
 ---
 
 # Dev Environment Setup
 
-Five repositories, two package managers, one set of habits. Start with the
+**Budget about 45 minutes**, most of it waiting on installs. Start with the
 handbook — it is the smallest clone and it proves your toolchain before
 anything harder depends on it.
 
 ## Prerequisites
 
-- **Node.js 22** (CI runs 22; the platform requires ≥ 20). Install it through a
-  version manager — `fnm` or `nvm` — not a system package.
-- **pnpm** — every repo except this handbook uses it. `corepack enable` is the
-  simplest way to get the right version.
-- **Git**, configured with your name and work email.
-- An editor with TypeScript, ESLint and Prettier integration.
+<Checklist id="env-prereqs">
+  <Task>**Node.js 22** through a version manager (`fnm` or `nvm`), not a system package. CI runs 22; the platform requires ≥ 20.</Task>
+  <Task>**pnpm** — `corepack enable` is the simplest route. Every repo except this handbook uses it.</Task>
+  <Task>**Git**, configured with your name and work email.</Task>
+  <Task>**An SSH key on your GitHub account.** Every clone command here is `git@github.com:…`, so without one the very first command fails with `Permission denied (publickey)`. [GitHub's guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) — generate, then add to your account, then `ssh -T git@github.com` to confirm.</Task>
+  <Task>**The Vercel CLI** (`npm i -g vercel`), then `vercel login`. Needed for `vercel env pull` and for the one repo that deploys by hand.</Task>
+  <Task>**An editor** with TypeScript, ESLint and Prettier integration.</Task>
+  <Task>**Python 3** — only if you will touch `baron-menu`, `jumeira` or `zad-alhkoul`, whose asset scripts need it.</Task>
+</Checklist>
 
-## Which package manager, per repo
-
-Getting this wrong produces a dependency tree the lockfile does not describe,
-and errors that make no sense.
-
-| Repo | Manager |
-| ---- | ------- |
-| `adawy-platform` | **pnpm** (workspace, `pnpm@10.33.4`) |
-| `aladawy-pack` | **pnpm** |
-| `aladawy-shop` | **pnpm** |
-| `baron-menu` | none — no build step |
-| `adawy-technical-docs` | **npm** (standalone, `package-lock.json`) |
+<Callout type="info">
+  Ticks are saved in your own browser and go no further. This is a bookmark so
+  you can come back to a half-finished setup, not a record anyone reads — the
+  [board](/how-we-work/the-board) is where work is tracked.
+</Callout>
 
 ## Start here: the handbook
 
@@ -36,11 +34,44 @@ and errors that make no sense.
 git clone git@github.com:Adawy-Group/adawy-technical-docs.git
 cd adawy-technical-docs
 npm install
-npm run dev      # → http://localhost:3000
-npm run build    # must pass before any PR
+npm run dev              # → http://localhost:3000
+
+node scripts/check-links.mjs   # both of these must pass before any PR
+npm run build
 ```
 
-If the build passes locally, your toolchain is correct.
+If those two pass, your toolchain is correct.
+
+<Callout type="important">
+  **`node scripts/check-links.mjs` is a separate CI gate and it runs first.**
+  It catches the two mistakes a first documentation PR is most likely to make:
+  a mistyped or relative cross-section link, and a new page missing from its
+  folder's `_meta.ts`. `npm run build` will not catch either.
+</Callout>
+
+## Every repository, at a glance
+
+| Repo | Manager | Install → run | Serves | Env vars |
+| ---- | ------- | ------------- | ------ | -------- |
+| [`adawy-platform`](/repositories/adawy-platform) | pnpm 10.33 | `pnpm install` → `pnpm turbo dev --filter=group` | `/en` | `apps/group/.env.example` |
+| [`adawy-group-links`](/repositories/adawy-group-links) | pnpm 11.5 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
+| [`aladawy-pack`](/repositories/aladawy-pack) | pnpm 11.4 | `pnpm install` → `pnpm dev` | `/en` | none to boot |
+| [`aladawy-shop`](/repositories/aladawy-shop) | pnpm | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`jumeira`](/repositories/jumeira) | pnpm 11.5 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 11.5 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
+| [`baron-menu`](/repositories/baron-menu) | **none** | serve the folder | one page | none |
+| `adawy-technical-docs` | **npm** | `npm install` → `npm run dev` | `/` | none |
+
+All of them run on **port 3000** by default, so run one at a time or pass
+`--port`. Clone any of them with
+`git clone git@github.com:Adawy-Group/<repo>.git`.
+
+<Callout type="warning">
+  **Getting the package manager wrong produces a dependency tree the lockfile
+  does not describe, and errors that make no sense.** This handbook is the only
+  npm repo in the org; everything else is pnpm. Check which repo you are in
+  before you install.
+</Callout>
 
 ## The platform monorepo
 
@@ -60,7 +91,8 @@ pnpm format:check
 ```
 
 Workspace names: `group`, `studio`, `pack`, `@adawy/ui`, `@adawy/design`,
-`@adawy/motion`, `@adawy/i18n`, `@adawy/site`, `@adawy/holding`.
+`@adawy/motion`, `@adawy/i18n`, `@adawy/site`, `@adawy/holding`,
+`@adawy/eslint-config`, `@adawy/typescript-config`.
 
 A single test runs from inside the app:
 
@@ -71,45 +103,67 @@ pnpm --filter=group exec vitest                       # watch mode
 
 ## Client projects
 
-Both Next.js client repos follow the same shape — no workspace, no filters.
+The Next.js client repos follow the same shape — no workspace, no filters:
 
 ```bash
 pnpm install
-pnpm dev                  # aladawy-pack → /en   ·   aladawy-shop → /ar
+pnpm dev
 pnpm lint typecheck test
 pnpm format:check
 ```
 
-`baron-menu` needs no install at all — serve the folder:
+Two run something different, and running the wrong one means a red CI on a
+green local:
 
-```bash
-python3 -m http.server 8848   # → http://localhost:8848
-```
+- **`zad-alhkoul`** has no `test` script. Its whole gate is one composed
+  command: **`pnpm verify`** (typecheck → lint → format:check → check:i18n →
+  build).
+- **`baron-menu`** needs no install at all — serve the folder:
+
+  ```bash
+  python3 -m http.server 8848   # → http://localhost:8848
+  ```
+
+  On Windows that is `python -m http.server 8848`.
 
 ## Environment variables
 
-Never copied from chat, never committed.
+Never copied from chat, never committed, never invented.
 
 ```bash
+vercel login                  # once
+vercel link                   # once per repo, inside the repo
 vercel env pull .env.local    # for Vercel-linked projects
 ```
 
-The platform documents its variables in `apps/group/.env.example` — the only
-committed env template. Anything not covered there comes from the team
-password manager or the lead; **never invent a value**
-([security](/standards/security)).
+Only two repos document their variables in a committed `.env.example`
+(`adawy-platform`, in `apps/group/`, and `zad-alhkoul`). The rest boot with
+none. Anything not covered comes from the team password manager or the CTO —
+**never invent a value** ([security](/standards/security)).
+
+What each prefix means, and why it is a security fact rather than a naming
+one: [Next.js & React](/standards/nextjs#environment-variables-and-configuration).
 
 ## Common issues
 
 | Symptom | Cause → fix |
 | ------- | ----------- |
+| `Permission denied (publickey)` on the first clone | No SSH key on your GitHub account. Generate one, add it, then `ssh -T git@github.com` |
+| `pnpm: command not found` after `corepack enable` | Corepack is enabled but pnpm has not been provisioned — run `corepack prepare pnpm@latest --activate`, or install pnpm directly |
 | Dependency errors that make no sense in a platform or client repo | You ran `npm install` in a pnpm repo. Delete `node_modules` and `package-lock.json`, then `pnpm install` |
-| Wrong Node version errors | You skipped the version manager — `fnm use` / `nvm use` in the repo root |
+| Wrong Node version errors | You skipped the version manager — `fnm use 22` / `nvm use 22`. Only some repos pin a version, so name it explicitly |
+| `Error: Your codebase isn't linked to a project` from `vercel env pull` | Run `vercel link` in that repo first |
 | CI fails on formatting after a green local `turbo lint` | `pnpm format:check` is a separate gate and is not a turbo task. Run it too |
-| A class exists in your source but not in the served CSS | Stale Turbopack CSS chunk — `rm -rf apps/<app>/.next` and restart. A plain restart is not enough |
+| A class exists in your source but not in the served CSS | Stale Turbopack CSS chunk — `rm -rf .next` (or `apps/<app>/.next`) and restart. A plain restart is not enough |
 | Build fails on a page that renders fine in dev | Prerender error — run the dev server and open that route; dev shows the real message the build hides |
 | `Invalid input: expected nonoptional` (handbook repo) | The `zod` override drifted — keep the pin in `package.json` and `npm install` again |
 | A shared-package change doesn't appear in the running app | Restart the filtered dev task; if it persists, `pnpm turbo build --force` the package |
+
+<Callout type="info">
+  Every command in this handbook is POSIX. On Windows, run them in **Git Bash
+  or WSL** rather than PowerShell — `rm -rf`, a trailing `&` and `python3` all
+  behave differently otherwise.
+</Callout>
 
 Anything not covered here belongs in [Troubleshooting](/help/troubleshooting) —
 and adding it is a perfect first PR.

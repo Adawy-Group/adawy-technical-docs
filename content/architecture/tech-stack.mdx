@@ -1,5 +1,7 @@
 ---
 title: Tech Stack & Why
+description: Every tool the department runs or has committed to, the reason behind each choice, and an honest ledger of what is actually built versus what is only decided.
+tags: ['Explanation', 'Reference']
 ---
 
 # Tech Stack & Why
@@ -8,20 +10,32 @@ Every tool here was chosen for a reason, and the reasons matter more than the
 names. The governing principle: **choose tools the group owns and controls,
 avoiding subscription dependencies that compound at 110-brand scale.**
 
+## Built, decided, deferred — read this first
+
+A stack page that lists chosen tools alongside running ones teaches a new
+engineer to expect things that are not there. Everything below carries one of
+these states, and nothing on this page is in a fourth one.
+
+| State | Means | Where you will find it |
+| ----- | ----- | ---------------------- |
+| <Badge tone="live">Running</Badge> | In a repository today, in production or in CI | Clone it and it is there |
+| <Badge tone="planned">Decided</Badge> | Chosen in advance so it is not re-litigated — **not installed** | An ADR or this page, and nowhere in a `package.json` |
+| <Badge tone="building">Deferred</Badge> | Deliberately postponed, with a stated revisit trigger | The ADR that deferred it |
+
 <Callout type="info">
-  **Frontend is built; backend is decided but not built.** Everything in the
-  Frontend table below is running in a repository today. The Backend and
-  Platform-services tables are **choices recorded in advance** for Phase 2 and
-  Phase 3 — nothing in the org currently runs NestJS, Prisma, Better Auth,
-  Meilisearch, Redis or pgvector. Recording them early is deliberate (it stops
-  each decision being re-litigated), but do not go looking for them in a clone.
+  **Frontend is built; everything behind it is decided but not built.**
+  Everything in the Frontend table is running today. The Backend and
+  Platform-services tables are choices recorded in advance for Phases 2 and 3 —
+  **nothing in the org currently runs NestJS, Prisma, Better Auth, Meilisearch,
+  Redis, pgvector, Sentry or Better Stack.** Recording them early is deliberate;
+  going looking for them in a clone is not.
 </Callout>
 
 ## Frontend
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Monorepo | **Turborepo + pnpm** — `apps/` per brand + shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Monorepo | **Turborepo + pnpm** — `apps/` per brand + eight shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
 | Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team. Note: middleware is `proxy.ts` in this version |
 | Styling | **Tailwind CSS v4 + shadcn/ui** (`@adawy/ui`, `@adawy/design`) | Tokens are CSS-first (`@theme`): `@adawy/design` defines the token structure, each brand overrides the values — accessible, owned by the team, no component library subscription |
 | Motion | **GSAP + Lenis** (`@adawy/motion`) | The brand guidelines require cinematic, scroll-driven motion; GSAP is the industry standard and Lenis provides smooth scrolling, driven by GSAP's ticker so they share one clock. Wired once in `@adawy/motion` — the package ships primitives, brands own choreography |
@@ -30,15 +44,36 @@ avoiding subscription dependencies that compound at 110-brand scale.**
 | Forms | **React Hook Form + Zod** | Type-safe forms with one validation schema shared between client and server ([forms & enquiries](/guides/forms-and-enquiries)) |
 | Transactional email | **Resend** | Contact and quote submissions; reached through a single delivery seam so the provider is swappable |
 | Testing | **Vitest**, colocated | Pure logic is extracted specifically so it can be tested without a DOM ([testing](/standards/testing)) |
+| Lint & format | **ESLint 9 (flat config) + Prettier**, both gating CI | `@adawy/eslint-config` machine-enforces the architecture — the rules in this handbook fail the build rather than waiting for a reviewer ([coding](/standards/coding#linting--formatting)) |
 
-Client projects run the **same frontend stack minus the monorepo** — Next.js
-16, Tailwind v4, shadcn, next-intl, GSAP + Lenis, react-hook-form + zod,
-Vitest — with no `@adawy/*` dependency
-([ADR-010](/architecture/adrs)). `aladawy-shop` additionally uses **Redux
-Toolkit**, justified by a quote that persists across routes and reloads; that
-is a project-specific choice, not a house pattern.
+## What a client project is required to run
 
-## Backend
+Client projects do **not** run "the same stack minus the monorepo". They run
+the same **floor**, and vary above it — which is what
+[ADR-010](/architecture/adrs) buys and what a shared package would have taken
+away.
+
+**The floor, in every client repo:** Next.js 16 App Router, TypeScript strict,
+Tailwind v4, next-intl with real RTL, WCAG 2.1 AA, pnpm, Prettier, and a
+publishing switch that keeps the site out of the index before launch.
+
+**Above the floor, actual variation today:**
+
+| Choice | Who differs, and why |
+| ------ | -------------------- |
+| Primitive library | `aladawy-pack` and `aladawy-shop` are on Radix; `jumeira` on Radix; `zad-alhkoul` and `adawy-group-links` on Base UI. Base UI is where new work starts — it is what `@adawy/ui` uses |
+| Smooth scroll | Most pair GSAP with Lenis. [`jumeira`](/repositories/jumeira#why-there-is-no-lenis-here) removed it, because on a page whose scroll *is* the animation a second scroll authority is the bug |
+| Forms | Only the repos that take an enquiry carry react-hook-form + zod. A site with no form ships neither |
+| State | `aladawy-shop` alone uses **Redux Toolkit**, justified by a quote that persists across routes and reloads. That is genuinely cross-cutting client state, and it is a project-specific choice, not a house pattern |
+| Tests | Vitest in five repos; [`zad-alhkoul`](/repositories/zad-alhkoul) has none, which is a gap rather than a decision |
+
+*Why state a floor instead of a stack:* a stack list goes stale the first time
+a project makes a defensible different choice, and then the handbook is either
+wrong or the project is "non-compliant" for no reason. A floor is a rule that
+survives contact with the next brief — and every variation above it has to be
+defensible, which is the actual standard.
+
+## Backend <Badge tone="planned">Decided, not built</Badge>
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
@@ -47,7 +82,7 @@ is a project-specific choice, not a house pattern.
 | Cache & queue | **Redis (Upstash)** | Pay-as-you-go; sessions, rate limiting, caching, background jobs |
 | Object storage | **Cloudflare R2** | S3-compatible with **no download fees** — members download brand asset packages constantly |
 
-## Platform services
+## Platform services <Badge tone="planned">Decided, not built</Badge>
 
 | Service | Choice | Why |
 | ------- | ------ | --- |
@@ -59,17 +94,26 @@ is a project-specific choice, not a house pattern.
 
 ## Operations
 
-| Tool | Purpose |
-| ---- | ------- |
-| Vercel Pro | Frontend hosting (built for Next.js) |
-| Railway → DigitalOcean | Backend hosting (Railway early, DO at scale) |
-| GitHub | Code hosting + CI (the `adawy-group` org) |
-| Sentry | Error tracking and performance monitoring |
-| Better Stack | Uptime monitoring and alerting |
-| Linear | Engineering project management |
-| Trello | Department-level Kanban board (see [How We Work](/how-we-work)) |
-| Notion | Internal documentation |
-| Figma | Design and design-to-code handoff |
+| Tool | Status | Purpose |
+| ---- | ------ | ------- |
+| **Vercel** | <Badge tone="live">Running</Badge> | Frontend hosting, one project per app. On the **Hobby** plan today, which is why deploys are CLI-driven from GitHub Actions rather than Vercel's dashboard Git integration — connecting a private org-owned repo needs Pro ([deployment](/how-we-work/deployment)) |
+| **GitHub** | <Badge tone="live">Running</Badge> | Code hosting and CI, in the `Adawy-Group` org |
+| **Trello** | <Badge tone="live">Running</Badge> | The department Kanban board ([how we work](/how-we-work)) |
+| **Figma** | <Badge tone="live">Running</Badge> | Design and design-to-code handoff |
+| **Notion** | <Badge tone="live">Running</Badge> | Company-wide documentation. **Not** the engineering source of truth — that is this handbook ([ADR-007](/architecture/adrs)) |
+| Railway → DigitalOcean | <Badge tone="planned">Phase 2</Badge> | Backend hosting, once there is a backend (Railway early, DO at scale) |
+| Sentry | <Badge tone="planned">Chosen, not installed</Badge> | Error tracking and performance monitoring |
+| Better Stack | <Badge tone="planned">Chosen, not installed</Badge> | Uptime monitoring and alerting |
+| Linear | <Badge tone="planned">Not adopted</Badge> | Engineering project management, if the board outgrows Trello |
+
+<Callout type="warning">
+  **Sentry and Better Stack are decisions, not dashboards.** No repository in
+  the org has an error-tracking or uptime SDK installed today. Where the
+  handbook says "check Sentry is quiet" or "monitoring clean"
+  ([definition of done](/how-we-work/definition-of-done)), read it as the
+  standard being aimed at — and as a gap someone has to close before either
+  sentence is checkable.
+</Callout>
 
 ## What we deliberately avoid (and why)
 
