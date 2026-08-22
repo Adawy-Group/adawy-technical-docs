@@ -12,6 +12,9 @@ public/_pagefind/
 # vercel
 .vercel
 
+# browser-automation snapshots and screenshots
+.playwright-mcp/
+
 # misc
 .DS_Store
 *.tsbuildinfo

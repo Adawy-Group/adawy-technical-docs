@@ -130,14 +130,24 @@ nothing failing.
 
 <Callout type="important">
   **Both git-derived dates need full history, and two different clones have to
-  provide it.** CI checks out with `fetch-depth: 0`; the Vercel build is a
-  *separate* clone and is shallow, so `scripts/unshallow.mjs` runs as
-  `prebuild` and deepens it.
+  provide it.** CI checks out with `fetch-depth: 0`. The Vercel build is a
+  *separate* clone and is shallow by default, which needs **both** of these:
 
-  Without that, a page reports a date from before it existed — which is worse
-  than no date, because a wrong timestamp reads as a maintained page. The
-  script never fails the build; if it cannot deepen the clone it says so and
-  the dates simply degrade.
+  1. **`VERCEL_DEEP_CLONE=1`** in the Vercel project's environment variables.
+     This is the supported switch and the one that always works.
+  2. **`scripts/unshallow.mjs`**, which runs as `prebuild` and deepens the
+     clone itself. It is the belt to that braces — useful anywhere the project
+     is built outside Vercel, and a no-op on a complete clone.
+
+  Without full history a page reports a date from before it existed, which is
+  worse than no date at all: a wrong timestamp reads as a page somebody
+  maintains. The script never fails the build; if it cannot reach the remote it
+  logs `[unshallow] skipped` and the dates degrade rather than the deploy
+  failing.
+
+  **To check which applies, read the deploy log** for the `[unshallow]` line.
+  The tell-tale on the site itself is a page whose date is *newer* than its last
+  real change — that means every page is falling back to `HEAD`.
 </Callout>
 
 ## Components available in MDX
