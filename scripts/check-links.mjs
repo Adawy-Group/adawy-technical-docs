@@ -6,6 +6,12 @@
  * builds green and 404s in production. A page absent from _meta.ts builds
  * green too and is simply invisible in the sidebar. Both were found by hand
  * before this existed.
+ *
+ * Two link syntaxes are checked, because the pages use both: Markdown
+ * `](/route)` and the `href="/route"` prop on JSX components such as
+ * <Cards.Card>. A card link is invisible to the Markdown matcher, so without
+ * the second pattern a section index built from cards would be the least
+ * validated page on the site rather than the most.
  */
 import fs from "node:fs"
 import path from "node:path"
@@ -58,16 +64,23 @@ for (const file of mdxFiles) {
 
 const problems = []
 
-// 1. Internal links and their anchors.
+// 1. Internal links and their anchors, in both Markdown and JSX syntax.
+const LINK_PATTERNS = [
+  /\]\((\/[^)\s]*)\)/g, //        [text](/route#anchor)
+  /href="(\/[^"\s]*)"/g //        <Cards.Card href="/route" />
+]
+
 for (const file of mdxFiles) {
   const src = fs.readFileSync(file, "utf8")
-  for (const m of src.matchAll(/\]\((\/[^)\s]*)\)/g)) {
-    const [target, hash] = m[1].split("#")
-    const route = target === "" ? "/" : target
-    if (!routes.has(route)) {
-      problems.push(`${file}: link to ${m[1]} — no such page`)
-    } else if (hash && !anchors.get(route).has(hash)) {
-      problems.push(`${file}: link to ${m[1]} — no such heading on that page`)
+  for (const pattern of LINK_PATTERNS) {
+    for (const m of src.matchAll(pattern)) {
+      const [target, hash] = m[1].split("#")
+      const route = target === "" ? "/" : target
+      if (!routes.has(route)) {
+        problems.push(`${file}: link to ${m[1]} — no such page`)
+      } else if (hash && !anchors.get(route).has(hash)) {
+        problems.push(`${file}: link to ${m[1]} — no such heading on that page`)
+      }
     }
   }
 }
