@@ -8,11 +8,14 @@ tags: ['Reference', 'Architecture']
 
 ## The platform monorepo
 
-The platform is **one monorepo (Turborepo, pnpm workspaces)**: a thin Next.js
-app per flagship brand in `apps/`, built entirely from shared `@adawy/*`
-packages in `packages/`. Each flagship app deploys to its own domain as its
-own Vercel project; the long tail of templated brands shares one multi-tenant
-app ([ADR-008](/architecture/adrs)).
+The platform is **one monorepo (Turborepo, pnpm workspaces)**: a Next.js app
+per flagship brand in `apps/`, standing on shared `@adawy/*` packages in
+`packages/`. An app is *thin at the platform boundary* — routing, tokens,
+content, and whatever bespoke work makes it a flagship, organised
+feature-first inside the app ([ADR-011](/architecture/adrs)); everything
+reusable across brands lives in packages. Each flagship deploys to its own
+domain as its own Vercel project; the long tail of templated brands shares
+one multi-tenant app ([ADR-008](/architecture/adrs)).
 
 ```
 adawy-platform/
@@ -50,6 +53,17 @@ This is the **Group** monorepo. Client projects are standalone repositories
 with a different structure entirely — see
 [Client Projects](/how-we-work/client-projects) and
 [the repository map](/repositories).
+
+## Inside a flagship app
+
+One sentence: **routes in `app/`, things you can see in `features/`,
+machinery in `platform/`** ([ADR-011](/architecture/adrs)). A feature is
+`features/<name>/{components, scene, lib, index.ts}`, named after what the
+visitor sees; cross-cutting machinery is a `platform/` module. The boundary
+law (platform never imports features; cross-feature only via barrels; lib has
+no React/three.js; scene has no React) is enforced by lint, not memory. The
+full route → feature map and the site's working vocabulary live in the
+[glossary](/architecture/glossary).
 
 A new brand is a **config entry in `apps/sites`** by default. It gets its own
 folder under `apps/` only when it needs unique routes, custom sections, or

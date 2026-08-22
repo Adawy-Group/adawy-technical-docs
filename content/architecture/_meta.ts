@@ -5,5 +5,6 @@ export default {
   'platform-architecture': 'Platform Architecture',
   patterns: 'Design Patterns',
   roadmap: 'Roadmap & Phases',
-  adrs: 'Decision Records (ADRs)'
+  adrs: 'Decision Records (ADRs)',
+  glossary: 'Vocabulary & Map'
 }

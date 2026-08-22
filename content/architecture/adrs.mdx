@@ -27,7 +27,8 @@ through for the 10% of occasions where the reasoning matters.
 | [008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app) | Flagships get their own app; the long tail shares `apps/sites` | <Badge tone="planned">Not built</Badge> | Group work |
 | [009](#adr-009--the-phase-2-backend-joins-the-same-monorepo) | The Phase-2 backend joins the monorepo as `apps/api` | <Badge tone="planned">Not built</Badge> | Backend |
 | [010](#adr-010--group-brands-share-a-monorepo-client-projects-get-their-own-repo) | Group brands share the monorepo; each client project gets its own repo | <Badge tone="live">Built</Badge> | Everything |
-| [011](#adr-011--architectural-rules-are-lint-rules-not-review-conventions) | Architectural rules are lint rules and tests, not review conventions | <Badge tone="live">Built</Badge> | Everything |
+| [011](#adr-011--feature-first-app-layout-features--platform) | Routes in `app/`, things you can see in `features/`, machinery in `platform/` | <Badge tone="live">Built</Badge> | `apps/group` |
+| [012](#adr-012--machine-enforce-a-rule-wherever-the-mistake-would-not-look-like-one) | Machine-enforce a rule wherever the mistake would not look like one | <Badge tone="live">Built</Badge> | Everything |
 
 ## How to add one
 
@@ -241,30 +242,79 @@ was wrong is the most useful thing in the file.
   outside the platform. Until that is decided the rule reads *Group brand
   **sites** live in the monorepo*, and the microsite is one open case rather
   than a precedent.
-## ADR-011 — Architectural rules are lint rules, not review conventions
 
-- **Context:** The department's rules — keep apps thin, never import GSAP
-  directly, never use a physical direction class, keep locale files in step —
-  were written down and reviewed by hand. The 2026 audit of the old site found
-  that its accessibility failures were, without exception, things a checklist
-  had been supposed to catch. With one reviewer and eight repositories, a rule
-  that lives only in a document is a rule that gets skipped on the busy week.
-- **Decision:** Any architectural rule that can be machine-checked **is**
-  machine-checked, and fails the build rather than waiting for a reviewer.
-  Concretely: `apps/group/eslint.config.js` *generates* its
-  `no-restricted-imports` blocks from the app's layering, so the layering and
-  its enforcement cannot drift apart; physical Tailwind classes, direct `gsap`
-  imports and locale-unaware `next/link` imports are errors; message parity, a
-  `tel:` matching its displayed number, and the Arabic spelling of the brand
-  are tests; accessibility is an axe-core gate over every route. The lint
-  philosophy that follows: **a rule is an error or it is not enabled** — no
-  warnings, because a warning-only lint is no lint at all.
+## ADR-011 — Feature-first app layout: `features/` + `platform/`
+
+- **Context:** `apps/group` grew to ~60k lines organised as four parallel
+  layer trees (`components/`, `lib/`, `scene/`, `hooks/`). Every feature was
+  sliced across three or four places under drifting names (contact lived in
+  four spots under three names; the brand pages nested differently in every
+  tree), `lib/` — 280 files — mixed feature logic, app machinery and generic
+  utilities in one namespace, and the load-bearing import rules ("lib is
+  pure", "scene has no React") were prose, not lint. The public
+  site's language and the code's names had diverged: the `/ecosystem` page
+  was built from folders named `ecosystem-hero` and `relay`, while
+  `ecosystem` named a *home* section.
+- **Decision:** One sentence, meant to still be obvious in five years:
+  **routes in `app/`, things you can see in `features/`, machinery in
+  `platform/`.** A feature is one thing a visitor can point at, named after
+  the public site (`features/ecosystem` is the `/ecosystem` page,
+  `features/ecosystem-belt` the home card-belt, `features/brands` the
+  `/ecosystem/<brand>` pages, `features/stage` the persistent home 3D world —
+  deliberately one feature, because its crane/coins/mark travel across
+  sections). Each feature is `{components, scene, lib, index.ts}`.
+  Cross-cutting machinery is a `platform/` module (`chrome`, `scroll`,
+  `sound`, `gl`, `scene`, `seo`, `brand`, `theme`, `perf`, `boot`, `math`,
+  `tokens`, `ui`, …). A four-line boundary law is machine-enforced by
+  generated `no-restricted-imports` blocks: platform never imports features;
+  a feature imports another feature only through its barrel; `app/` composes
+  UI via barrels (feature `lib/` stays importable); `lib/` has no React and
+  no three.js, `scene/` has no React. Domain-driven design is adopted only
+  where it pays: the vocabulary is written down ([glossary](/architecture/glossary)),
+  IO keeps its ports (the Mailer), and tactical DDD waits for the Phase-2
+  backend where real bounded contexts live.
+- **Consequences:** A file's place is guessable from what it is — "the thing
+  on the ecosystem page" has one folder — and renaming or deleting a feature
+  touches that folder alone. The layer rules now fail CI instead of relying
+  on review memory. Forcing the law to hold with zero exceptions surfaced
+  every mislabeled shared piece: the scrub/take driver kit and the journey's
+  per-section scroll profiles moved to `platform/scroll`, the sound engine to
+  `platform/sound`, group data (members, marks, industries) to
+  `platform/brand`, five private `lerp`s and three incompatible `clamp`s
+  collapsed into `platform/math`, and eight hand-rolled renderer boots into
+  one `bootRenderer`. Trade-offs: a cross-feature convenience import is now
+  an error whose fix is a deliberate move to platform, and `git blame`
+  crosses one large rename boundary (use `--follow`).
+
+## ADR-012 — Machine-enforce a rule wherever the mistake would not look like one
+
+- **Context:** [ADR-011](#adr-011--feature-first-app-layout-features--platform)
+  made one app's boundary law machine-enforced, and it worked — the rules now
+  fail CI instead of relying on review memory. The same question is open across
+  the other seven repositories, where rules like *never use a physical
+  direction class*, *never import GSAP directly* and *keep locale files in
+  step* were prose. The 2026 audit of the old site is the argument: its
+  accessibility failures were, without exception, things a checklist had been
+  supposed to catch. With one reviewer and eight repositories, a rule that
+  lives only in a document is a rule that gets skipped on the busy week.
+- **Decision:** Generalise ADR-011's enforcement beyond `apps/group`, with an
+  explicit test for *what* to enforce: **would this mistake look like a
+  mistake to a reviewer scanning the diff?** If yes, prose is enough. If it
+  renders identically whether it is right or wrong, it becomes a lint rule or a
+  test. Already in force on that basis: physical Tailwind classes, direct
+  `gsap` imports and locale-unaware `next/link` imports are lint **errors**;
+  message parity, a `tel:` matching its displayed number, the Arabic spelling
+  of the brand, and a publishing switch set in both of the two files that need
+  it are **tests**; accessibility is an axe-core gate over every route. The
+  lint philosophy that follows: **a rule is an error or it is not enabled** —
+  no warnings, because a warning-only lint is no lint at all.
 - **Consequences:** The rules in this handbook are, for the most part, not
-  advice — the build tells you. Review time goes to the things no rule can
-  catch: naming, structure, whether a section earns its place. Two costs are
+  advice — the build tells you, and review time goes to what no rule can catch:
+  naming, structure, whether a section earns its place. Three costs are
   accepted. Adding a rule is slower than writing a sentence, so only rules
-  worth that cost get written; and a badly scoped rule blocks legitimate work,
-  which is why every restriction here carries the replacement in its own error
-  message. The decision rule for what to enforce is on
-  [Design Patterns](/architecture/patterns#6-enforce-it-do-not-document-it):
-  **would this mistake look like a mistake?** If not, it belongs in a test.
+  worth that cost get written. A badly scoped rule blocks legitimate work,
+  which is why every restriction carries its replacement in its own error
+  message. And the coverage is currently uneven — the axe gate runs on
+  `apps/group` alone, and one client repo has no CI to hang any of this on
+  ([the matrix](/repositories#what-the-repos-actually-share)). Closing those is
+  the work this record commits to, not something it claims is done.

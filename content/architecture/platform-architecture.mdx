@@ -15,12 +15,18 @@ This page is the **orientation**. The file-level detail lives in the platform
 repo, and deliberately not here — see [where each fact lives](#where-each-fact-lives)
 at the bottom.
 
-## 0. Three layers, and the imports they may not make
+## 0. The layout, drawn
 
-Before anything else: the app has three layers, and **the arrow that is not
-allowed is the point.** The dotted edge below is a `no-restricted-imports`
-error — the eslint config *generates* those blocks from the layering, so the
-rule and the structure cannot drift apart, and CI fails on a breach.
+**Routes in `app/`, things you can see in `features/`, machinery in
+`platform/`.** That one sentence is the whole layout;
+[ADR-011](/architecture/adrs) carries the decision, what it replaced and what
+it cost, and [Vocabulary & Map](/architecture/glossary) maps every route to its
+feature. This is the picture — because the arrow that is **not** allowed is the
+part prose keeps losing.
+
+The dotted edge below is a `no-restricted-imports` error: the eslint config
+*generates* those blocks from the layering, so the rule and the structure
+cannot drift apart, and CI fails on a breach.
 
 ```mermaid
 flowchart TD
@@ -41,18 +47,18 @@ flowchart TD
     PLAT -.->|"never"| FEAT
 ```
 
-Four rules, one reason each:
+The four-line boundary law is stated in full in
+[ADR-011](/architecture/adrs). What is worth carrying in your head while you
+work:
 
-| Rule | Why |
-| ---- | --- |
-| `platform/` never imports `features/` | Machinery that knows about a specific section is no longer machinery. This is the edge that decays first, and the only one that cannot be undone cheaply |
-| A feature reaches another **only** through its barrel | The barrel is the feature's public surface; without it, every internal file is public and nothing can be refactored |
-| `lib/` holds no React and no three.js | It is the only layer with unit tests, and it is testable precisely because it imports neither |
-| `scene/` holds no React | The render loop and the component tree run on different clocks. Mixing them is how a frame ends up waiting on a re-render |
-
-**`app/` composes feature *UI* through barrels, but a feature's `lib/` stays
-importable** — pages need metadata fragments and actions need domain logic, and
-routing those through a UI barrel would be ceremony.
+- **`platform/` never imports `features/`.** Machinery that knows about a
+  specific section is no longer machinery, and this is the edge that decays
+  first.
+- **`app/` composes feature *UI* through barrels — but a feature's `lib/`
+  stays importable.** Pages need metadata fragments and actions need domain
+  logic; routing those through a UI barrel would be ceremony.
+- **`lib/` is the only layer with unit tests,** and it is testable precisely
+  because it imports neither React nor three.js.
 
 ## 1. One canvas, many passes
 
@@ -61,14 +67,14 @@ positioned `fixed inset-0`. Everything 3D is a *pass* on that one renderer —
 the Why-Choose crystal is a second pass on the same context, not a second
 canvas.
 
-- `components/gl/gl-canvas.tsx` is the only WebGL host: canvas element,
+- `platform/gl/gl-canvas.tsx` is the only WebGL host: canvas element,
   create/dispose, theme pushes. A scene is a `create` function returning
   `{ dispose, applyTheme? }`.
-- `scene/stage/runtime.ts` builds the kernel — renderer, scene, image-based
+- `features/stage/scene/runtime.ts` builds the kernel — renderer, scene, image-based
   lighting, camera, lights, group hierarchy.
-- `scene/stage/create-stage.ts` is wire-up only: framing, resize, theme, and
+- `features/stage/scene/create-stage.ts` is wire-up only: framing, resize, theme, and
   the rAF loop.
-- `scene/stage/stage-pass.ts` is the contract.
+- `features/stage/scene/stage-pass.ts` is the contract.
 
 Each frame, the stage reads **every progress channel once** into a `StageFrame`
 and hands that same object to every pass. Passes never read channels
@@ -91,12 +97,12 @@ one.
 
 ```mermaid
 flowchart LR
-    A["lib/&lt;section&gt;/<br/>pure math — beats and easing<br/>no React, no three.js"] --> B["progress channel<br/>module singleton<br/>clamped to 0..1"]
+    A["features/&lt;section&gt;/lib/<br/>pure math — beats and easing<br/>no React, no three.js"] --> B["progress channel<br/>module singleton<br/>clamped to 0..1"]
     B --> C["the render loop<br/>reads every channel once per frame"]
     D["*-scroll-driver.tsx<br/>renders nothing<br/>wires a ScrollTrigger"] --> B
 ```
 
-1. **Pure math in `lib/<section>/`** — beat thresholds and easing as plain
+1. **Pure math in `features/<section>/lib/`** — beat thresholds and easing as plain
    functions of normalized progress `p ∈ [0,1]`, importing no React and no
    three.js. This is the only layer with unit tests, and it is where the
    choreography actually lives.
@@ -114,7 +120,7 @@ test will tell you, because there is nothing to test.
 
 ### Two rules the tests enforce
 
-**Address elements through `lib/stage/anchors.ts`, never a raw selector
+**Address elements through `platform/scroll/lib/anchors.ts`, never a raw selector
 string.** JSX spreads `{...anchor("data-why")}`; drivers call
 `query("data-why")`. Both sides take the same union, so renaming an anchor
 fails the build at every use instead of silently matching nothing. A test fails
@@ -129,7 +135,7 @@ wrote the branch remembered.
 
 ## 3. The performance tier
 
-`lib/perf/perf-tier.ts` is a site-wide quality governor with two states,
+`platform/perf/lib/perf-tier.ts` is a site-wide quality governor with two states,
 `"full"` and `"lite"`. It exists so "this device is struggling" is answered
 **once**, rather than by each effect inventing its own answer.
 
