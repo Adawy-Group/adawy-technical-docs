@@ -109,7 +109,9 @@ something here is wrong, that link is the shortest path to fixing it.
   relative ones. `check-links.mjs` validates `](/…)` and `href="/…"`; a
   relative link silently skips validation and can 404 in production with a
   green build.
-- **Mermaid diagrams** render from ` ```mermaid ` fences.
+- **Mermaid diagrams** render from ` ```mermaid ` fences. Break a node label
+  with `<br/>`, never a literal `\n` — this build drops the escape instead of
+  breaking the line, and the label renders run together.
 - **Numbers must be stable.** Repository counts, locale counts, founding years
   and committed targets are fine. Commit counts, deploy counts and last week's
   Lighthouse score are not — nothing here refreshes them, and a stale number is
@@ -196,7 +198,9 @@ reader; a blockquote is someone else speaking.
 | A page renders in dev but fails `next build` | A prerender error in MDX — unsupported syntax or a broken import | Open the failing route in dev; it shows the real message that the production build hides |
 | A new page is missing from the sidebar | No entry in that folder's `_meta.ts` | Add the filename key with its title. `check-links.mjs` catches this |
 | A component renders as nothing | It is used in MDX but not registered in `mdx-components.tsx` | Add it to the map |
-| A Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+| A Mermaid diagram renders as a code block or an error box | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+| Every Mermaid diagram shows *"Expecting NEWLINE, got SPACE"* locally, but the deployed site is fine | Your working copy has CRLF line endings. The bundled Mermaid does not treat a lone CR as a line terminator | `.gitattributes` checks the repo out as LF everywhere; if you cloned before it existed, re-clone or run `git add --renormalize .` |
+| A multi-line node label renders as one run-on line | A literal `\n` inside the label | Use `<br/>`. This Mermaid build drops `\n` instead of breaking the line |
 | Search returns nothing in `npm run dev` | The Pagefind index is built by `postbuild` | Expected — run `npm run build` to populate it |
 
 ## Search

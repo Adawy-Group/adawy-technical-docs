@@ -159,6 +159,31 @@ html.dark .adawy-badge-holding {
 /* `planned`, `private`, `public` and `neutral` intentionally keep the base
  * grey: they are facts about a thing, not a judgement on its health. */
 
+/* ── Card grids ────────────────────────────────────────────────────────────
+ * Nextra's Cards.Card renders its children ABOVE the title, which is right for
+ * a card whose child is an image and backwards for one whose child is a
+ * sentence describing where the link goes. Reverse the visual order rather
+ * than dropping the sentence: the title is what a reader scans, and the line
+ * under it is what decides the click.
+ */
+
+.nextra-cards .nextra-card {
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+}
+
+.nextra-cards .nextra-card > span {
+  padding-bottom: 0.375rem;
+}
+
+.nextra-cards .nextra-card > p {
+  margin: 0;
+  padding: 0 1rem 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--adawy-muted);
+}
+
 /* ── Stat tiles ────────────────────────────────────────────────────────────*/
 
 .adawy-stats {

@@ -17,33 +17,28 @@ at the bottom.
 
 ## 0. Three layers, and the imports they may not make
 
-Before anything else: the app has three layers, and **the arrows that are not
-allowed are the point.** Dotted red edges below are `no-restricted-imports`
-errors — the eslint config *generates* them from the layering, so the rule and
-the structure cannot drift apart, and CI fails on a breach.
+Before anything else: the app has three layers, and **the arrow that is not
+allowed is the point.** The dotted edge below is a `no-restricted-imports`
+error — the eslint config *generates* those blocks from the layering, so the
+rule and the structure cannot drift apart, and CI fails on a breach.
 
 ```mermaid
 flowchart TD
-    APP["app/ — routes only\ncomposes feature UI through barrels"]
-    FEAT["features/&lt;thing a visitor can point at&gt;\ncomponents/ · scene/ · lib/"]
-    PLAT["platform/ — app-wide machinery\nchrome · scroll · gl · sound · seo"]
-
+    APP["app/<br/>routes only — composes feature UI through barrels"]
+    FEAT["features/&lt;name&gt;<br/>one per thing a visitor can point at"]
+    PLAT["platform/<br/>app-wide machinery — chrome · scroll · gl · sound · seo"]
+    C["components/<br/>React"]
+    S["scene/<br/>three.js, no React"]
+    L["lib/<br/>pure functions — no React, no three.js"]
     APP --> FEAT
     APP --> PLAT
     FEAT --> PLAT
-    FEAT -. "a feature reaches another\nONLY through its barrel" .-> FEAT
-    PLAT -. "never" .-x FEAT
-
-    subgraph INSIDE["Inside one feature"]
-        C["components/ — React"]
-        S["scene/ — three.js, no React"]
-        L["lib/ — pure functions\nno React, no three.js"]
-        C --> L
-        S --> L
-    end
-
-    linkStyle 4 stroke:#b45309;
-    linkStyle 5 stroke:#dc2626;
+    FEAT --> C
+    FEAT --> S
+    FEAT --> L
+    C --> L
+    S --> L
+    PLAT -.->|"never"| FEAT
 ```
 
 Four rules, one reason each:
@@ -96,9 +91,9 @@ one.
 
 ```mermaid
 flowchart LR
-    A["lib/&lt;section&gt;/\npure math — beats and easing\nno React, no three.js"] --> B["progress channel\nmodule singleton\nclamped to 0..1"]
-    B --> C["the render loop\nreads every channel once per frame"]
-    D["*-scroll-driver.tsx\nrenders nothing\nwires a ScrollTrigger"] --> B
+    A["lib/&lt;section&gt;/<br/>pure math — beats and easing<br/>no React, no three.js"] --> B["progress channel<br/>module singleton<br/>clamped to 0..1"]
+    B --> C["the render loop<br/>reads every channel once per frame"]
+    D["*-scroll-driver.tsx<br/>renders nothing<br/>wires a ScrollTrigger"] --> B
 ```
 
 1. **Pure math in `lib/<section>/`** — beat thresholds and easing as plain

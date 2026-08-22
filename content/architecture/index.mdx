@@ -18,30 +18,30 @@ Dashed boxes are **decided but not built**
 flowchart TD
     subgraph MONO["adawy-platform (Turborepo + pnpm)"]
         subgraph PKGS["packages/ — where the engineering lives"]
-            UI["@adawy/ui\nshadcn primitives"]
-            TW["@adawy/design\ndesign tokens"]
-            MO["@adawy/motion\nGSAP + Lenis"]
-            IN["@adawy/i18n\nlocales + direction"]
-            SEOP["@adawy/site\nidentity · routes · metadata"]
-            UT["@adawy/holding\nholding-page shell"]
-            LINT["@adawy/eslint-config\n@adawy/typescript-config\nthe rules, machine-enforced"]
+            UI["@adawy/ui<br/>shadcn primitives"]
+            TW["@adawy/design<br/>design tokens"]
+            MO["@adawy/motion<br/>GSAP + Lenis"]
+            IN["@adawy/i18n<br/>locales + direction"]
+            SEOP["@adawy/site<br/>identity · routes · metadata"]
+            UT["@adawy/holding<br/>holding-page shell"]
+            LINT["@adawy/eslint-config<br/>@adawy/typescript-config<br/>the rules, machine-enforced"]
         end
         subgraph APPS["apps/ — a thin app per flagship + one multi-tenant app"]
             G["group"]
             S["studio"]
             P["pack"]
-            N["sites\nlong-tail brands, ADR-008"]
+            N["sites<br/>long-tail brands, ADR-008"]
         end
         PKGS --> APPS
     end
     G --> DG["adawygroup.com"]
     S --> DS["adawystudio.com"]
     P --> DP["adawypack.com"]
-    APPS --> BE["apps/api — Node.js + NestJS\nauth · business logic · integrations"]
-    BE --> ODOO["Odoo (system of record)\nfinance · inventory · payroll · manufacturing"]
+    APPS --> BE["apps/api — Node.js + NestJS<br/>auth · business logic · integrations"]
+    BE --> ODOO["Odoo (system of record)<br/>finance · inventory · payroll · manufacturing"]
     BE --> DB[("PostgreSQL + pgvector")]
-    BE --> PORTAL["Client portal\nportal.adawygroup.com"]
-    BE --> EMP["Employee portal\ninternal AI · search · dashboards"]
+    BE --> PORTAL["Client portal<br/>portal.adawygroup.com"]
+    BE --> EMP["Employee portal<br/>internal AI · search · dashboards"]
 
     classDef planned stroke-dasharray: 5 4;
     class N,BE,DB,PORTAL,EMP,DS,DP planned;

@@ -33,7 +33,7 @@ flowchart LR
     F2["quote form"] --> S
     R1["/api/contact"] --> S
     R2["/api/quote"] --> S
-    S["lib/enquiry.ts\nthe only place a submission leaves"] --> P["Resend · a log line · whatever is next"]
+    S["lib/enquiry.ts<br/>the only place a submission leaves"] --> P["Resend · a log line · whatever is next"]
 ```
 
 **Where it already is:**
@@ -225,13 +225,13 @@ one yet*:
 
 ```mermaid
 flowchart TD
-    A["A fact or a behaviour appears twice"] --> B{"Does the second copy\nrender identically when wrong?"}
-    B -- yes --> C["Write the test\npattern 6"]
-    B -- no --> D{"Do the two copies have to\nagree forever?"}
-    D -- yes --> E["Give it a typed handle\npattern 3"]
-    D -- no --> F{"Is it a boundary —\nsomething leaving the app?"}
-    F -- yes --> G["Give it a seam\npattern 1"]
-    F -- no --> H["Leave it duplicated.\nExtract on the third use"]
+    A["A fact or a behaviour appears twice"] --> B{"Does the second copy<br/>render identically when wrong?"}
+    B -- yes --> C["Write the test<br/>pattern 6"]
+    B -- no --> D{"Do the two copies have to<br/>agree forever?"}
+    D -- yes --> E["Give it a typed handle<br/>pattern 3"]
+    D -- no --> F{"Is it a boundary —<br/>something leaving the app?"}
+    F -- yes --> G["Give it a seam<br/>pattern 1"]
+    F -- no --> H["Leave it duplicated.<br/>Extract on the third use"]
 ```
 
 The last box is deliberate. **Two is a coincidence; three is a pattern** —

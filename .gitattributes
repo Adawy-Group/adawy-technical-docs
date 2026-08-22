@@ -1,0 +1,20 @@
+# Check every text file out with LF, on every platform.
+#
+# Not a style preference: the Mermaid build bundled with Nextra does not treat
+# a lone CR as a line terminator, so a diagram in a CRLF working copy fails to
+# parse with "Expecting NEWLINE, got SPACE" and renders as an error box. It
+# builds and deploys correctly from CI, where the checkout is LF — which makes
+# it a bug only Windows contributors ever see, and only locally.
+#
+# `adawy-platform`, `jumeira` and `aladawy-pack` carry the same file.
+* text=auto eol=lf
+
+# Binary assets: never touch these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

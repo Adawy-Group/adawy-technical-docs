@@ -66,5 +66,6 @@ so there is one table to update rather than two that drift.
 | ------- | ----- | --- |
 | Build fails: `Invalid input: expected nonoptional, received undefined → at children` on every page | A newer `zod` was hoisted; Nextra 4.6's `Layout` validates props against older `z.custom` behavior | Keep the `overrides.zod` pin in `package.json`; `npm install` again |
 | A new page doesn't appear in the sidebar | Missing entry in that folder's `_meta.ts` | Add the filename key with its display title |
-| A Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+| A Mermaid diagram renders as a code block or an error box | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+| **Every** Mermaid diagram fails locally with *"Expecting NEWLINE, got SPACE"*, while the deployed site renders them fine | CRLF line endings in your working copy — the bundled Mermaid does not treat a lone CR as a line terminator, and CI checks out LF | `.gitattributes` now forces LF; if you cloned before it landed, `git add --renormalize .` or re-clone |
 | Search returns nothing in `npm run dev` | The Pagefind index is built by `postbuild` | Expected — run `npm run build` to populate it |
