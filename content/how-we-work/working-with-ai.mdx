@@ -1,12 +1,13 @@
 ---
 title: Working with AI
 description: The AGENTS.md convention every repo carries, how AI-assisted work is reviewed, and the rules about what may never be pasted into a model.
+tags: ['Reference', 'Daily']
 ---
 
 # Working with AI
 
 AI coding assistants are part of how this department works. A two-person team
-maintaining five repositories is only possible with them. They are also the
+maintaining eight repositories is only possible with them. They are also the
 fastest way to fill a codebase with confident, plausible, wrong code — so the
 practice is written down rather than left to taste.
 
@@ -16,15 +17,29 @@ Open it before your first change. It is the **architectural contract** for that
 codebase: the constraints that are load-bearing, and the traps somebody has
 already paid for.
 
-| Repo | What its `AGENTS.md` covers |
-| ---- | --------------------------- |
-| `adawy-platform` | The shadcn contract — why you edit the vendored component instead of out-specifying it from the call site, and which registry components were deliberately *not* adopted |
-| `aladawy-shop` | The quote-not-cart domain model, the two content trees, the commands to run before calling work done |
-| `aladawy-pack` | The content/messages split, the monochrome surface system, the motion rules |
+| Repo | Where the contract is | What it covers |
+| ---- | --------------------- | -------------- |
+| `adawy-platform` | `AGENTS.md` | The shadcn contract — why you edit the vendored component instead of out-specifying it from the call site, and which registry components were deliberately *not* adopted |
+| `jumeira` | `AGENTS.md` | The standalone-repo contract, the RTL lint rules, and the trap ledger behind the pinned film |
+| `aladawy-shop` | `AGENTS.md` | The quote-not-cart domain model, the two content trees, the commands to run before calling work done |
+| `zad-alhkoul` | **`CLAUDE.md`** | The three-layer design system and the generated files |
+| `adawy-group-links` | **`CLAUDE.md`** | The monochrome palette rule, the Arabic brand spelling, RTL-safe motion, the baked pattern |
+| `aladawy-pack` | — | **Nothing.** Its constraints are in the README and the source comments |
+| `baron-menu` | — | **Nothing.** `PRODUCT.md` carries the zero-build-step principle instead |
+| `adawy-technical-docs` | — | **Nothing tracked.** This handbook is its own contract |
 
-Some repos also have a `CLAUDE.md`. Where both exist, `CLAUDE.md` is usually
-one line — `@AGENTS.md` — pointing at the same file, so there is one document
-and not two that disagree.
+Where both files exist, `CLAUDE.md` is usually one line — `@AGENTS.md` —
+pointing at the same file, so there is one document rather than two that
+disagree. In two repos it is the other way round: the file Next.js generates
+sits in `AGENTS.md` and the real contract is in `CLAUDE.md`.
+
+<Callout type="important">
+  **Three repos have no contract file at all**, which is the gap this section
+  exists to name. If you are the next person into one of them, writing it is
+  the highest-value small PR available — and it has to be written *as you
+  work*, because a trap ledger assembled at the end is assembled from memory,
+  and the detail that made the bug expensive is the first thing to go.
+</Callout>
 
 **`AGENTS.md` is written as you go, in the PR that earns the entry.** A trap
 ledger written at the end of a project is written from memory, and the detail

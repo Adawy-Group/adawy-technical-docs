@@ -1,12 +1,21 @@
 ---
 title: Glossary
 description: The words this department uses that do not mean what you would guess — company names, platform vocabulary, and process terms.
+tags: ['Reference', 'Day 1']
 ---
 
 # Glossary
 
 Terms you will hear in reviews and on cards, in the order they are most likely
 to confuse you.
+
+<Callout type="info">
+  **There are two glossaries, and they do different jobs.** This one covers the
+  department's vocabulary — company names, process terms, stack words with a
+  local meaning. [Vocabulary & Map](/architecture/glossary) covers
+  `apps/group`'s own language: which route each feature serves, and what a
+  take, a driver, a cue or a closer is in that codebase.
+</Callout>
 
 ## Company and product names
 
@@ -29,6 +38,15 @@ flexible-packaging manufacturer founded in 1971. Lives in its own repository,
 **Aladawy Shop** — a **client**: a packaging and kitchen-supply house. Its
 storefront is [`aladawy-shop`](/repositories/aladawy-shop).
 
+**Jumeira Catering** — a **client**: a contract catering and premium buffet
+company in Benghazi, Libya. Its site is [`jumeira`](/repositories/jumeira). No
+relation to any Adawy company; a third "pack-adjacent-sounding" name is not one
+of the traps, but the client roster is longer than most people assume.
+
+**Zad Al-Hkoul** — a **client**: Zad Al-Hkoul for Agricultural Crops, a Saudi
+company operating from Egypt. Its site is
+[`zad-alhkoul`](/repositories/zad-alhkoul).
+
 **Baron** — a **client**: "The Lord of Fried Chicken", a restaurant whose QR
 menu is [`baron-menu`](/repositories/baron-menu).
 
@@ -38,8 +56,13 @@ other businesses, one standalone repo each
 ([ADR-010](/architecture/adrs), [client projects](/how-we-work/client-projects)).
 
 **Holding page** — a single branded screen standing in for an unbuilt site.
-`apps/studio` and `apps/pack` are holding pages today. They are real apps with
-real deploys, which is why a shared-package change verifies three apps.
+`apps/studio` and `apps/pack` are holding pages today, and so are the current
+states of `jumeira` and `zad-alhkoul`. They are real apps with real deploys,
+which is why a shared-package change verifies three apps.
+
+**Group microsite** — Adawy Group's own property that is not a brand site.
+There is one, [`adawy-group-links`](/repositories/adawy-group-links), and its
+placement outside the monorepo is an open question rather than a pattern.
 
 ## Platform vocabulary
 
@@ -103,9 +126,25 @@ physical equivalents are lint errors.
 
 ## Process terms
 
+**The CTO / the lead** — the same person. Pages written from the board's point
+of view say "the lead"; pages written from the org chart's say "CTO". Both mean
+Seif ([team map](/about/team)).
+
+**Staging** — **not a separate environment.** There are two: a per-PR
+**preview**, and **production**. "Staging" in this handbook means the
+production deployment before its custom domain is attached — the Vercel project
+URL leadership reviews ([deployment](/how-we-work/deployment#environments)).
+
+**The floor** — the set of things every client project must run regardless of
+its own choices: strict TypeScript, bilingual with real RTL, Tailwind v4, WCAG
+2.1 AA, and a publishing switch. Above the floor, projects vary and have to
+justify it ([tech stack](/architecture/tech-stack#what-a-client-project-is-required-to-run)).
+
 **Ready for Dev** — a board state meaning design approved *and* fully
-specified. Work does not start before it, even small work
-([definition of done](/how-we-work/definition-of-done)).
+specified. Work does not start before it, even small work — with one stated
+exception, a fix to this handbook
+([definition of done](/how-we-work/definition-of-done),
+[first PR](/onboarding/first-pr)).
 
 **WIP limit** — the cap on how many cards may be in the build stage at once.
 The single most important rule on the board: it forces work to be finished
@@ -117,7 +156,9 @@ how this team thinks.
 
 **Verify job** — the CI job running lint, typecheck, test and build across
 every app and package, unfiltered on purpose so one app's change cannot break a
-sibling.
+sibling. It is called `verify` in the platform, this handbook and
+`aladawy-pack`; `checks` in `jumeira`; and it is split across two workflows in
+`zad-alhkoul`. Read the repo's own workflow before quoting a job name.
 
 **Affected** — the Turborepo resolution deciding which apps a change actually
 reaches, and therefore which get deployed. Verification is never filtered;

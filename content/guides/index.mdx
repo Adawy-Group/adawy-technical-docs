@@ -1,29 +1,61 @@
 ---
 title: Guides
+description: Practical how-tos for recurring tasks - launching a brand site, building an intake form, and holding the performance budget.
+tags: ['How-to', 'Reference']
 ---
 
 # Guides
 
-Practical how-tos for recurring tasks. Each guide follows the same shape:
-problem → steps → pitfalls.
+Practical how-tos for recurring tasks. Each follows the same shape: problem →
+steps → pitfalls. A guide assumes you already know *why* — that is what
+[Architecture](/architecture) and [Standards](/standards) are for.
 
-- **[Launching a New Brand Site](/guides/launch-new-brand)** — the
-  configuration-not-build workflow that turns six weeks into one.
-- **[Forms & Enquiries](/guides/forms-and-enquiries)** — one zod schema for
-  form and server, spam defences, and the single delivery seam.
-- **[Performance Checklist](/guides/performance-checklist)** — how we hold the
-  Lighthouse target on every page.
+<Cards num={3}>
+  <Cards.Card title="Launching a New Brand Site" href="/guides/launch-new-brand" arrow>
+    The configuration-not-build workflow that turns six weeks into one.
+  </Cards.Card>
+  <Cards.Card title="Forms & Enquiries" href="/guides/forms-and-enquiries" arrow>
+    One zod schema for form and server, spam defences, and the single delivery
+    seam.
+  </Cards.Card>
+  <Cards.Card title="Performance Checklist" href="/guides/performance-checklist" arrow>
+    The three numbers, which one blocks a merge, and the checks that get you
+    there.
+  </Cards.Card>
+</Cards>
 
-Related, elsewhere in the handbook:
+## Elsewhere in the handbook
 
-- **[Client Projects](/how-we-work/client-projects)** — starting one, and the
-  launch checklist.
-- **[Platform Architecture](/architecture/platform-architecture)** — adding a
-  scroll take to `apps/group`.
-- **[i18n & RTL](/standards/i18n-rtl)** — managing bilingual content.
+| I need to… | Go to |
+| ---------- | ----- |
+| Set up any repository locally | [Dev Environment Setup](/onboarding/environment) |
+| Start a new client project, or launch one | [Client Projects](/how-we-work/client-projects) |
+| Add a scroll take to `apps/group` | [Platform Architecture](/architecture/platform-architecture) |
+| Add or change a translation | [i18n & RTL](/standards/i18n-rtl) |
+| Decide where a new piece of code belongs | [Project Structure](/standards/project-structure) |
+| Recognise a pattern in an unfamiliar repo | [Design Patterns](/architecture/patterns) |
+| Work out why a check went red | [When a check goes red](/onboarding/first-pr#when-a-check-goes-red) |
 
-Planned (add yours via PR — solving something tricky twice means it belongs
-here):
+## Guides this section still owes
 
-- Data fetching patterns on the platform (RSC, caching, Odoo reads)
-- Adding a brand to the multi-tenant `apps/sites`, once it exists
+Not written yet, in rough order of how often the absence is felt. **Solving
+something tricky twice means it belongs here** — write the guide in the PR that
+solves it the second time.
+
+- **Adding a component to `@adawy/ui`.** "Fixes flow upstream to `packages/`"
+  is stated on four pages and has no procedure behind it.
+- **Reading a failing CI run** beyond the summary table on
+  [Your First PR](/onboarding/first-pr#when-a-check-goes-red).
+- **Adding a locale**, end to end — routing, the message tree, `hreflang`, the
+  parity gate, the sitemap.
+- **Creating and configuring a Vercel project** — root directory, environment
+  variables, domain. Two of its failure modes are already in
+  [Troubleshooting](/help/troubleshooting).
+- **The asset bake pipeline.** `assets:bake`, `og:bake`, `pattern:bake` and
+  friends are named on six pages and taught on none.
+- **Incident response and rollback.** "Production is broken" currently routes
+  to the CTO with no runbook behind it.
+- **Dependency upgrades**, including the pins that are load-bearing.
+- **Data fetching and caching on the platform** — deliberately unwritten until
+  a repo actually practices it, because a standard nobody follows is worse than
+  no standard.

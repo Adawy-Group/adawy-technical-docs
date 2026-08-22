@@ -1,5 +1,7 @@
 ---
 title: Products & Architecture
+description: The shape of the platform, the reasoning behind it, and where each architectural fact lives — one monorepo, shared packages, a thin app per brand.
+tags: ['Explanation', 'Start here']
 ---
 
 # Products & Architecture
@@ -9,34 +11,52 @@ thin app per brand.** Each of the 38 companies keeps its own domain, its own
 visual identity, and its own deployment; behind the scenes, every site is
 composed from the same `@adawy/*` packages.
 
+Dashed boxes are **decided but not built**
+([the ledger](/architecture/tech-stack#built-decided-deferred--read-this-first)).
+
 ```mermaid
 flowchart TD
-    subgraph MONO["The adawy monorepo (Turborepo)"]
+    subgraph MONO["adawy-platform (Turborepo + pnpm)"]
         subgraph PKGS["packages/ — where the engineering lives"]
-            UI["@adawy/ui\nshadcn primitives"]
-            TW["@adawy/design\ndesign tokens"]
-            MO["@adawy/motion\nGSAP + Lenis"]
-            IN["@adawy/i18n\nlocales + direction"]
-            SEOP["@adawy/site\nidentity · routes · metadata"]
-            UT["@adawy/holding\nholding-page shell"]
+            UI["@adawy/ui<br/>shadcn primitives"]
+            TW["@adawy/design<br/>design tokens"]
+            MO["@adawy/motion<br/>GSAP + Lenis"]
+            IN["@adawy/i18n<br/>locales + direction"]
+            SEOP["@adawy/site<br/>identity · routes · metadata"]
+            UT["@adawy/holding<br/>holding-page shell"]
+            LINT["@adawy/eslint-config<br/>@adawy/typescript-config<br/>the rules, machine-enforced"]
         end
         subgraph APPS["apps/ — a thin app per flagship + one multi-tenant app"]
             G["group"]
             S["studio"]
             P["pack"]
-            N["sites\n(long-tail brands, ADR-008)"]
+            N["sites<br/>long-tail brands, ADR-008"]
         end
         PKGS --> APPS
     end
     G --> DG["adawygroup.com"]
     S --> DS["adawystudio.com"]
     P --> DP["adawypack.com"]
-    APPS --> BE["Node.js backend (NestJS) — Phase 2\nauth · business logic · integrations"]
-    BE --> ODOO["Odoo (system of record)\nfinance · inventory · payroll · manufacturing"]
+    APPS --> BE["apps/api — Node.js + NestJS<br/>auth · business logic · integrations"]
+    BE --> ODOO["Odoo (system of record)<br/>finance · inventory · payroll · manufacturing"]
     BE --> DB[("PostgreSQL + pgvector")]
-    BE --> PORTAL["Client portal (Phase 2)\nportal.adawygroup.com"]
-    BE --> EMP["Employee portal (Phase 3)\ninternal AI · search · dashboards"]
+    BE --> PORTAL["Client portal<br/>portal.adawygroup.com"]
+    BE --> EMP["Employee portal<br/>internal AI · search · dashboards"]
+
+    classDef planned stroke-dasharray: 5 4;
+    class N,BE,DB,PORTAL,EMP,DS,DP planned;
 ```
+
+| | Built today | Decided, not built |
+| --- | --- | --- |
+| Apps | `group`, `studio`, `pack` | `sites`, `api` |
+| Packages | all **eight** `@adawy/*` | — |
+| Domains | adawygroup.com | adawystudio.com, adawypack.com |
+| Behind them | — | the backend, PostgreSQL, both portals |
+
+`apps/studio` and `apps/pack` are **holding pages** — one branded screen each,
+sharing `@adawy/holding`. They are real apps with real deploys, which is why a
+change to `packages/ui` verifies and deploys three apps rather than one.
 
 ## Why this shape (the business reason)
 
@@ -61,19 +81,36 @@ department.
 
 ## In this section
 
-- **[Our Systems](/architecture/systems)** — every system we run or are
-  replacing, and how they connect.
-- **[Tech Stack & Why](/architecture/tech-stack)** — every tool, with the
-  reasoning. The principle: **own what we build; avoid subscriptions that
-  compound at 110-brand scale.**
-- **[Roadmap & Phases](/architecture/roadmap)** — the three product phases:
-  the websites → the client portal → the employee portal, with AI woven
-  through.
-- **[Platform Architecture](/architecture/platform-architecture)** — how
-  `apps/group` is actually built: one WebGL canvas, the scroll-take split, and
-  the quality governor.
-- **[Decision Records](/architecture/adrs)** — the significant decisions,
-  their context, and their trade-offs.
+<Cards num={2}>
+  <Cards.Card title="Tech Stack & Why" href="/architecture/tech-stack" arrow>
+    Every tool, with its reason — and an honest ledger of what is running
+    versus what is only decided.
+  </Cards.Card>
+  <Cards.Card title="Decision Records" href="/architecture/adrs" arrow>
+    Twelve decisions, their context and their trade-offs. The fastest way to
+    absorb how this team thinks.
+  </Cards.Card>
+  <Cards.Card title="Design Patterns" href="/architecture/patterns" arrow>
+    The five patterns that recur across every repo, each with the failure it
+    exists to prevent.
+  </Cards.Card>
+  <Cards.Card title="Platform Architecture" href="/architecture/platform-architecture" arrow>
+    How `apps/group` is actually built: three layers, one WebGL canvas, one
+    quality governor.
+  </Cards.Card>
+  <Cards.Card title="Vocabulary & Map" href="/architecture/glossary" arrow>
+    `apps/group`'s own language — which route each feature serves, and what a
+    take, a driver or a closer is.
+  </Cards.Card>
+  <Cards.Card title="Our Systems" href="/architecture/systems" arrow>
+    Every system we run or are replacing, and how they connect — including
+    Odoo.
+  </Cards.Card>
+  <Cards.Card title="Roadmap & Phases" href="/architecture/roadmap" arrow>
+    The websites → the client portal → the employee portal, and what each
+    phase proves.
+  </Cards.Card>
+</Cards>
 
 <Callout type="info">
   This section describes **Adawy Group's own products**. The department also

@@ -1,52 +1,129 @@
 ---
 title: Your First PR
+description: The full loop from card to Done — branch, build, the gates, the review, and the verification step people skip.
+tags: ['Tutorial', 'Week 1', '~2 hours']
 ---
 
 # Your First PR
 
 Target: **merged within your first week.** The full loop matters more than the
-size of the change.
+size of the change — by the end of it you will have touched the board, the
+repo, the checks, the preview pipeline, review, and production.
 
-## 1. Pick the card
+<Steps>
 
-Your first card comes from the top of **This Week** — the lead flags starter
-cards for new joiners. Good first PRs: a stub page in this handbook, a small
-Content card, a Maintenance/grey card. The card must be in **Ready for Dev**
-(design approved + fully specified) before you start —
-[that's the rule](/how-we-work/definition-of-done) even for small work.
+### Pick the card
 
-## 2. Branch and build
+Your first card comes from the top of **This Week** — the CTO flags starter
+cards for new joiners. Good ones: a stub page in this handbook, a small Content
+card, a Maintenance card.
+
+The card must be in **Ready for Dev** — design approved *and* fully specified —
+before you start. [That is the rule](/how-we-work/definition-of-done) even for
+small work.
+
+<Callout type="info">
+  **One exception, and it is deliberate: a fix to this handbook needs no card.**
+  Every page carries an "Edit this page on GitHub" link, and using it is
+  explicitly encouraged. Documentation is the one place where the cost of a
+  wrong change is a revert, so the process gets out of the way. Everything that
+  ships to a user goes through a card.
+</Callout>
+
+### Branch
 
 ```bash
 git checkout main && git pull
-git checkout -b fix/navbar-rtl-alignment   # type prefix matches the card's label
+git checkout -b fix/navbar-rtl-alignment
 ```
+
+The prefix matches the card's Type label: `feat/`, `fix/`, `content/`,
+`chore/` ([git workflow](/how-we-work/git-workflow)).
+
+### Build it, then run the gates yourself
 
 Small commits, written for the reader. Check the
 [coding conventions](/standards/coding) as you go — strict TS, design tokens,
-accessibility, no raw `<img>`.
+logical direction classes, accessibility, no raw `<img>`.
 
-## 3. Open the PR
+Before you push, run what CI runs. **A red check is the author's to fix, not
+the reviewer's to catch.**
 
-- Title says what it does; description says **why**, and links the Trello card.
-- Paste the PR link back onto the card.
-- Wait for the automated checks and the preview deploy — then click through
-  your own preview before requesting review. Reviewers review working pages,
-  not promises.
+<Tabs items={['This handbook', 'The platform', 'A client repo', 'zad-alhkoul']} storageKey="repo-kind">
+<Tabs.Tab>
+```bash
+node scripts/check-links.mjs   # runs first in CI, and needs no build
+npm run build
+```
+`check-links` catches the two most likely first-PR mistakes: a mistyped or
+relative cross-section link, and a new page missing from its `_meta.ts`. The
+build catches neither.
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+pnpm turbo lint typecheck test build
+pnpm format:check
+```
+Both lines. `format:check` is not a turbo task, and `--filter` skips the
+packages — each has let a red CI through on its own.
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+pnpm lint typecheck test
+pnpm format:check
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+pnpm verify
+```
+One composed script: typecheck → lint → format:check → check:i18n → build.
+There is no `test` script in this repo.
+</Tabs.Tab>
+</Tabs>
 
-## 4. Review → merge → verify
+### Push and open the PR
 
-The lead reviews within one working day. Address feedback with new commits
-(don't force-push during review). After merge: confirm the change on staging,
-check Sentry is quiet, move the card to **Done**.
+```bash
+git push -u origin fix/navbar-rtl-alignment
+gh pr create --fill        # or open the link git prints
+```
 
-## 5. You shipped
+- **Title says what it does; the description says *why*, and links the Trello
+  card.** Paste the PR link back onto the card — that two-way link is how
+  design, code and status stay in one place.
+- Wait for the checks and the preview deploy, then **click through your own
+  preview** before requesting review. Reviewers review working pages, not
+  promises — and open `/ar` as well as `/en` if you touched layout.
 
-You've now touched every part of the system you'll use daily: the board, the
-repo, the checks, the preview pipeline, review, staging, and Done. Everything
-after this is the same loop with bigger cards.
+### Review, merge, verify
+
+The CTO reviews within one working day. Address feedback with new commits —
+**do not force-push during review**, because it destroys the reviewer's place
+in the diff.
+
+After merge, `main` deploys automatically. Then do the step people skip:
+**open the deployed URL and confirm the change is actually live**, on a phone
+if it is visual. Merged is not shipped
+([deployment](/how-we-work/deployment#the-path-to-production)).
+
+Move the card to **Done**.
+
+</Steps>
+
+## When a check goes red
+
+| The check | What it is telling you |
+| --------- | ---------------------- |
+| `check-links` | A link points at a page or heading that does not exist, or a page is missing from its `_meta.ts`. The message names the file and the target |
+| `lint` | Usually an architecture rule, not a style one — a physical direction class, a banned import, a filename case. The error message carries the replacement |
+| `typecheck` | In `adawy-group-links`, run `pnpm typecheck` in full: it is `next typegen && tsc`, and the generated route types do not exist without the first half |
+| `format:check` | Run the repo's `format` script and commit the result. Never argue formatting in review |
+| `build` | A prerender error. Open that route in `dev` — dev shows the real message the production build hides |
+| `test` | Most often message parity: a key exists in one locale and not the other ([why that fails the build](/standards/i18n-rtl#the-parity-test-is-a-merge-gate)) |
+| accessibility | An axe violation on some route. It names the route and the rule ([how to run it locally](/standards/testing)) |
 
 <Callout>
   Found anything confusing during this process? The docs failed you — fixing
-  them is your natural second PR.
+  them is your natural second PR, and it needs no card.
 </Callout>

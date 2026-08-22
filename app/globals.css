@@ -1,7 +1,20 @@
 /*
  * Project styles layered on top of the Nextra theme.
  * Imported after `nextra-theme-docs/style.css` so these rules win.
+ *
+ * Everything here is themed through `currentColor` rather than a light and a
+ * dark palette. The theme flips the text colour on `html.dark`; mixing against
+ * it means one declaration is correct in both modes and neither can drift.
+ * The single exception is the accent, which reuses the theme's own
+ * `--x-color-primary-*` so a link and a badge never disagree about "our blue".
  */
+
+:root {
+  --adawy-hairline: color-mix(in oklab, currentColor 14%, transparent);
+  --adawy-hairline-soft: color-mix(in oklab, currentColor 9%, transparent);
+  --adawy-surface: color-mix(in oklab, currentColor 4%, transparent);
+  --adawy-muted: color-mix(in oklab, currentColor 62%, transparent);
+}
 
 /*
  * Wide content tables (e.g. the 3-column "Why" tables) scroll horizontally
@@ -31,4 +44,290 @@
   main table::-webkit-scrollbar-track {
     background: transparent;
   }
+}
+
+/* ── The page header strip ─────────────────────────────────────────────────
+ * Sits between the breadcrumb and the h1: reading time, last change, tags.
+ * Deliberately quiet — it is orientation, not content, and must never compete
+ * with the page title.
+ */
+
+.adawy-page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--adawy-muted);
+}
+
+.adawy-page-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.adawy-page-meta-icon {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
+}
+
+.adawy-page-meta-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.adawy-page-tag {
+  padding: 0.0625rem 0.5rem;
+  border: 1px solid var(--adawy-hairline);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+/* ── Badges ────────────────────────────────────────────────────────────────
+ * One colour per meaning, so the palette is learnable: green = ours and live,
+ * amber = provisional, grey = neutral fact.
+ */
+
+.adawy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.5rem;
+  border: 1px solid var(--adawy-hairline);
+  border-radius: 9999px;
+  font-size: 0.75em;
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: middle;
+  background: var(--adawy-surface);
+}
+
+.adawy-badge-group,
+.adawy-badge-live {
+  color: #15803d;
+  border-color: color-mix(in oklab, #15803d 30%, transparent);
+  background: color-mix(in oklab, #15803d 8%, transparent);
+}
+
+.adawy-badge-client {
+  color: var(--x-color-primary-600);
+  border-color: color-mix(in oklab, var(--x-color-primary-600) 32%, transparent);
+  background: color-mix(in oklab, var(--x-color-primary-600) 8%, transparent);
+}
+
+.adawy-badge-internal {
+  color: #7c3aed;
+  border-color: color-mix(in oklab, #7c3aed 30%, transparent);
+  background: color-mix(in oklab, #7c3aed 8%, transparent);
+}
+
+.adawy-badge-building,
+.adawy-badge-holding {
+  color: #b45309;
+  border-color: color-mix(in oklab, #b45309 30%, transparent);
+  background: color-mix(in oklab, #b45309 8%, transparent);
+}
+
+html.dark .adawy-badge-group,
+html.dark .adawy-badge-live {
+  color: #4ade80;
+}
+
+html.dark .adawy-badge-internal {
+  color: #c4b5fd;
+}
+
+html.dark .adawy-badge-building,
+html.dark .adawy-badge-holding {
+  color: #fbbf24;
+}
+
+/* `planned`, `private`, `public` and `neutral` intentionally keep the base
+ * grey: they are facts about a thing, not a judgement on its health. */
+
+/* ── Card grids ────────────────────────────────────────────────────────────
+ * Nextra's Cards.Card renders its children ABOVE the title, which is right for
+ * a card whose child is an image and backwards for one whose child is a
+ * sentence describing where the link goes. Reverse the visual order rather
+ * than dropping the sentence: the title is what a reader scans, and the line
+ * under it is what decides the click.
+ */
+
+.nextra-cards .nextra-card {
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+}
+
+.nextra-cards .nextra-card > span {
+  padding-bottom: 0.375rem;
+}
+
+.nextra-cards .nextra-card > p {
+  margin: 0;
+  padding: 0 1rem 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--adawy-muted);
+}
+
+/* ── Stat tiles ────────────────────────────────────────────────────────────*/
+
+.adawy-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.adawy-stat {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--adawy-hairline-soft);
+  border-radius: 0.625rem;
+  background: var(--adawy-surface);
+}
+
+.adawy-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.adawy-stat-label {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.adawy-stat-hint {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--adawy-muted);
+}
+
+/* ── Checklists ────────────────────────────────────────────────────────────*/
+
+.adawy-checklist {
+  margin-top: 1.5rem;
+  padding: 1rem 1.125rem 0.75rem;
+  border: 1px solid var(--adawy-hairline-soft);
+  border-radius: 0.625rem;
+  background: var(--adawy-surface);
+}
+
+.adawy-checklist-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--adawy-muted);
+}
+
+.adawy-checklist-count strong {
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.adawy-checklist[data-complete='true'] .adawy-checklist-count strong {
+  color: #15803d;
+}
+
+html.dark .adawy-checklist[data-complete='true'] .adawy-checklist-count strong {
+  color: #4ade80;
+}
+
+.adawy-checklist-reset {
+  font-size: 0.75rem;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+.adawy-checklist-reset:hover {
+  opacity: 1;
+}
+
+.adawy-checklist-bar {
+  height: 3px;
+  margin-top: 0.5rem;
+  border-radius: 9999px;
+  background: var(--adawy-hairline);
+  overflow: hidden;
+}
+
+.adawy-checklist-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--x-color-primary-600);
+  transition: width 0.2s ease-out;
+}
+
+.adawy-checklist[data-complete='true'] .adawy-checklist-fill {
+  background: #16a34a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adawy-checklist-fill {
+    transition: none;
+  }
+}
+
+.adawy-checklist-items {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adawy-task + .adawy-task {
+  border-top: 1px solid var(--adawy-hairline-soft);
+}
+
+.adawy-task-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.4375rem 0;
+  cursor: pointer;
+}
+
+.adawy-task-box {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.1875rem;
+  accent-color: var(--x-color-primary-600);
+  cursor: pointer;
+}
+
+.adawy-task-box:disabled {
+  cursor: default;
+}
+
+.adawy-task-text {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.adawy-task[data-checked='true'] .adawy-task-text {
+  color: var(--adawy-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }

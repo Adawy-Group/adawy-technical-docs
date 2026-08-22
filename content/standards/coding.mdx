@@ -1,5 +1,7 @@
 ---
 title: Coding Conventions
+description: TypeScript style, comment discipline, naming, the quality bars, and the lint rules that fail the build rather than waiting for a reviewer.
+tags: ['Reference', 'Daily']
 ---
 
 # Coding Conventions
@@ -46,8 +48,11 @@ much code is AI-assisted — see [Working with AI](/how-we-work/working-with-ai)
 ## Next.js / React
 
 - **Server Components by default; `"use client"` only where interaction
-  requires it.** *Why:* this is a core part of how we hold the Lighthouse 94
-  target — less JavaScript shipped is the cheapest performance win.
+  requires it.** *Why:* less JavaScript shipped is the cheapest performance win
+  there is, and it is most of how the [performance
+  budget](/guides/performance-checklist#the-numbers-and-which-one-blocks-a-merge)
+  is held. Where the boundary goes is its own subject —
+  [Next.js & React](/standards/nextjs).
 - **`next/image` for every image; no raw `<img>`.** *Why:* WebP/AVIF and
   responsive sizing cut 25–50% of image weight — the exact failure of the old
   sites.
@@ -60,8 +65,8 @@ much code is AI-assisted — see [Working with AI](/how-we-work/working-with-ai)
 ## Testing
 
 Vitest, colocated as `*.test.ts` next to the code it covers. Test behavior and
-logic, never markup. There is deliberately no component or browser test layer —
-extract logic into `lib/` and test that instead.
+logic, never markup — extract logic into `lib/` and test that instead of
+reaching for a component test.
 
 Full rules, the merge gates, and the commands to run before calling work done:
 [Testing](/standards/testing).
@@ -112,7 +117,8 @@ message namespaces are `PascalCase` (`HomePage`, `Metadata`); leaf keys are
   image has meaningful alt text (or `alt=""` if decorative); decorative
   marquee duplicates get `aria-hidden="true"`. *Why:* these were audit
   findings on the old site — we do not re-introduce documented mistakes.
-- **Performance:** Lighthouse mobile ≥ 90 on every page; heavy media re-encoded
+- **Performance:** Lighthouse mobile **≥ 90 blocks a merge**, 94 is the launch
+  target ([the numbers](/guides/performance-checklist#the-numbers-and-which-one-blocks-a-merge)); heavy media re-encoded
   (background video ≤1080p, poster frame, `preload="none"`,
   `prefers-reduced-motion` respected). *Why:* our audience loads pages on
   Egyptian 4G; every megabyte is real money and real abandonment.

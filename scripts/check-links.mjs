@@ -6,6 +6,12 @@
  * builds green and 404s in production. A page absent from _meta.ts builds
  * green too and is simply invisible in the sidebar. Both were found by hand
  * before this existed.
+ *
+ * Two link syntaxes are checked, because the pages use both: Markdown
+ * `](/route)` and the `href="/route"` prop on JSX components such as
+ * <Cards.Card>. A card link is invisible to the Markdown matcher, so without
+ * the second pattern a section index built from cards would be the least
+ * validated page on the site rather than the most.
  */
 import fs from "node:fs"
 import path from "node:path"
@@ -31,7 +37,14 @@ function toRoute(file) {
   return route === "" ? "/" : route
 }
 
-/** Mirrors the GitHub-style slug Nextra generates for heading anchors. */
+/**
+ * Mirrors the GitHub-style slug Nextra generates for heading anchors.
+ *
+ * Each whitespace character becomes its own hyphen — runs are NOT collapsed.
+ * "Linting & formatting" loses the ampersand and keeps both spaces, so the
+ * real anchor is `linting--formatting` with two hyphens. Collapsing here would
+ * reject that valid link and accept the single-hyphen one that 404s.
+ */
 function slugify(heading) {
   return heading
     .trim()
@@ -39,18 +52,29 @@ function slugify(heading) {
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
+    .replace(/\s/g, "-")
 }
 
 const routes = new Set(mdxFiles.map(toRoute))
+
+/**
+ * Strips fenced blocks and inline code spans.
+ *
+ * Prose about links is not a link: the page documenting this script quotes the
+ * patterns it matches, and a code sample may contain a path that does not
+ * resolve on purpose. Both are inside backticks, and neither is something a
+ * reader can click.
+ */
+function withoutCode(src) {
+  return src.replace(/^```[\s\S]*?^```/gm, "").replace(/`[^`\n]*`/g, "")
+}
 
 const anchors = new Map()
 for (const file of mdxFiles) {
   const headings = new Set()
   const src = fs.readFileSync(file, "utf8")
   // Skip fenced code blocks so a `# comment` inside bash is not read as a heading.
-  const withoutCode = src.replace(/^```[\s\S]*?^```/gm, "")
-  for (const m of withoutCode.matchAll(/^#{1,6}\s+(.+)$/gm)) {
+  for (const m of src.replace(/^```[\s\S]*?^```/gm, "").matchAll(/^#{1,6}\s+(.+)$/gm)) {
     headings.add(slugify(m[1]))
   }
   anchors.set(toRoute(file), headings)
@@ -58,16 +82,37 @@ for (const file of mdxFiles) {
 
 const problems = []
 
-// 1. Internal links and their anchors.
+// 1. Internal links and their anchors, in both Markdown and JSX syntax.
+const LINK_PATTERNS = [
+  /\]\((\/[^)\s]*)\)/g, //        [text](/route#anchor)
+  /href="(\/[^"\s]*)"/g //        <Cards.Card href="/route" />
+]
+
+// Same-page anchors: [text](#heading). They carry no route, so they are
+// resolved against the file they appear in. The long slugs the ADR page links
+// between are exactly the kind that rot on an unrelated heading edit.
+const SAME_PAGE_PATTERN = /\]\((#[^)\s]+)\)/g
+
 for (const file of mdxFiles) {
-  const src = fs.readFileSync(file, "utf8")
-  for (const m of src.matchAll(/\]\((\/[^)\s]*)\)/g)) {
-    const [target, hash] = m[1].split("#")
-    const route = target === "" ? "/" : target
-    if (!routes.has(route)) {
-      problems.push(`${file}: link to ${m[1]} — no such page`)
-    } else if (hash && !anchors.get(route).has(hash)) {
-      problems.push(`${file}: link to ${m[1]} — no such heading on that page`)
+  const src = withoutCode(fs.readFileSync(file, "utf8"))
+  const own = toRoute(file)
+
+  for (const pattern of LINK_PATTERNS) {
+    for (const m of src.matchAll(pattern)) {
+      const [target, hash] = m[1].split("#")
+      const route = target === "" ? "/" : target
+      if (!routes.has(route)) {
+        problems.push(`${file}: link to ${m[1]} — no such page`)
+      } else if (hash && !anchors.get(route).has(hash)) {
+        problems.push(`${file}: link to ${m[1]} — no such heading on that page`)
+      }
+    }
+  }
+
+  for (const m of src.matchAll(SAME_PAGE_PATTERN)) {
+    const hash = m[1].slice(1)
+    if (!anchors.get(own).has(hash)) {
+      problems.push(`${file}: link to ${m[1]} — no such heading on this page`)
     }
   }
 }

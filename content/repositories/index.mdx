@@ -1,38 +1,62 @@
 ---
 title: The Repository Map
-description: Every repository in the adawy-group organization — what it is, which world it belongs to, and which one to clone for the work in front of you.
+description: Every repository in the Adawy-Group organization — what it is, which world it belongs to, which one to clone for the work in front of you, and where the shared conventions genuinely hold.
+tags: ['Reference', 'Start here']
 ---
 
 # The Repository Map
 
-Five repositories, in **two worlds**. Knowing which world a repo belongs to
-tells you which rules apply to it before you open a single file.
+**Eight repositories.** Knowing which world a repo belongs to tells you which
+rules apply to it before you open a single file.
+
+<Stats>
+  <Stat value="8" label="repositories" hint="in the Adawy-Group org" />
+  <Stat value="1" label="Group monorepo" hint="every brand site" />
+  <Stat value="5" label="client projects" hint="one repo each" />
+  <Stat value="7" label="bilingual" hint="all but this handbook" />
+</Stats>
 
 | Repository | World | What it is | Stack |
 | ---------- | ----- | ---------- | ----- |
-| [`adawy-platform`](/repositories/adawy-platform) | Group | The monorepo behind every Adawy Group brand site | Turborepo + pnpm, Next.js 16 |
-| [`aladawy-pack`](/repositories/aladawy-pack) | Client | Website for Aladawy Pack for Printing & Packaging | Next.js 16, standalone |
-| [`aladawy-shop`](/repositories/aladawy-shop) | Client | Quote-request storefront for Aladawy Shop | Next.js 16 + Redux, standalone |
-| [`baron-menu`](/repositories/baron-menu) | Client | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
-| [`adawy-technical-docs`](/repositories/adawy-technical-docs) | Internal | This handbook | Nextra 4 |
+| [`adawy-platform`](/repositories/adawy-platform) | <Badge tone="group">Group</Badge> | The monorepo behind every Adawy Group brand site | Turborepo + pnpm, Next.js 16 |
+| [`adawy-group-links`](/repositories/adawy-group-links) | <Badge tone="group">Group</Badge> | The Group's own link-in-bio page — standalone, and an [open question](#the-third-case-and-the-open-question) | Next.js 16, standalone |
+| [`aladawy-pack`](/repositories/aladawy-pack) | <Badge tone="client">Client</Badge> | Website for Aladawy Pack for Printing & Packaging | Next.js 16, standalone |
+| [`aladawy-shop`](/repositories/aladawy-shop) | <Badge tone="client">Client</Badge> | Quote-request storefront for Aladawy Shop | Next.js 16 + Redux, standalone |
+| [`jumeira`](/repositories/jumeira) | <Badge tone="client">Client</Badge> | Pre-launch film site for Jumeira Catering, Benghazi | Next.js 16, standalone |
+| [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | Site for Zad Al-Hkoul for Agricultural Crops | Next.js 16, standalone |
+| [`baron-menu`](/repositories/baron-menu) | <Badge tone="client">Client</Badge> | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
+| [`adawy-technical-docs`](/repositories/adawy-technical-docs) | <Badge tone="internal">Internal</Badge> | This handbook | Nextra 4 |
 
 ## The two worlds
 
 **Group work** is Adawy Group's own brands — Adawy Group, Adawy Studio, Adawy
-Pack, and the rest of the portfolio. It all lives in **one monorepo**,
-`adawy-platform`, on shared `@adawy/*` packages. This is where
-[ADR-001](/architecture/adrs) and [ADR-008](/architecture/adrs) apply, and it
-is the only place they apply.
+Pack, and the rest of the portfolio. Every brand **site** lives in one
+monorepo, `adawy-platform`, on shared `@adawy/*` packages. This is where
+[ADR-001](/architecture/adrs) and [ADR-008](/architecture/adrs) apply, and it is
+the only place they apply.
 
 **Client work** is software the department builds *for other businesses*.
-Aladawy Pack, Aladawy Shop and Baron are customers of the department, not
-Group brands. Each gets **its own standalone repository**, deliberately not
-coupled to `@adawy/*` — see [ADR-010](/architecture/adrs) for why, and
+Aladawy Pack, Aladawy Shop, Jumeira Catering, Zad Al-Hkoul and Baron are
+customers of the department, not Group brands. Each gets **its own standalone
+repository**, deliberately not coupled to `@adawy/*` — see
+[ADR-010](/architecture/adrs) for why, and
 [Client Projects](/how-we-work/client-projects) for how to run one.
 
 Both worlds share the department's *standards* — TypeScript strict, bilingual
 and RTL from day one, accessibility, the same review and deployment
 discipline. What they do not share is **code**.
+
+### The third case, and the open question
+
+[`adawy-group-links`](/repositories/adawy-group-links) is Adawy Group's own
+property in a standalone repository, which is neither pattern. It is a
+one-screen microsite rather than a brand site, and the repository itself
+records no reason for sitting outside the monorepo.
+
+Until that is decided, read the rule as stated above — **Group brand *sites*
+live in the monorepo** — and treat the microsite as a single open case, not a
+precedent. Starting a new Group property outside the platform is still an
+[ADR-010](/architecture/adrs) decision, not a default.
 
 <Callout type="warning">
   **Adawy Pack and Aladawy Pack are two different companies**, one letter
@@ -54,8 +78,11 @@ discipline. What they do not share is **code**.
 | Anything on adawygroup.com | `adawy-platform` → `apps/group` |
 | A shared component, token, or motion primitive | `adawy-platform` → `packages/` |
 | A new Adawy Group brand site | `adawy-platform` → a new `apps/<brand>` ([guide](/guides/launch-new-brand)) |
+| The Group's link-in-bio page | `adawy-group-links` |
 | The Aladawy Pack website | `aladawy-pack` |
 | The Aladawy Shop storefront | `aladawy-shop` |
+| The Jumeira Catering site | `jumeira` |
+| The Zad Al-Hkoul site | `zad-alhkoul` |
 | Baron's menu — a price, an item, a photo | `baron-menu` |
 | Fixing this handbook | `adawy-technical-docs` |
 
@@ -63,29 +90,99 @@ If you are new, clone [`adawy-technical-docs`](/repositories/adawy-technical-doc
 first. It is the smallest repo, it builds in under a minute, and getting it
 running proves your toolchain before anything harder depends on it.
 
-## What every repo has in common
+## Start with the repo you have been given
 
-Whatever world it belongs to, every repository in the org follows the same
-conventions — this is what makes moving between them cheap:
+<Cards num={3}>
+  <Cards.Card title="adawy-platform" href="/repositories/adawy-platform" arrow>
+    The monorepo. One WebGL canvas, three locales, eight shared packages.
+  </Cards.Card>
+  <Cards.Card title="adawy-group-links" href="/repositories/adawy-group-links" arrow>
+    One screen, two locales, five tests — and an open placement question.
+  </Cards.Card>
+  <Cards.Card title="aladawy-pack" href="/repositories/aladawy-pack" arrow>
+    A monochrome marketing site with a surface system worth learning.
+  </Cards.Card>
+  <Cards.Card title="aladawy-shop" href="/repositories/aladawy-shop" arrow>
+    A storefront where nothing has a price. Quote by grade, not checkout.
+  </Cards.Card>
+  <Cards.Card title="jumeira" href="/repositories/jumeira" arrow>
+    One pinned scroll carrying two scrubbed films. The hardest client build.
+  </Cards.Card>
+  <Cards.Card title="zad-alhkoul" href="/repositories/zad-alhkoul" arrow>
+    English-default, `src/`-rooted, and a three-layer design system.
+  </Cards.Card>
+  <Cards.Card title="baron-menu" href="/repositories/baron-menu" arrow>
+    No framework, no build step, on purpose. Edit one file to change the menu.
+  </Cards.Card>
+  <Cards.Card title="adawy-technical-docs" href="/repositories/adawy-technical-docs" arrow>
+    This handbook. The best first clone and the best first pull request.
+  </Cards.Card>
+</Cards>
+
+## What the repos actually share
+
+Moving between repos is cheap because they agree on most things. They do not
+agree on all of them, and a rule you assume is universal is worse than one you
+know is not — so here is the honest matrix.
+
+| | Package manager | AGENTS.md | CI | Tests | Bilingual |
+| --- | --- | --- | --- | --- | --- |
+| `adawy-platform` | pnpm 10.33 | ✅ | ✅ | ✅ | en · ar · fr |
+| `adawy-group-links` | pnpm 11.5 | in `CLAUDE.md` | ✅ | ✅ | en · ar |
+| `aladawy-pack` | pnpm 11.4 | ❌ | ✅ | ✅ | en · ar |
+| `aladawy-shop` | pnpm | ✅ | ❌ | ✅ | ar · en |
+| `jumeira` | pnpm 11.5 | ✅ | ✅ | ✅ | ar · en |
+| `zad-alhkoul` | pnpm 11.5 | in `CLAUDE.md` | ✅ | ❌ | en · ar |
+| `baron-menu` | — none | ❌ | ❌ | ❌ | en · ar |
+| `adawy-technical-docs` | **npm** | ❌ | ✅ | ❌ | English only |
+
+**What is genuinely universal:**
 
 - **`main` is the deployable branch.** Work lands through reviewed pull
   requests ([git workflow](/how-we-work/git-workflow)).
-- **An `AGENTS.md` at the root** recording the architectural constraints and
-  the traps already hit in that codebase. Read it before your first change —
-  see [Working with AI](/how-we-work/working-with-ai).
 - **A `README.md`** covering what the project is, how to run it, and what
   ships. The README is the tour; `AGENTS.md` is the contract.
-- **Bilingual with real RTL** (`baron-menu` included), and every human-readable
-  string in a message file rather than in a component
-  ([i18n & RTL](/standards/i18n-rtl)).
-- **Prettier + ESLint gate CI.** Formatting is never a review conversation.
+- **Bilingual with real RTL** in every product repo — `baron-menu` included —
+  with every human-readable string in a message file rather than in a component
+  ([i18n & RTL](/standards/i18n-rtl)). This handbook is the exception, English
+  only by decision ([ADR-007](/architecture/adrs)).
+- **Prettier settles formatting.** Where CI exists it gates on it; formatting is
+  never a review conversation.
+
+**Where the gaps are, and what they mean:**
+
+- **`aladawy-pack` and `baron-menu` have no `AGENTS.md`**, and in
+  `adawy-group-links` and `zad-alhkoul` the file holds only the block Next.js
+  generates — the real constraints are in `CLAUDE.md`. If you are the next
+  person into one of those repos, writing it is the highest-value small PR
+  available ([working with AI](/how-we-work/working-with-ai)).
+- **`aladawy-shop` has no CI at all.** It has tests and it has a `test` script;
+  nothing runs them on a push. Its four gates are yours to run by hand until
+  that is fixed.
+- **`zad-alhkoul` has no test framework.** Its locale parity is guarded by a
+  standalone Node script instead ([why that is not the same
+  thing](/repositories/zad-alhkoul#testing-what-is-actually-there)).
+- **The CI job is not called the same thing everywhere** — `verify` here and in
+  `aladawy-pack`, `checks` in `jumeira`, split across two workflows in
+  `zad-alhkoul`. Read the repo's own workflow before quoting a job name in a
+  PR.
+
+<Callout type="info">
+  These gaps are the current state, not the target. The target is the left-hand
+  column of that table filled in everywhere it applies. Closing one is a
+  legitimate Maintenance card ([the board](/how-we-work/the-board)).
+</Callout>
 
 ## What is deliberately *not* a repo
 
-- **No per-brand repositories for Group brands.** Adawy Studio and Adawy Pack
-  are apps inside `adawy-platform`, not repos of their own. Splitting them
+- **No per-brand repositories for Group brand sites.** Adawy Studio and Adawy
+  Pack are apps inside `adawy-platform`, not repos of their own. Splitting them
   would recreate the ×38 maintenance problem the monorepo exists to solve.
 - **No backend repository yet.** The Phase-2 NestJS service joins the platform
   monorepo as `apps/api` when it is built ([ADR-009](/architecture/adrs)).
 - **No shared package repository.** `@adawy/*` are workspace packages inside
   the monorepo, published nowhere and versioned with the apps that use them.
+- **No shared client-project package.** The repeated patterns —
+  `lib/enquiry.ts`, the content/messages split, the publishing switch — are
+  documented here rather than packaged, because a client's deliverable has to
+  be complete on its own ([ADR-010](/architecture/adrs)).
