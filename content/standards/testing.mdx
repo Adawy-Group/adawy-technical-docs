@@ -11,7 +11,7 @@ break silently and are cheap to cover; we do not test markup.
 ## Vitest, colocated
 
 Tests sit next to the code they cover as `<module>.test.ts`. No separate test
-tree, no config file — defaults only.
+tree.
 
 ```bash
 # platform monorepo
@@ -28,6 +28,21 @@ pnpm test messages/parity
 *Why colocated:* a test beside its source is found and updated with it. A
 distant test rots, and a rotted test is worse than no test — it fails on
 intended change and passes on real regressions.
+
+<Callout type="info">
+  **Which repos actually run tests**, because the answer is not "all of them":
+  `adawy-platform` (156 test files), `jumeira` (17), `adawy-group-links` (5),
+  `aladawy-shop` and `aladawy-pack` (a parity test each).
+  [`zad-alhkoul`](/repositories/zad-alhkoul) has **no test framework at all**
+  and guards its locales with a standalone Node script instead;
+  `baron-menu` has no build step to hang a test off. Both are gaps rather than
+  decisions — [the matrix](/repositories#what-the-repos-actually-share).
+
+  Most repos need no Vitest config file. Two carry one anyway and for good
+  reasons: `jumeira` splits its suite into a DOM-free `node` project and a
+  jsdom project selected **by filename**, and `aladawy-shop` sets its own
+  environment. A config file is fine; a separate test *tree* is not.
+</Callout>
 
 ## Test behavior and logic, not declarative UI
 
@@ -46,10 +61,10 @@ intended change and passes on real regressions.
 - Components whose only job is to render props.
 - Anything a type already guarantees.
 
-## There is no component or browser test layer
+## Extract the logic; do not test the markup
 
-This is a deliberate architectural choice, not a gap in coverage — and the
-answer to "this driver is untested" is **not** to add one.
+The answer to "this driver is untested" is **not** a component test. It is to
+move the part worth testing out of the component.
 
 Choreography math, scroll beats and policy live in `lib/` precisely so they are
 testable without three.js, GSAP, or a DOM. If a `.tsx` driver or a render pass
@@ -58,7 +73,17 @@ there.** The component keeps only the wiring.
 
 *Why:* the alternative is a browser-driven suite whose slowest, flakiest tests
 cover the code that changes most often. The extraction rule gets the same
-coverage from tests that run in milliseconds and never flake.
+coverage from tests that run in milliseconds and never flake. It is also what
+made the three arithmetic modules behind `jumeira`'s film testable in Node —
+they import nothing at all.
+
+**Where a DOM is genuinely the subject, a jsdom test is allowed** — and exists.
+`jumeira` runs a second Vitest project for `*.browser.test.ts` files covering
+its intro-curtain sequence and audio player: things whose whole behaviour *is*
+DOM lifecycle, and whose two shipped defects were both invisible to a node-only
+suite. The rule is about **what** you test, not which environment you test it
+in: never a snapshot of markup, never a component whose only job is to render
+props.
 
 ## The gates that block a merge
 
@@ -91,10 +116,16 @@ pnpm --filter=group a11y:check
 site were all things a checklist was supposed to catch. A rule that only exists
 in a document gets skipped on the busy week.
 
-## The parity test
+## The parity gate
 
 Every project with a `messages/` directory asserts that all locale files share
-an identical key tree. It is a build failure. See
+an identical key tree, and failing it fails the build. Most do it with
+`messages/parity.test.ts`; [`zad-alhkoul`](/repositories/zad-alhkoul) does it
+with a dependency-free Node script wired into its own CI job, because it has no
+test runner to host one.
+
+**The gate is the requirement; the mechanism is not.** What is not negotiable
+is that a missing key stops a merge — see
 [i18n & RTL](/standards/i18n-rtl#the-parity-test-is-a-merge-gate) for why a
 missing Arabic key is worse than an obvious crash.
 

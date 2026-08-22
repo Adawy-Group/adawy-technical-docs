@@ -1,5 +1,7 @@
 ---
 title: UI & Brand Standards
+description: The engineering-facing distillation of the brand guidelines — palette, typography, motion, imagery and microcopy — plus the component rules that keep brands siblings rather than clones.
+tags: ['Reference', 'Design']
 ---
 
 # UI & Brand Standards
@@ -77,11 +79,38 @@ exaggeration.
   (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`/`text-end`); the
   physical ones are [lint errors](/standards/coding).
 
+## Which primitive library
+
+The org runs two, and the split is historical rather than principled:
+
+| Library | Where | |
+| ------- | ----- | --- |
+| **Base UI** | `@adawy/ui` in the platform, `zad-alhkoul`, `adawy-group-links` | **Where new work starts** — it is what the shared package uses |
+| Radix | `aladawy-pack`, `aladawy-shop`, `jumeira` | Fine where it is. Not a reason to migrate a working site |
+
+*Why it matters to know:* the two have different APIs for the same shapes, so a
+component copied between repos will not compile, and a fix found in one does
+not transfer. Check the repo's `package.json` before you reach for a
+primitive.
+
 ## Component rules
 
 - Build with the shared design system: `@adawy/ui` (shadcn-based primitives +
   section components), themed by `@adawy/design` tokens, animated
   with `@adawy/motion`. Check whether a component exists before writing one.
+- **A vendored shadcn component is ours to edit.** When a consumer needs
+  different geometry, change the component — do not out-specify it from the
+  call site. *Why:* shadcn's defaults are variant-scoped
+  (`data-[size=default]:h-8`, `dark:bg-input/30`), and tailwind-merge does not
+  treat a bare utility and a modified one as conflicting, so a plain `h-14`
+  passed in `className` loses no matter where it sits in the list. One form in
+  the platform once carried ~90 lines whose only job was to fight its own
+  components.
+- **A `dark:` rule can only be displaced by another `dark:` rule.** Keep fills
+  theme-neutral in the primitive (`bg-transparent`) and let the tokens invert.
+- **Never hard-code a brand colour or font in a shared package.** Brands
+  restyle through token overrides in their own `globals.css` — that is the
+  whole mechanism ([project structure](/standards/project-structure)).
 - New reusable component → it goes in `@adawy/ui`, themeable via tokens,
   accessible, documented, reviewed as platform code (it will run on every
   brand app).

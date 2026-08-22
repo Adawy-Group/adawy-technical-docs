@@ -14,14 +14,17 @@ alike — it is one of the few things that genuinely carries across both worlds.
 
 ## The locales
 
-| Project | Locales | Default |
-| ------- | ------- | ------- |
-| `adawy-platform` | `en`, `ar`, **`fr`** | `en` |
-| `aladawy-pack` | `en`, `ar` | `en` |
-| `aladawy-shop` | `ar`, `en` | **`ar`** |
-| `baron-menu` | `en`, `ar` | auto-detected from the phone |
+| Project | Locales | Default | URL shape |
+| ------- | ------- | ------- | --------- |
+| `adawy-platform` | `en`, `ar`, **`fr`** | `en` | prefixed (`group` publishes all three; `studio` and `pack` publish two) |
+| `adawy-group-links` | `en`, `ar` | `en` | **always prefixed** — `/en`, `/ar` |
+| `aladawy-pack` | `en`, `ar` | `en` | prefixed |
+| `aladawy-shop` | `ar`, `en` | **`ar`** | prefixed |
+| `jumeira` | `ar`, `en` | **`ar`** | always prefixed; `hreflang` is `ar-LY` |
+| `zad-alhkoul` | `en`, `ar` | `en` | **unprefixed default** — `/` and `/ar` |
+| `baron-menu` | `en`, `ar` | auto-detected from the phone | one page, a toggle |
 
-Two things people get wrong here:
+Three things people get wrong here:
 
 **There are three locales in the platform, not two.** `@adawy/i18n` exports
 `["en", "ar", "fr"]` and `apps/group` has a complete `messages/fr.json`.
@@ -29,9 +32,19 @@ Anything that enumerates locales must import that list — never a hand-written
 array, or French silently disappears from a sitemap, a language switcher, or a
 set of `hreflang` alternates.
 
-**The default locale is per project.** Aladawy Shop redirects `/` to `/ar`,
-because its customers are Egyptian buyers. Assuming English default will send
-you looking for a routing bug that is not there.
+**The default locale is per project, and it follows the audience.**
+[`aladawy-shop`](/repositories/aladawy-shop) and
+[`jumeira`](/repositories/jumeira) redirect to `/ar` because their customers
+are Egyptian buyers and Libyan procurement leads.
+[`zad-alhkoul`](/repositories/zad-alhkoul) defaults to English because its
+audience is export trade. Assuming an English default will send you looking for
+a routing bug that is not there.
+
+**The prefix mode is a decision too.** `always` gives an address that is stable
+no matter who opens it — which is why the link-in-bio page uses it, since a URL
+pasted into a social profile must not depend on `Accept-Language`. `as-needed`
+leaves the default locale at the bare root, which reads better for a marketing
+site's primary audience. Read the routing file before assuming either.
 
 Direction comes from one helper (`getDirection`), which sets `dir` on `<html>`.
 Arabic is the only RTL locale today; write code that asks the helper rather
@@ -96,7 +109,16 @@ In hand-written CSS the same applies: `margin-inline-start`, not
 
 **Animation axes must be direction-agnostic too.** A reveal that slides in from
 `x: -40` slides in from the wrong side in Arabic. The lint rule cannot see
-that — it is on you.
+that — it is on you. The cheapest way to be safe is the one
+[`adawy-group-links`](/repositories/adawy-group-links) took: **animate `y` and
+opacity only**, and give anything that genuinely must move sideways an explicit
+`[dir="rtl"]` counterpart.
+
+**Never letterspace Arabic.** `tracking-[0.08em]` on an uppercase Latin heading
+is a design decision; applied to Arabic it pulls a joined script apart, because
+Arabic letters connect and have no case to shout in. Pair every tracking
+utility with a `[&:lang(ar)]:tracking-normal` override — and pair `uppercase`
+with nothing, because it does nothing.
 
 ## The traps that only appear in Arabic
 

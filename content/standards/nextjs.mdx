@@ -1,0 +1,180 @@
+---
+title: Next.js & React
+description: Where the client boundary goes, how locale routing is wired, which special files every app owes, why metadata never lives in a layout, and how environment variables are handled.
+tags: ['Reference', 'Daily', 'App Router']
+---
+
+# Next.js & React
+
+Every product repository in the org is Next.js 16 App Router. These are the
+decisions you make daily in one, in the order they bite.
+
+<Callout type="warning">
+  **This is not the Next.js in any model's training data, or in most people's
+  heads.** Middleware is `proxy.ts`; `middleware.ts` does not exist in this
+  version and searching for it is a routine few minutes lost. Every repo's
+  `AGENTS.md` opens by saying so. When you or an assistant writes framework
+  code confidently, check it against `node_modules/next/dist/docs/`
+  ([working with AI](/how-we-work/working-with-ai)).
+</Callout>
+
+## Where the client boundary goes
+
+**Server Components by default. `"use client"` only where interaction requires
+it, and as far down the tree as it will go.**
+
+*Why the depth matters more than the count:* `"use client"` is not a marker on
+one component — it is a **boundary**, and everything imported below it is
+client code. A directive at the top of a page moves the entire page into the
+bundle, and the page still looks correct, so nothing tells you. Put it on the
+leaf that actually needs state.
+
+Two habits keep the boundary honest:
+
+- **Pass server-rendered output *through* a client component as `children` or
+  as a prop.** A client shell can wrap a server subtree; it just cannot import
+  one. [`zad-alhkoul`](/repositories/zad-alhkoul) renders its logo lockup on
+  the server and hands it to the interactive component as a prop, which keeps
+  ~15 KB of inlined SVG path data out of the client bundle.
+- **Count what you have.** [`adawy-group-links`](/repositories/adawy-group-links)
+  is a fully interactive page — theme reveal, copy buttons, entrance animation,
+  hover spotlights — with **seven** client components; its locale switcher,
+  link list and contact block are all server-rendered.
+
+**Only the props you pass cross the boundary, and they must be serializable.**
+A function, a class instance or a Date-with-methods does not survive it.
+
+<Callout type="info">
+  With `next-intl`, translations reach a client component only if its namespace
+  is in the client bundle. `jumeira` ships **three** namespaces to the browser
+  — 1094 bytes uncompressed — and everything else stays on the server. The
+  trap: a page can typecheck and still render the raw key path as text, because
+  the type check validates against the whole message tree rather than against
+  what actually reached the browser. It shipped once, drawing `Meta.siteName`
+  as a logo's alt text.
+</Callout>
+
+## Locale routing, wired the same way everywhere
+
+Five repos, one shape:
+
+| Concern | Where it lives | The rule |
+| ------- | -------------- | -------- |
+| The locale list, default and prefix mode | `i18n/routing.ts` (or `@adawy/i18n`) | **One source of truth.** Anything that enumerates locales imports it — never a hand-written array |
+| Locale detection and redirect | `proxy.ts` | Not `middleware.ts`. Resolution order is URL prefix → cookie → `Accept-Language` |
+| Links and router APIs | `@/i18n/navigation` | Importing `next/link` or `next/navigation`'s router APIs in app code is a **lint error** — the originals drop the locale prefix |
+| Static rendering | `setRequestLocale(locale)` in the `[locale]` layout **and each page** | Without it every page opts out of static rendering and goes dynamic, silently |
+
+**`localePrefix` is a per-project decision with a real reason behind it.**
+`always` gives stable, shareable addresses — which is why
+[`adawy-group-links`](/repositories/adawy-group-links) uses it, since a link
+pasted into a social bio must not depend on `Accept-Language`. `as-needed`
+leaves the default locale at `/`, which is why
+[`zad-alhkoul`](/repositories/zad-alhkoul) uses it for an export audience.
+Neither is the house default; read the routing file before you assume.
+
+<Callout type="warning">
+  **A `proxy.ts` matcher must exclude extension-less metadata routes.** The
+  usual `.*\..*` exclusion does not catch `/og` or `/apple-icon`, so the proxy
+  rewrites them to `/en/og` and `/en/apple-icon`, which do not exist. Both then
+  404 — for crawlers and social cards only, which is exactly where nobody
+  looks.
+</Callout>
+
+## The special files every app owes
+
+The App Router's error and not-found conventions are not optional extras. They
+are the difference between a bad moment and a blank page.
+
+| File | What it catches | Notes |
+| ---- | --------------- | ----- |
+| `app/[locale]/not-found.tsx` | An unknown route *inside* a valid locale | Keeps the right fonts, direction and theme — a bare 404 loses all three |
+| `app/not-found.tsx` | Anything outside the locale tree | |
+| `app/[locale]/error.tsx` | A render error below the locale layout | A **client** component. Its strings are translated like any other |
+| `app/global-error.tsx` | An error thrown **by** the locale layout itself | Renders its own `<html>` and `<body>` |
+
+<Callout type="error">
+  **`global-error.tsx` must not import from the pipeline that just failed.** It
+  is the boundary for an error in the locale layout — where locale, messages
+  and structured data are resolved — so importing fonts or `next-intl` there
+  makes it depend on the thing that broke. `jumeira`'s imports the stylesheet
+  and nothing else, measured at 179 bytes per page.
+
+  **Two repos ship no error boundary at all today**
+  ([`zad-alhkoul`](/repositories/zad-alhkoul) and
+  [`adawy-group-links`](/repositories/adawy-group-links)). That is a gap, not a
+  pattern — adding one is a good small PR.
+</Callout>
+
+## Metadata belongs to the page, never to the layout
+
+A locale layout sets `metadataBase`, the title template, icons and the
+manifest. **It does not set `alternates`, canonicals, or Open Graph URLs.**
+Every page builds its own.
+
+*Why:* Next merges layout metadata into pages **field by field**, so a layout
+that emits `alternates` hands its canonical URL to every route that does not
+override it — and a page telling search engines it is a different page is a
+serious, silent SEO defect. A page that forgets its canonical simply has none,
+which is recoverable. A page that inherits the wrong one is not.
+
+The same discipline applies to the origin those URLs are built from: resolve it
+**once**, in one module, and never from `VERCEL_URL` — that is the
+per-deployment hostname, so a canonical built from it points at a URL that will
+not exist next week.
+
+## Intake is a route handler
+
+Every form in the org posts to a **POST route handler** under `app/api/`, which
+validates the body with the same zod schema the form used, and delivers through
+[the seam](/architecture/patterns#1-the-seam). Server Actions are not used for
+intake in any repo today.
+
+The full pattern, with the spam defences and the reason client and server share
+one schema: [Forms & Enquiries](/guides/forms-and-enquiries).
+
+## Environment variables and configuration
+
+<Callout type="important">
+  **`NEXT_PUBLIC_` is not a naming convention — it is a publishing
+  instruction.** Anything with that prefix is inlined into the JavaScript
+  bundle and readable by every visitor. A secret with that prefix is a leaked
+  secret, and no build step will tell you.
+</Callout>
+
+- **Never invent a value.** Missing variables come from `vercel env pull`, the
+  `.env.example` in the repo, or the team password manager — never from a
+  guess, and never from chat ([security](/standards/security)).
+- **`.env.example` is a required file**, and it is the only committed env
+  template. It documents *which* variables exist and what they are for; it
+  never carries a real value.
+- **Resolve a public origin through one module with an explicit fallback
+  chain.** Every client repo does this in `lib/site.ts`. `jumeira`'s falls back
+  to a hard-coded pre-launch host rather than an env var, because CI builds on
+  a GitHub runner where Vercel's host variables do not exist — the env version
+  read back `undefined`, and every page prerendered with `metadataBase` on
+  `localhost` and link cards with no image.
+- **In the monorepo, declare every variable the build reads in `turbo.json`.**
+  `turbo/no-undeclared-env-vars` is an error, because an undeclared variable
+  gets the wrong cache key — a changed value then serves a stale build.
+
+## Security headers
+
+Set in `next.config.ts`, and currently inconsistent across repos. The floor for
+a new project:
+
+```ts
+poweredByHeader: false,
+headers: [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
+]
+```
+
+**Content-Security-Policy is deliberately absent**, and that is a recorded
+decision rather than an oversight in the two repos that state it: a page with
+inline scripts that must run before React exists needs either `'unsafe-inline'`
+(which buys close to nothing) or per-request nonces (which opt every page out
+of static prerendering). Revisit when a project has a server-rendered route
+anyway. Do not add `'unsafe-inline'` and call it done.
