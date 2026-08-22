@@ -2,9 +2,10 @@
   "name": "adawy-technical-docs",
   "version": "1.0.0",
   "private": true,
-  "description": "Adawy Group — Software Department Handbook",
+  "description": "Adawy Group \u2014 Software Department Handbook",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/unshallow.mjs",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "start": "next start",
