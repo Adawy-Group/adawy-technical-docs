@@ -122,11 +122,23 @@ something here is wrong, that link is the shortest path to fixing it.
 | Shown | Comes from |
 | ----- | ---------- |
 | "6 min read" | `readingTime: true` in `next.config.mjs`, computed from the compiled MDX |
-| "Updated 22 Aug 2026" | The file's last git commit — which is why CI checks out with `fetch-depth: 0` |
+| "Updated 22 Aug 2026" | The file's last git commit |
 | "Last updated on …" in the footer | The same timestamp, rendered by the theme |
 
 Writing any of those into a page by hand produces a number that goes stale with
 nothing failing.
+
+<Callout type="important">
+  **Both git-derived dates need full history, and two different clones have to
+  provide it.** CI checks out with `fetch-depth: 0`; the Vercel build is a
+  *separate* clone and is shallow, so `scripts/unshallow.mjs` runs as
+  `prebuild` and deepens it.
+
+  Without that, a page reports a date from before it existed — which is worse
+  than no date, because a wrong timestamp reads as a maintained page. The
+  script never fails the build; if it cannot deepen the clone it says so and
+  the dates simply degrade.
+</Callout>
 
 ## Components available in MDX
 
