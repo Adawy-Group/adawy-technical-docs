@@ -1,0 +1,206 @@
+---
+title: zad-alhkoul
+description: Client site for Zad Al-Hkoul for Agricultural Crops — an English-default bilingual build whose real deliverable so far is the three-layer design system under the holding page.
+tags: ['Client work', 'Next.js 16', 'English-default', 'Pre-launch']
+---
+
+# `zad-alhkoul`
+
+**Client project.** The marketing site for **Zad Al-Hkoul for Agricultural
+Crops** (شركة زاد الحقول للمحاصيل الزراعية) — a Saudi company operating from
+Egypt across trade, agriculture, industry and food packaging, with a separate
+humanitarian relief supply line.
+
+Private · standalone Next.js 16 app · not part of the monorepo
+
+<Stats>
+  <Stat value="EN" label="default locale" hint="unprefixed — `/` and `/ar`" />
+  <Stat value="3" label="CSS layers" hint="tokens → semantic → type" />
+  <Stat value="1" label="page route" hint="a designed holding page" />
+  <Stat value="0" label="test files" hint="a gap, not a decision" />
+</Stats>
+
+The README is honest about the current state: *"currently a bilingual holding
+page while the UI design is in progress. Everything below it — design system,
+i18n, SEO — is the real foundation the designed site will be built on."* Read
+it that way. The interesting code is the foundation, not the page.
+
+<Callout type="info">
+  The holding page is not placeholder copy. It is built around the company's
+  stated differentiator — honest weights, *"500g means 500g. Not 480. Not
+  495"* — rendered as a balance beam whose fulcrum is the check mark in the
+  logo. A holding page still has to make one argument.
+</Callout>
+
+## The two things that are different here
+
+Every client repo in the org shares a shape ([project
+structure](/standards/project-structure#a-standalone-project-client-work)).
+This one deviates twice, and both will catch you out.
+
+**English is the default and it is not prefixed.** `localePrefix: 'as-needed'`,
+so the site is `/` for English and `/ar` for Arabic — where
+[`aladawy-shop`](/repositories/aladawy-shop) and
+[`jumeira`](/repositories/jumeira) are Arabic-default with an always-on prefix.
+The reason is stated in `routing.ts`: *"the marketing site lives at `/` for the
+export audience and `/ar` for the Saudi/Egyptian audience."* The default locale
+is a per-project fact, never a house default ([i18n & RTL](/standards/i18n-rtl)).
+
+**Everything lives under `src/`.** `src/app`, `src/lib`, `src/messages`,
+`src/i18n`, `src/fonts`. The other Next.js repos put those at the root. Nothing
+depends on the difference; you just have to know before you go looking.
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Turbopack), React 19 |
+| Language | TypeScript, strict; `typescript.ignoreBuildErrors: false` |
+| Styling | Tailwind CSS v4 (CSS-first, no JS config) + shadcn/ui on `@base-ui/react` |
+| Motion | GSAP + `@gsap/react`, Lenis driven off the GSAP ticker |
+| i18n | next-intl — `en` (default, unprefixed) + `ar`, timezone pinned `Asia/Riyadh` |
+| Commits | Conventional Commits, enforced by commitlint + husky |
+| Tests | **none** — see below |
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev          # http://localhost:3000 (English at /, Arabic at /ar)
+
+pnpm verify       # typecheck → lint → format:check → check:i18n → build
+```
+
+`pnpm verify` is exactly what CI runs, in that order, as one composed script.
+*Why a single script rather than a remembered list:* the gate cannot drift from
+the documentation of the gate if there is only one of them —
+[testing](/standards/testing) covers the same idea for the other repos.
+
+Three generated files are regenerated, never hand-edited: `pnpm gen:logo`,
+`pnpm gen:og` and `pnpm gen:numerals`. The last two Python scripts need
+`pip install 'fonttools[woff]'`.
+
+## The three-layer design system
+
+The most reusable thing in this repo. `globals.css` imports three files **in a
+strict order**, and the order is the rule:
+
+```
+tokens.css       raw brand primitives — colour ramps, spacing, radii
+semantic.css     maps primitives onto the shadcn token contract, light + dark
+typography.css   the type scale
+```
+
+Components build against the **semantic** layer (`bg-background`,
+`text-muted-foreground`, `border-border`) and never against the primitives.
+`tokens.css` states it as a rule in the file itself: *"these are primitives:
+never reference them directly in components."*
+
+*Why:* referencing a primitive from a component pins it to one theme. The
+semantic layer is what the light/dark switch actually swaps, so a component
+that skips it stops inverting — silently, and only in the other theme. This is
+the same separation `@adawy/design` makes in the platform, arrived at
+independently ([project structure](/standards/project-structure)).
+
+The type scale is expressed as **one 1.5 line-height ratio** rather than eleven
+size/leading pairs — one number to change instead of eleven. It ships twice: a
+fixed set matching the brand sheet exactly, and a fluid set for page copy,
+because *"68px doesn't fit a phone."*
+
+<Callout type="error">
+  **`cn()` here is not the stock `cn()`.** It wraps `extendTailwindMerge` and
+  teaches tailwind-merge the brand's own scales. Without that,
+  `cn("text-b4", "text-brand-ink")` returns `"text-brand-ink"` — merge cannot
+  tell a size class from a colour class, keeps the last one, and **the size is
+  silently lost with no error**. Same hazard between the brand's `rounded-r1…r7`
+  and Tailwind's right-side `rounded-r-*`. Always import `cn` from
+  `@/lib/utils`.
+</Callout>
+
+## Testing: what is actually there
+
+There is **no test framework in this repo** — no Vitest, no config, no `test`
+script. What guards the locales instead is `scripts/check-messages.mjs`, a
+dependency-free Node script run as `pnpm check:i18n` and as its own CI job.
+
+It flattens every catalogue to dotted key paths and compares each locale
+against the **union** of all keys, so a key missing from all-but-one file is
+still reported against the right file. *Why it exists at all:* a missing key
+does not fail a Next.js build — next-intl renders the raw key path in its
+place — *"so without this check a half-translated string ships silently."*
+
+<Callout type="warning">
+  The handbook's rule is that every project with a `messages/` directory
+  carries a `messages/parity.test.ts` merge gate
+  ([i18n & RTL](/standards/i18n-rtl#the-parity-test-is-a-merge-gate)). This
+  repo satisfies the *intent* with a different mechanism and satisfies nothing
+  else: **there is no test coverage of any kind here.** Treat that as an open
+  gap rather than a house pattern to copy.
+</Callout>
+
+## Traps
+
+<details>
+<summary>Fonts: a subset face must sit ahead of the display face — and must not be metric-adjusted</summary>
+
+The display face does not provide usable digits, so `src/fonts/numerals/` is a
+~3.5 KB subset declared with `unicode-range: U+0030-0039, U+0660-0669` and
+placed **ahead** of it in the stack. Two things about that are load-bearing:
+
+- **`adjustFontFallback: false` on the subset is critical.** `next/font`
+  otherwise emits a metrics-adjusted *"&lt;name&gt; Fallback"* family alongside
+  it — and that generated face carries **no `unicode-range`**. Sitting ahead of
+  the display face, it would claim every character and render the entire site
+  in a system sans.
+- **The display face is declared `preload: false`** because `preload: true`
+  emits a `<link rel="preload">` for *every* declared face — eighteen of them,
+  roughly 1.8 MB pushed before first paint — for the two or three weights a
+  page actually renders.
+
+</details>
+
+<details>
+<summary>The proxy matcher must exclude extension-less metadata routes</summary>
+
+`/og` and `/apple-icon` have no file extension, so the usual
+`.*\..*` exclusion does not catch them. Without naming them explicitly the
+proxy rewrites them to `/en/og` and `/en/apple-icon`, which do not exist, and
+both 404 — for crawlers and social cards only, which is where nobody looks.
+
+</details>
+
+<details>
+<summary>Deploy runs beside CI, not after it</summary>
+
+`deploy.yml` cannot use `needs:` to reference a job in `ci.yml`, so the two
+workflows run in parallel. That is safe here because `vercel build` runs the
+real production build: a broken build fails in the deploy workflow too and
+never gets promoted. CI is what catches lint, type and i18n regressions.
+
+Both jobs install pnpm even though the Vercel CLI is installed with npm —
+`vercel build` runs the project's own install and build, so the runner needs
+the package manager the lockfile was written with.
+
+</details>
+
+## Going live
+
+<Callout type="important">
+  **This repo does not use `PRODUCTION_HOST`.** Its publishing switch is the
+  environment variable **`NEXT_PUBLIC_ALLOW_INDEXING`**, and while it is unset
+  the site is `noindex` through three independent layers: `robots.ts` returns
+  `Disallow: /`, every page emits a `noindex, nofollow` meta tag, and
+  `next.config.ts` adds an `X-Robots-Tag` response header. All three drop
+  together when it is set.
+
+  Following the generic [launch
+  checklist](/how-we-work/client-projects#launch-checklist) literally here
+  would leave a launched site invisible to search. The third layer exists
+  because the meta tag only protects HTML documents — the header also covers
+  the OG image, the icons and the sitemap.
+</Callout>
+
+An SEO audit **will** report this site as "Not Indexable" before launch. The
+README says it plainly: *that is the intended state.* Do not "fix" it. It flips
+in the Vercel **production** environment, on the real domain, at launch, and
+not before.

@@ -9,6 +9,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const withNextra = nextra({
   defaultShowCopyCode: true,
+  // Puts a `readingTime` object on every page's metadata, computed from the
+  // compiled MDX. The header strip renders it, so no page carries a
+  // hand-written "5 min read" that nothing would fail on when it went stale.
+  readingTime: true,
   search: {
     codeblocks: false
   }

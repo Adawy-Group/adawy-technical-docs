@@ -1,0 +1,179 @@
+---
+title: adawy-group-links
+description: The Group's own link-in-bio page — one screen, two locales — and the only Adawy Group property today that lives outside the platform monorepo.
+tags: ['Group work', 'Next.js 16', 'One route', 'Open question']
+---
+
+# `adawy-group-links`
+
+**Adawy Group's own property.** The "link in bio" page: one screen carrying the
+website, the company profile PDF, four social accounts, the head-office contact
+details and the branch list — in English and Arabic, light and dark.
+
+Private · standalone Next.js 16 app · **not** part of the monorepo
+
+<Stats>
+  <Stat value="1" label="route" hint="everything else 404s inside the locale" />
+  <Stat value="6" label="destinations" hint="enforced by a test" />
+  <Stat value="6" label="branches" hint="EGY · KSA · UAE · LIBYA · USA · CHINA" />
+  <Stat value="5" label="test files" hint="for a two-page site" />
+</Stats>
+
+Social profiles allow one link. This is that link: a poster-like page routing a
+visitor from an Instagram or TikTok bio to everything else, with tap-to-call,
+`mailto:`, a map pin and one-tap copy on the number and the inbox.
+
+## An open question before you read further
+
+<Callout type="warning">
+  **This is the one repository that does not fit the two-worlds model.**
+
+  [The repository map](/repositories) says Group work lives in the
+  `adawy-platform` monorepo and client work gets a standalone repo each. This
+  is Adawy Group's own property **in a standalone repo** — every destination,
+  phone number and handle on it belongs to the Group.
+
+  The repository does not record why it sits outside the monorepo, and this
+  page will not invent a reason. Treat it as a **Group-owned standalone
+  microsite** and an open placement decision: either the rule narrows to
+  *"Group **brand sites** live in the monorepo"*, or this folds back into
+  `apps/` later. Until someone decides, do not read it as a precedent for
+  starting the next Group property outside the platform —
+  [ADR-010](/architecture/adrs) still governs that choice.
+</Callout>
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16 (App Router), React 19 |
+| Language | TypeScript, strict |
+| Styling | Tailwind CSS v4 (CSS-first) + shadcn/ui on `@base-ui/react`, `rtl: true` |
+| Theme | next-themes, `attribute="class"`, with a hand-rolled reveal animation |
+| Motion | GSAP entrance, gated on JavaScript **and** reduced motion |
+| i18n | next-intl — `en` (default) + `ar`, `localePrefix: 'always'` |
+| Fonts | Montserrat (Latin) + Cairo (Arabic), `preload: false` |
+| Tests | Vitest — five files, and they cover the things reviewers cannot see |
+
+No API routes, no server actions, no forms, no database, no client state
+library. The only mutations on the whole site are a theme change and a
+clipboard write.
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev             # http://localhost:3000 → redirects to /en
+
+pnpm lint typecheck test format:check   # what CI gates on
+pnpm pattern:bake                       # re-bake the background tile
+```
+
+<Callout type="important">
+  `pnpm typecheck` is **`next typegen && tsc --noEmit`**, and the first half is
+  load-bearing. The layout and page use Next 16's generated route types
+  (`LayoutProps<"/[locale]">`), which do not exist until typegen has run. CI
+  failed on exactly this once — do not "simplify" the script back to a bare
+  `tsc`.
+</Callout>
+
+## Why the locale prefix is always on
+
+`localePrefix: 'always'`, so the two pages are `/en` and `/ar` — never a bare
+`/`. The routing file gives the reason, and it is specific to what this page
+*is*: **a link pasted into a bio must not depend on `Accept-Language`.** The
+address someone copies has to be the address everyone lands on.
+
+Compare [`zad-alhkoul`](/repositories/zad-alhkoul), which is unprefixed for its
+default locale because its job is search reach rather than a shareable
+constant. Same library, opposite setting, both correct
+([i18n & RTL](/standards/i18n-rtl)).
+
+## Two rules worth stealing for any Arabic interface
+
+**The Arabic brand is عدوى — always, and a test enforces it.**
+`messages/brand-spelling.test.ts` fails on أدوي, ادوي, إدوي, أدوى and
+مجموعة العدوي. The test carries its own reasoning:
+
+> Ported from `adawy-platform`, where the group site once shipped أدوي and عدوى
+> side by side and Arabic search saw two brands where there is one. Nothing
+> about writing a new Arabic string makes the wrong form look wrong (one
+> dotless letter), so it is checked rather than trusted.
+
+That last sentence is the general rule: **a mistake that does not look like a
+mistake belongs in a test, not in a review checklist.**
+
+**Never letterspace Arabic.** Latin headings here use `tracking-[0.08em]` with
+`uppercase`, and every one of them is paired with a
+`[&:lang(ar)]:tracking-normal` override. Arabic has no case, and letterspacing
+breaks the joined script — the glyphs come apart. The lint rules cannot see
+this; it is on the author ([i18n & RTL](/standards/i18n-rtl)).
+
+## Things the tests cover that a reviewer's eye cannot
+
+For a site with one route, five test files looks like a lot. They are all
+guarding facts that render identically whether they are right or wrong:
+
+| Test | What would otherwise ship broken |
+| ---- | -------------------------------- |
+| `lib/contact.test.ts` | `tel:` and `mailto:` — *"invisible to the eye but what a tap actually dials"*. The `tel:` form must equal the display number with spaces stripped |
+| `lib/links.test.ts` | Every `kind: "document"` destination exists on disk under `public/`, so renaming the company profile PDF breaks the suite instead of the page |
+| `messages/parity.test.ts` | Identical key trees across locales, and no empty strings |
+| `messages/brand-spelling.test.ts` | The Arabic brand form, as above |
+| `components/brand/lib/*.test.ts` | The generated pattern geometry |
+
+This is the department's testing philosophy applied to a marketing page: test
+the things that break silently, never the markup
+([testing](/standards/testing)).
+
+<details>
+<summary>Design and performance decisions, with their reasons</summary>
+
+- **The theme flip is a hand-rolled Web Animations clip-path reveal, not the
+  View Transitions API.** VT snapshots the whole page before it can animate,
+  which is dead time after the tap on mobile; the overlay is one solid
+  viewport-sized layer and animates from radius 0 the instant you tap. It is
+  module-scoped so it survives the locale-switch remount.
+- **The background pattern is a baked PNG, not a live SVG.** A viewport-sized
+  SVG pattern stalled headless capture. Change the geometry in the tile module,
+  then `pnpm pattern:bake` — editing the geometry without re-baking changes
+  nothing on screen, and `public/` is in `.prettierignore` so nothing else
+  flags it.
+- **The entrance animation is gated on JavaScript.** An inline `<head>` script
+  adds a class before first paint, and the CSS only hides the reveal targets
+  under that class — *"a visitor without JS sees the whole page at once instead
+  of nothing."* Under `prefers-reduced-motion` the timeline jumps straight to
+  its finished state.
+- **The entrance animates `y` and opacity only.** Vertical motion is
+  direction-agnostic; anything horizontal has to be mirrored under `[dir=rtl]`,
+  and the one glyph that does move sideways carries an explicit RTL
+  counterpart.
+- **Copy buttons stay silent on failure.** The clipboard write is wrapped in a
+  `try`/`catch` and the catch path changes nothing on screen, because
+  *"claiming a copy that did not happen is worse than no feedback at all."*
+  Success flips the icon and announces through an always-mounted `aria-live`
+  region.
+- **English lists branches as codes (EGY, KSA…), Arabic as country names.**
+  Deliberate — the codes are an English abbreviation. Do not "fix" the Arabic.
+- **Social glyphs are hand-drawn to lucide's grammar** (24-box, 1.75 stroke,
+  round caps) because lucide no longer ships brand icons, and they have to sit
+  in a monochrome tile rather than on a brand-coloured card.
+
+</details>
+
+## Brand constraints
+
+The palette is **black, white and industrial gray only** — every colour token
+in the stylesheet is zero-chroma. The brand guidelines rule out bright
+palettes, saturated colour, trend gradients and colour-heavy layouts, and
+sub-brand accent colours that exist on adawygroup.com never appear here
+([UI & brand standards](/standards/ui)).
+
+## Deployment
+
+Deployed to its own Vercel project through GitHub Actions rather than Vercel's
+dashboard Git integration — the same arrangement, and the same reason, as
+[`adawy-platform`](/repositories/adawy-platform):
+[Deployment](/how-we-work/deployment). A custom domain is anticipated in the
+config but not attached yet, so canonicals, the sitemap and the OG URLs
+currently resolve to the Vercel project host.

@@ -1,0 +1,226 @@
+---
+title: jumeira
+description: Client pre-launch site for Jumeira Catering, Benghazi — one pinned, scroll-scrubbed film, and the delivery rules that make scrubbing video work on a Libyan phone.
+tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Pre-launch']
+---
+
+# `jumeira`
+
+**Client project.** The pre-launch site for **Jumeira Catering** — a contract
+catering and premium buffet company in **Benghazi, Libya**, feeding corporates,
+hospitals, oil fields, aviation, conferences and weddings.
+
+Private · standalone Next.js 16 app · not part of the monorepo
+
+<Stats>
+  <Stat value="AR" label="default locale" hint="`/ar` first, `/en` second" />
+  <Stat value="1" label="page route" hint="the whole site is one scroll" />
+  <Stat value="2" label="films" hint="one continuous timeline" />
+  <Stat value="8" label="video files" hint="2 cuts × 2 bandwidth tiers" />
+</Stats>
+
+It is the second-largest codebase in the org after
+[`adawy-platform`](/repositories/adawy-platform), and by some distance the most
+demanding one per page: a single route whose entire content is a scroll-driven
+film. If you are looking for the department's hardest client engineering, it is
+here.
+
+## What it is for
+
+`PRODUCT.md` states the job precisely: *"a pre-launch holding page while the
+full site is built… this page is not competing for search traffic, it is
+answering the question 'are these people serious?' for someone who already has
+the link."* Success is defined as **a contract buyer forwarding the link instead
+of asking for a company profile PDF**.
+
+Two audiences with almost nothing in common: a procurement lead deciding whether
+Jumeira can feed several hundred people a day on schedule, and a family planning
+a wedding, arriving from Instagram on an Arabic phone. That is why the argument
+is a film rather than a page of claims.
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Turbopack), React 19 |
+| Language | TypeScript, strict — plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` |
+| Styling | Tailwind CSS v4 + shadcn/ui (`new-york`, `rtl: true`) on radix-ui |
+| Motion | GSAP + ScrollTrigger. **No smooth-scroll library** — see below |
+| i18n | next-intl — `ar` (default) + `en`, `localePrefix: 'always'`, `hreflang` `ar-LY` |
+| Tests | Vitest, in two projects: `node` and a jsdom one for `*.browser.test.ts` |
+| Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, self-hosted |
+
+No forms, no server actions, no API routes, no state library. The only stateful
+things on the page are a scrub position, a theme and an audio element.
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev                 # http://localhost:3000 → redirects to /ar
+
+pnpm lint typecheck test  # what CI gates on
+pnpm format:check
+```
+
+Two asset bakes are **hand-run and need tools the standard machine setup does
+not install** — `pnpm bake:brand` needs Python 3, `pnpm bake:track` needs bash
+and ffmpeg. Their output is committed, so a fresh clone builds without either
+([dev environment](/onboarding/environment)).
+
+## The one idea to understand first
+
+**The whole page is a single GSAP ScrollTrigger pin — 1140% of the viewport —
+carrying two films and an ending in one continuous timeline.**
+
+It was built as two pinned sections once, and *"it read as two: the first pin
+released, the scene scrolled away and the next scrolled in, so a cut appeared
+where the footage had none."* The services film opens on the exact frame the
+opening film closes on, which is the one place a pin boundary would show. So
+the second scene takes the parent timeline as an argument rather than building
+its own.
+
+The scene is split across eleven files **by what the code is, not by how big it
+got**: markup / choreography / film-as-media / arithmetic, per half. The three
+arithmetic modules import nothing at all, which is exactly what lets them be
+tested in Node with no DOM — the same rule the platform applies to its
+`lib/` layer ([testing](/standards/testing)).
+
+<Callout type="info">
+  Markup and timeline share elements through a `MARKER` constant map, never
+  through refs or raw selector strings: *"a GSAP target is a selector and a
+  React prop is an attribute, so an animated element is otherwise spelled twice
+  with nothing to catch a rename."* A test holds every `data-*` selector in the
+  stylesheet to a `MARKER` value. This is the same idea as the platform's typed
+  anchors ([platform architecture](/architecture/platform-architecture)).
+</Callout>
+
+## Scrubbing video, and what it costs
+
+Nothing on this page ever *plays*. Both films are scrubbed against the
+scrollbar, and almost every unusual decision in the repo follows from that.
+
+- **Frame rate is matched to the pin, not to playback.** The opening film is
+  10 fps, the services film 24 — *"10 fps is not a playback rate; it is how
+  finely the footage is cut against the scrollbar."* Dropping frames was
+  measured as a better lever than raising CRF: 10 fps at CRF 26 came out both
+  smaller **and** higher quality than 12 fps at CRF 27.
+- **Every file is all-intra.** A seek is only as fast as the nearest keyframe
+  behind it, and reverse scrubbing is the first thing that falls apart without
+  it.
+- **The scrub is clamped to what has actually downloaded.** A `<video>` asked
+  for a frame it does not hold *neither stalls nor reports anything* — it keeps
+  showing its last decoded frame while `currentTime` runs away from it.
+  Measured on a throttled phone, unclamped showed **1 frame across 3150 px of
+  scroll**; clamped showed **19**.
+- **Two cuts × two tiers.** Cuts follow the screen's shape and can change on
+  rotation; tiers follow what the connection turns out to carry, are decided
+  once, and only ever go down. Every cut of a film holds the same frames at the
+  same timestamps, so a rotation or a downshift can restore `currentTime`.
+- **The second film is queued behind the first, not merely time-gated.** At low
+  bandwidth both films split the line and *"neither film could move and both
+  were being paid for."* The rule, stated in the repo: **one film that scrubs
+  beats two that do not.**
+- **It stays a `<video>`, never a canvas frame sequence.** Measured twice: file
+  size is a wash, but `currentTime` seek runs ~2.4 ms on the phone's hardware
+  decoder against ~20 ms for a WebP bitmap draw — past the frame budget.
+
+**Nothing downloads until the reader asks for it.** The `<video>` carries no
+`src` in the markup and `preload="none"`, because Chrome pulled 6.8 MB just
+deciding what the film was under `preload="metadata"` — on a page that is
+otherwise about half a megabyte.
+
+<Callout type="warning">
+  **Do not measure media with Resource Timing.**
+  `performance.getEntriesByType` does not surface media range requests, so it
+  reports 0 bytes for a film and looks fine while CI fails. That mistake is how
+  the 6.8 MB shipped in the first place.
+</Callout>
+
+## Why there is no Lenis here
+
+Every other Next.js project in the org pairs GSAP with Lenis. This one removed
+it, and `scroll-behavior: smooth` is banned outright.
+
+The page is one pinned scene, so **nothing visibly scrolls during the pin**
+except the scrubbed timeline, and ScrollTrigger's own `scrub: 0.5` catch-up
+already produces the glide. Lenis added a second scroll authority whose lerp
+stacked on top of the scrub and read as seek lag.
+
+*Why this matters beyond one repo:* smooth scroll is a house default, not a
+house law. When a page's scroll *is* the animation, the second authority is the
+bug ([UI standards](/standards/ui)).
+
+## Arabic is the default, and the design language
+
+`i18n/routing.ts` says it plainly: *"Arabic is the default, because the
+business, its clients and its staff are in Benghazi."* `PRODUCT.md` goes
+further — *"every type decision is judged in Arabic first. A treatment that is
+beautiful in Latin caps and merely acceptable in Arabic has failed the majority
+of the audience."*
+
+Two consequences worth carrying to your own work:
+
+- **Physical direction utilities are lint errors here even inside
+  `components/ui/`** — the vendored primitives are held to the same rule as
+  everything else, because a shadcn default that ships `ml-2` mirrors wrongly
+  in Arabic exactly like your own code would ([i18n & RTL](/standards/i18n-rtl)).
+- **Locale facts live in one module.** `HREFLANG` is a `Record<Locale, string>`
+  rather than a `locale === 'ar' ? 'ar-LY' : locale` written out in three files.
+  Adding a third locale is now a **type error until it is mapped**, instead of
+  three silent `else` branches.
+
+<Callout type="warning">
+  **A number inside Arabic prose needs its own bidi isolate — isolating a
+  parent is not enough.** Space-separated digit groups reorder, so a phone
+  number renders back-to-front. Nothing on the holding page prints a number
+  today, which means this bites the moment the contact block lands.
+</Callout>
+
+<details>
+<summary>Traps that have already cost someone a day</summary>
+
+- **The intro curtain overlay must never be removed from the DOM.** The
+  controller called `overlay.remove()` once; React still held the fiber, and
+  the next client-side navigation died in the unmount commit with no error
+  boundary above the layout. The symptom was *switching locale showed an error
+  page, every time, in both directions.* Retire it by dropping its attribute
+  and letting CSS hide it.
+- **The curtain's release chain must never be able to reject.**
+  `Animation.finished` rejects with `AbortError` when its element leaves the
+  DOM, and `Promise.race` settles on the first settlement — including a
+  rejection — so the timeout ceiling cannot rescue it and the reader gets a
+  page that will not scroll.
+- **Anything the curtain hides needs its own CSS failsafe keyframe.** The
+  header had none, and a fixed transparent strip went on swallowing clicks
+  whenever a release never came.
+- **Check curtain timing on a throttled network, not a local load.** The
+  truncation only appears once first paint passes 300 ms, which is every real
+  connection and no local one. CPU throttling barely moves it.
+- **`requestVideoFrameCallback` is not trustworthy under CPU throttling** — it
+  under-reports badly enough to look like a catastrophic frame drop that is not
+  happening. Track `currentTime` against scroll instead.
+- **Re-encode from the masters, never from the files in `public/`.** Deriving
+  the light cuts from the full cuts cost measurable quality across all four.
+  After any re-encode, check that keyframe count still equals frame count in
+  all eight files, or all-intra has been lost and reverse scrubbing with it.
+
+</details>
+
+## Going live
+
+Same publishing switch as the other client projects: `PRODUCTION_HOST` set in
+**both** `lib/site.ts` and `next.config.ts`, hostname only. Setting one and not
+the other ships a half-indexed site — the meta tags and the `X-Robots-Tag`
+header disagree — and a colocated test is the only thing that catches it. Full
+procedure: [Client Projects](/how-we-work/client-projects#the-go-live-switch).
+
+Two things this repo does that the generic checklist does not cover:
+
+- **The site URL falls back to a hard-coded pre-launch host, not an env var.**
+  CI runs `vercel build` on a GitHub runner where no `VERCEL_*` host variables
+  exist, so the env-var version read back `undefined`, every page prerendered
+  with `metadataBase` on `localhost`, and link cards rendered with no image.
+- **A redirect map from the client's legacy domain is a launch blocker.** Only
+  a handful of entry points are mapped today; the rest has to come off the old
+  sitemap before the domain moves ([why](/how-we-work/client-projects#launch-checklist)).
