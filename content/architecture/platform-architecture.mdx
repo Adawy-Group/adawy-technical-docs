@@ -1,18 +1,63 @@
 ---
 title: Platform Architecture
-description: How apps/group is actually built — one WebGL canvas, the driver-channel-stage split, and the performance tier — and where each fact is documented.
+description: How apps/group is actually built — three enforced layers, one WebGL canvas, the driver-channel-stage split, and the performance tier.
+tags: ['Explanation', 'Platform', 'Deep']
 ---
 
 # Platform Architecture
 
 `apps/group` is the most technically dense thing the department has built: a
-single scroll narrative where most sections drive 3D. Three ideas hold it
+single scroll narrative where most sections drive 3D. Four ideas hold it
 together, and knowing them is the difference between adding a section in an
 afternoon and breaking the whole page.
 
 This page is the **orientation**. The file-level detail lives in the platform
 repo, and deliberately not here — see [where each fact lives](#where-each-fact-lives)
 at the bottom.
+
+## 0. Three layers, and the imports they may not make
+
+Before anything else: the app has three layers, and **the arrows that are not
+allowed are the point.** Dotted red edges below are `no-restricted-imports`
+errors — the eslint config *generates* them from the layering, so the rule and
+the structure cannot drift apart, and CI fails on a breach.
+
+```mermaid
+flowchart TD
+    APP["app/ — routes only\ncomposes feature UI through barrels"]
+    FEAT["features/&lt;thing a visitor can point at&gt;\ncomponents/ · scene/ · lib/"]
+    PLAT["platform/ — app-wide machinery\nchrome · scroll · gl · sound · seo"]
+
+    APP --> FEAT
+    APP --> PLAT
+    FEAT --> PLAT
+    FEAT -. "a feature reaches another\nONLY through its barrel" .-> FEAT
+    PLAT -. "never" .-x FEAT
+
+    subgraph INSIDE["Inside one feature"]
+        C["components/ — React"]
+        S["scene/ — three.js, no React"]
+        L["lib/ — pure functions\nno React, no three.js"]
+        C --> L
+        S --> L
+    end
+
+    linkStyle 4 stroke:#b45309;
+    linkStyle 5 stroke:#dc2626;
+```
+
+Four rules, one reason each:
+
+| Rule | Why |
+| ---- | --- |
+| `platform/` never imports `features/` | Machinery that knows about a specific section is no longer machinery. This is the edge that decays first, and the only one that cannot be undone cheaply |
+| A feature reaches another **only** through its barrel | The barrel is the feature's public surface; without it, every internal file is public and nothing can be refactored |
+| `lib/` holds no React and no three.js | It is the only layer with unit tests, and it is testable precisely because it imports neither |
+| `scene/` holds no React | The render loop and the component tree run on different clocks. Mixing them is how a frame ends up waiting on a re-render |
+
+**`app/` composes feature *UI* through barrels, but a feature's `lib/` stays
+importable** — pages need metadata fragments and actions need domain logic, and
+routing those through a UI barrel would be ceremony.
 
 ## 1. One canvas, many passes
 

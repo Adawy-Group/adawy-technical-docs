@@ -1,6 +1,7 @@
 ---
 title: adawy-technical-docs
-description: This handbook — how it is built, how to add or fix a page, and the one dependency pin that will otherwise break your build.
+description: This handbook — how it is built, how to add or fix a page, the components available in MDX, and the one dependency pin that will otherwise break your build.
+tags: ['Internal', 'Nextra 4', 'This repo']
 ---
 
 # `adawy-technical-docs`
@@ -24,8 +25,10 @@ locally, your toolchain is correct.
 git clone git@github.com:Adawy-Group/adawy-technical-docs.git
 cd adawy-technical-docs
 npm install
-npm run dev      # http://localhost:3000
-npm run build    # must pass before any PR
+npm run dev                    # http://localhost:3000
+
+node scripts/check-links.mjs   # CI runs this FIRST — it needs no build
+npm run build                  # the real gate on content
 ```
 
 <Callout type="warning">
@@ -40,46 +43,117 @@ npm run build    # must pass before any PR
 app/                  Nextra app shell ([[...mdxPath]] catch-all + layout)
 content/              every handbook page (MDX) — the sidebar mirrors the folders
   <section>/_meta.ts  sidebar order and titles for that section
-components/           json-ld helper
+components/           the site's own MDX components + the JSON-LD helper
 lib/seo.ts            metadata, canonicals, structured data
+scripts/check-links.mjs   the link, anchor and sidebar checker
 next.config.mjs       Nextra config
-mdx-components.tsx    MDX component map
+mdx-components.tsx    the MDX component map — a component missing here is undefined
 ```
 
 ## Adding or changing a page
 
-1. Create the `.mdx` file in the right section folder under `content/`.
-2. Add its filename key to that folder's **`_meta.ts`** with a display title.
-   A page missing from `_meta.ts` does not appear in the sidebar.
-3. Run `npm run build` — a page that renders in dev can still fail to
-   prerender.
-4. Open a PR. Vercel posts a preview URL; merging to `main` deploys.
+<Steps>
+
+### Create the `.mdx` file
+
+In the right section folder under `content/`. Frontmatter carries `title`,
+`description` and `tags`:
+
+```mdx filename="content/standards/example.mdx"
+---
+title: Example Standard
+description: One sentence — it feeds the meta description and the search index.
+tags: ['Reference', 'Daily']
+---
+```
+
+`tags` render as pills in the page header strip. Keep to **two or three**,
+drawn from the vocabulary already in use — a tag that appears on one page is a
+label, not a tag.
+
+### Add it to `_meta.ts`
+
+The filename key, with its display title. **A page missing from `_meta.ts` does
+not appear in the sidebar**, and `check-links.mjs` fails on it.
+
+Keep the flat `export default { key: 'Title' }` shape at two-space indent: the
+checker parses these files textually with a regex rather than importing them,
+so unusual formatting produces false failures.
+
+### Run both gates
+
+```bash
+node scripts/check-links.mjs
+npm run build
+```
+
+In that order — the checker needs no build output, and a broken link should be
+reported even when a page fails to prerender.
+
+### Open a PR
+
+Vercel posts a preview URL; merging to `main` deploys. A documentation fix
+needs no Trello card ([why](/onboarding/first-pr)).
+
+</Steps>
 
 Every page has an **"Edit this page on GitHub"** link in its footer. If
-something here is wrong, that link is the shortest path to fixing it — you do
-not need permission to fix docs.
+something here is wrong, that link is the shortest path to fixing it.
 
-### Page conventions
+## Page conventions
 
-- **Frontmatter** carries `title` and, on section indexes and major pages, a
-  `description` — it feeds the meta description and the search index.
 - **State the reason.** Every rule in this handbook says *why* it exists. A
   rule without a reason is a candidate for deletion; that is the house style,
   not a formality.
-- **Link across sections** with absolute paths (`/standards/coding`), not
-  relative ones.
+- **Link across sections with absolute paths** (`/standards/coding`), not
+  relative ones. `check-links.mjs` validates `](/…)` and `href="/…"`; a
+  relative link silently skips validation and can 404 in production with a
+  green build.
 - **Mermaid diagrams** render from ` ```mermaid ` fences.
+- **Numbers must be stable.** Repository counts, locale counts, founding years
+  and committed targets are fine. Commit counts, deploy counts and last week's
+  Lighthouse score are not — nothing here refreshes them, and a stale number is
+  a page lying with more confidence than prose can.
 
-### Components available in MDX
+### What is derived, and must not be hand-written
 
-`Callout`, `Cards`, `FileTree`, `Steps` and `Tabs` are registered globally in
-`mdx-components.tsx` — use them without an import.
+| Shown | Comes from |
+| ----- | ---------- |
+| "6 min read" | `readingTime: true` in `next.config.mjs`, computed from the compiled MDX |
+| "Updated 22 Aug 2026" | The file's last git commit — which is why CI checks out with `fetch-depth: 0` |
+| "Last updated on …" in the footer | The same timestamp, rendered by the theme |
+
+Writing any of those into a page by hand produces a number that goes stale with
+nothing failing.
+
+## Components available in MDX
+
+All registered globally in `mdx-components.tsx` — use them without an import.
+**A component used in MDX but missing from that map compiles to `undefined`.**
+
+**From Nextra:** `Callout`, `Cards`, `FileTree`, `Steps`, `Tabs`, `Bleed`.
+
+**This site's own:**
 
 ```mdx
-<Callout type="warning">
-  Urgent information the reader must not miss.
-</Callout>
+<Badge tone="group">Group</Badge>
+
+<Stats>
+  <Stat value="8" label="repositories" hint="in the org" />
+</Stats>
+
+<Checklist id="unique-storage-key">
+  <Task>Something to tick</Task>
+</Checklist>
 ```
+
+| Component | For | Notes |
+| --------- | --- | ----- |
+| `Badge` | A status or classification, inline | `tone`: `group`, `client`, `internal`, `live`, `building`, `holding`, `planned`, `private`, `public`, `neutral`. A closed set, so one meaning always gets one colour |
+| `Stats` / `Stat` | A row of at-a-glance numbers | **Stable facts only** — see above |
+| `Checklist` / `Task` | A list worked through over hours or days | Ticks persist in the reader's own `localStorage` under `id`, and go nowhere else. Give every checklist a unique `id` |
+| `Tabs` | The same procedure per repo or per package manager | `storageKey` syncs the reader's choice across the whole site |
+| `Bleed` | A diagram wider than the prose column | |
 
 `Callout` takes `type="info" | "warning" | "error" | "important"`, or no type
 for a neutral tip. Pick by what the reader loses by skipping it:
@@ -96,17 +170,42 @@ for a neutral tip. Pick by what the reader loses by skipping it:
 lines quoted from another document. A callout is an aside from the page to its
 reader; a blockquote is someone else speaking.
 
+<Callout type="important">
+  **A new component must be registered in `mdx-components.tsx` and documented
+  in the table above**, or the next person will not know it exists. Keep it a
+  server component unless it genuinely needs state — a `"use client"` component
+  in the map costs every page that imports it, and this site's whole argument
+  is that less JavaScript is the cheapest win there is.
+</Callout>
+
+## What CI runs
+
+`.github/workflows/verify.yml`, in this order:
+
+1. **`node scripts/check-links.mjs`** — every internal link, every `#anchor`
+   (including same-page ones), every `href` on a card, and every page's
+   presence in its `_meta.ts`. It runs first because it needs no build output.
+2. **`npm run build`** — the real gate on content: a page can render in
+   `npm run dev` and still fail to prerender.
+
 ## Known traps
 
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
 | Build fails with `Invalid input: expected nonoptional, received undefined → at children` on every page | A newer `zod` got hoisted; Nextra 4.6's `Layout` validates props against older `z.custom` behavior | Keep the `overrides.zod` pin in `package.json`, then `npm install` again |
 | A page renders in dev but fails `next build` | A prerender error in MDX — unsupported syntax or a broken import | Open the failing route in dev; it shows the real message that the production build hides |
-| A new page is missing from the sidebar | No entry in that folder's `_meta.ts` | Add the filename key with its title |
+| A new page is missing from the sidebar | No entry in that folder's `_meta.ts` | Add the filename key with its title. `check-links.mjs` catches this |
+| A component renders as nothing | It is used in MDX but not registered in `mdx-components.tsx` | Add it to the map |
 | A Mermaid diagram renders as a code block | Syntax error inside the diagram | Validate at mermaid.live, then paste back |
+| Search returns nothing in `npm run dev` | The Pagefind index is built by `postbuild` | Expected — run `npm run build` to populate it |
 
 ## Search
 
 `npm run build` runs a `postbuild` step that indexes the site with
 **Pagefind** into `public/_pagefind`. Search is therefore only populated after
 a full build — an empty search box in `npm run dev` is expected, not a bug.
+
+Two things make the index actually useful, and both are the author's job: an
+`H2` per topic and an `H3` per subtopic, and sections that still make sense
+when a search result drops the reader into the middle of a page. "The rule
+above" is invisible to search; name the thing.

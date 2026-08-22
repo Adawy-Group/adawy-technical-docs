@@ -57,13 +57,24 @@ function slugify(heading) {
 
 const routes = new Set(mdxFiles.map(toRoute))
 
+/**
+ * Strips fenced blocks and inline code spans.
+ *
+ * Prose about links is not a link: the page documenting this script quotes the
+ * patterns it matches, and a code sample may contain a path that does not
+ * resolve on purpose. Both are inside backticks, and neither is something a
+ * reader can click.
+ */
+function withoutCode(src) {
+  return src.replace(/^```[\s\S]*?^```/gm, "").replace(/`[^`\n]*`/g, "")
+}
+
 const anchors = new Map()
 for (const file of mdxFiles) {
   const headings = new Set()
   const src = fs.readFileSync(file, "utf8")
   // Skip fenced code blocks so a `# comment` inside bash is not read as a heading.
-  const withoutCode = src.replace(/^```[\s\S]*?^```/gm, "")
-  for (const m of withoutCode.matchAll(/^#{1,6}\s+(.+)$/gm)) {
+  for (const m of src.replace(/^```[\s\S]*?^```/gm, "").matchAll(/^#{1,6}\s+(.+)$/gm)) {
     headings.add(slugify(m[1]))
   }
   anchors.set(toRoute(file), headings)
@@ -83,7 +94,7 @@ const LINK_PATTERNS = [
 const SAME_PAGE_PATTERN = /\]\((#[^)\s]+)\)/g
 
 for (const file of mdxFiles) {
-  const src = fs.readFileSync(file, "utf8")
+  const src = withoutCode(fs.readFileSync(file, "utf8"))
   const own = toRoute(file)
 
   for (const pattern of LINK_PATTERNS) {
