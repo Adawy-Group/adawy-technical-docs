@@ -33,6 +33,15 @@ Anything that enumerates locales must import that list — never a hand-written
 array, or French silently disappears from a sitemap, a language switcher, or a
 set of `hreflang` alternates.
 
+**In a client repo the same rule points at a different file.** Client projects
+carry no `@adawy/*` dependency by design
+([ADR-010](/architecture/adrs), [client projects](/how-we-work/client-projects)),
+so the single source is that repo's own `i18n/routing.ts`. The rule is *one
+module owns the locale facts*, not *this package owns them*.
+[`jumeira`](/repositories/jumeira) is the worked example: `HREFLANG` is a
+`Record<Locale, string>` there, so a third locale is a **type error until it is
+mapped** rather than three files quietly taking an `else` branch.
+
 **The default locale is per project, and it follows the audience.**
 [`aladawy-shop`](/repositories/aladawy-shop) and
 [`jumeira`](/repositories/jumeira) redirect to `/ar` because their customers
@@ -130,10 +139,15 @@ turns the element into a scroll container, so every `position: sticky` child
 inside it stops sticking. `overflow-x-clip` clips without creating a scroll
 container.
 
-**Numbers and prices need bidi isolation.** A price range dropped into Arabic
-text without isolation renders with its bounds swapped — `34–48` becomes
-`48–34`. Both client storefronts use Latin numerals in both locales and isolate
-numeric runs.
+**Numbers and prices need bidi isolation, and the isolate goes on the number.**
+A price range dropped into Arabic text without isolation renders with its bounds
+swapped — `34–48` becomes `48–34`. Both client storefronts use Latin numerals in
+both locales and isolate numeric runs.
+
+**Isolating a parent is not enough.** Space-separated digit groups reorder
+*within* an isolated container, so a phone number set as `+218 91 309 2828`
+comes out `2828 309 91 218+`. Wrap the number itself in a `dir="ltr"` span with
+`unicode-bidi: isolate` — one isolate per run, not one per paragraph.
 
 **Arabic text runs longer, and headings wrap further.** A layout that fits in
 English can push a pinned section's content below the fold in Arabic. This is
@@ -148,6 +162,30 @@ placeholders, and let the message file own the whole sentence.
 locale so each language ships only its own script's fonts. The Arabic face is
 swapped by a `html:lang(ar)` override on the brand font tokens, not by a
 conditional in a component.
+
+<Callout type="warning">
+  **`next/font`'s `preload` is decided per build, not per locale, and there is
+  one `[locale]` route.** It emits a `<link rel="preload">` for every face it is
+  asked to preload on every route whose module graph reaches it — so an Arabic
+  page and an English page preload the *same* files, at High priority, ahead of
+  the stylesheet and the LCP image, and half of it is a script the reader cannot
+  read. Measured on [`jumeira`](/repositories/jumeira): inverting it — body
+  faces discovered from the stylesheet, where `unicode-range` fetches only the
+  matching script, and only the display face preloaded — cut the English page's
+  font bytes by roughly two thirds and took its LCP under the budget. **Arabic
+  trades FCP for LCP** rather than winning outright: it genuinely needs both
+  scripts' faces, and the Arabic ones are two to three times the size.
+
+  Getting both means `next/font/local` with the woff2 files committed, so the
+  preload can be chosen per locale. There is no configuration that expresses it
+  otherwise — do not go looking for one.
+</Callout>
+
+**A display face is sized on ink, not on em.** Arabic faces differ enormously in
+how much of the em box they fill, so swapping one display face for another at
+the same `font-size` changes the apparent size of every heading. Match the ink,
+then re-read the type scale. And **never letterspace the replacement** either —
+see above.
 
 ## Testing and review
 

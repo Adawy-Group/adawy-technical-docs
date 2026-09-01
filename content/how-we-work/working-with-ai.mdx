@@ -20,7 +20,7 @@ already paid for.
 | Repo | Where the contract is | What it covers |
 | ---- | --------------------- | -------------- |
 | `adawy-platform` | `AGENTS.md` | The shadcn contract — why you edit the vendored component instead of out-specifying it from the call site, and which registry components were deliberately *not* adopted |
-| `jumeira` | `AGENTS.md` | The standalone-repo contract, the RTL lint rules, and the trap ledger behind the pinned film |
+| `jumeira` | `AGENTS.md` **+ four companions** | The standalone-repo contract, the RTL lint rules and the trap ledger — split across `SECTIONS.md`, `CHROME.md`, `FILMS.md` and `PRODUCT.md`, [see below](#a-contract-can-outgrow-one-file) |
 | `aladawy-shop` | `AGENTS.md` | The quote-not-cart domain model, the two content trees, the commands to run before calling work done |
 | `zad-alhkoul` | **`CLAUDE.md`** | The three-layer design system and the generated files |
 | `adawy-group-links` | **`CLAUDE.md`** | The monochrome palette rule, the Arabic brand spelling, RTL-safe motion, the baked pattern |
@@ -52,6 +52,33 @@ that made the bug expensive is the first thing to go.
   file — `AGENTS.md`, the repo's `docs/`, or this handbook.
 </Callout>
 
+### A contract can outgrow one file
+
+**An assistant reads roughly the first 150k characters of a document.** Past
+that, a rule is still in the repo and still true and has silently stopped being
+a contract — which is the worst failure available to a file whose entire job is
+to be read. `jumeira` hit that ceiling and split, and the split is the part
+worth copying:
+
+| | |
+| --- | --- |
+| **Divide by scope, never by size** | A constraint that governs two sections stays in `AGENTS.md`. A measurement taken on one section moves to that section's companion file |
+| **The entry point stubs each companion** | `AGENTS.md` names them and keeps the invariants that have to survive in an agent's head, so nobody has to read five files to make one change |
+| **Say where to read before you say what to do** | Each companion opens with the paths it governs — *read this before touching `public/hero/`* — so the router is the heading, not a guess |
+
+The failure mode it replaces is the one every long contract has: an agent that
+read the first 60% confidently applies a rule the last 40% overturned.
+
+<Callout type="important">
+  **The contract states mechanisms; measurements live next to the code they
+  were taken on.** A number copied into a second document rots the moment the
+  first one is re-measured, and nothing fails — which is exactly how this
+  handbook's own `jumeira` page came to describe a video pipeline that had been
+  deleted. When you write a contract file, prefer *"the last frame is fetched
+  out of order because the ending is composed against it"* over the frame count.
+  The count belongs in the test that holds it.
+</Callout>
+
 ## The rules
 
 **1. You own the diff.** "The AI wrote it" is not a review answer. If you
@@ -63,6 +90,11 @@ Next.js in any model's training data — middleware is `proxy.ts`, and APIs and
 conventions moved. Every repo's `AGENTS.md` opens by saying so. When an
 assistant writes framework code confidently, check it against
 `node_modules/next/dist/docs/`.
+
+**2b. And read the repo, not this handbook, for anything measured.** The same
+staleness applies to us: a page here describing a repo is a snapshot, and the
+repo is the thing that ships. Where the two disagree the repo wins, and the fix
+is a PR to this handbook in the same week — [code review](/how-we-work/code-review).
 
 **3. Never paste production or client data into a model** — client data,
 credentials, Odoo exports, real customer submissions — unless the tool is
