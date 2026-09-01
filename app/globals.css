@@ -46,6 +46,51 @@
   }
 }
 
+/* ── Mermaid diagrams ──────────────────────────────────────────────────────
+ * Mermaid emits `width="100%"` on the SVG with `max-width` set to the
+ * diagram's natural width, so a wide left-to-right flowchart is *scaled down*
+ * to fit the content column rather than overflowing it. Measured on
+ * /how-we-work/git-workflow: 2284px of diagram rendered into a 670px column at
+ * 28px tall, every label far below legible size. A diagram nobody can read is
+ * decoration, and this handbook uses diagrams instead of screenshots
+ * precisely so they carry information.
+ *
+ * Hold the SVG at its natural size and let the wrapper scroll — the same
+ * treatment wide tables get above, for the same reason. `width: auto` beats
+ * the `width="100%"` presentation attribute, and the intrinsic size then
+ * comes from the viewBox.
+ */
+main svg[aria-roledescription] {
+  width: auto;
+  height: auto;
+  /* An SVG carrying only a viewBox has a ratio but no intrinsic width, so
+   * `width: auto` still fills the column and changes nothing on its own. A
+   * floor on the HEIGHT is what actually bites: the browser then derives the
+   * width from the ratio, and the wrapper scrolls. 8rem keeps a single-row
+   * flowchart at roughly its drawn size (the board's is 129px tall, the git
+   * workflow's 94px) instead of a third of it. Diagrams already taller than
+   * this floor are untouched. */
+  min-height: 8rem;
+}
+
+main div:has(> svg[aria-roledescription]) {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(125, 125, 125, 0.5) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+main div:has(> svg[aria-roledescription])::-webkit-scrollbar {
+  height: 4px;
+  -webkit-appearance: none;
+}
+
+main div:has(> svg[aria-roledescription])::-webkit-scrollbar-thumb {
+  background-color: rgba(125, 125, 125, 0.5);
+  border-radius: 9999px;
+}
+
 /* ── The page header strip ─────────────────────────────────────────────────
  * Sits between the breadcrumb and the h1: reading time, last change, tags.
  * Deliberately quiet — it is orientation, not content, and must never compete

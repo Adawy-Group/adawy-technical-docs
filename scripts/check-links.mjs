@@ -1,6 +1,7 @@
 /*
- * Fails the build on a broken internal link, a broken #anchor, or a page that
- * is missing from its folder's _meta.ts.
+ * Fails the build on a broken internal link, a broken #anchor, a page that
+ * is missing from its folder's _meta.ts, or a page missing required
+ * frontmatter.
  *
  * Nextra resolves links at render time, so a typo in `](/standards/codeing)`
  * builds green and 404s in production. A page absent from _meta.ts builds
@@ -12,6 +13,12 @@
  * <Cards.Card>. A card link is invisible to the Markdown matcher, so without
  * the second pattern a section index built from cards would be the least
  * validated page on the site rather than the most.
+ *
+ * Passing `--external` additionally requests every off-site URL. That is NOT
+ * part of the PR gate on purpose: it needs the network, and a third party
+ * being briefly down would then fail a pull request that changed nothing. It
+ * runs on a schedule instead (.github/workflows/external-links.yml), where a
+ * failure means "go and look", not "your branch is broken".
  */
 import fs from "node:fs"
 import path from "node:path"
@@ -148,6 +155,112 @@ for (const metaFile of metaFiles) {
   }
 }
 
+// 3. Frontmatter. `title` names the page, `description` is both its meta
+//    description and what the site's own search shows under the result, and
+//    `tags` render as the pills in the header strip. All three build green
+//    when missing, which is how one page went a month without a description.
+const FRONTMATTER_FIELDS = ["title", "description", "tags"]
+
+for (const file of mdxFiles) {
+  const src = fs.readFileSync(file, "utf8")
+  const block = src.match(/^---\n([\s\S]*?)\n---/)
+  if (!block) {
+    problems.push(`${file}: no frontmatter block`)
+    continue
+  }
+  // Read the keys off the top level of the block rather than with a regex per
+  // field: a key is a line starting in column 0, and a value that is only
+  // whitespace is the same defect as no key at all.
+  const present = new Set(
+    block[1]
+      .split("\n")
+      .filter((line) => line === line.trimStart() && line.includes(":"))
+      .filter((line) => line.slice(line.indexOf(":") + 1).trim() !== "")
+      .map((line) => line.slice(0, line.indexOf(":")).trim())
+  )
+
+  for (const field of FRONTMATTER_FIELDS) {
+    if (!present.has(field)) {
+      problems.push(`${file}: frontmatter is missing "${field}"`)
+    }
+  }
+}
+
+// 4. External links. Only with `--external` — see the header for why.
+const EXTERNAL_PATTERN = /https?:\/\/[^\s)\]"'<>]+/g
+
+/*
+ * localhost is skipped: `http://localhost:3000` is an instruction to the
+ * reader, not a destination, and nothing in CI is serving it. Requesting it
+ * would fail on every single run, which is how a check teaches people to
+ * ignore it.
+ */
+const SKIP_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"])
+
+function externalLinks() {
+  const found = new Map() // url -> Set of files citing it
+  for (const file of mdxFiles) {
+    const src = withoutCode(fs.readFileSync(file, "utf8"))
+    for (const m of src.matchAll(EXTERNAL_PATTERN)) {
+      // Trailing punctuation belongs to the sentence, not to the URL.
+      const url = m[0].replace(/[.,;:]+$/, "")
+      let host
+      try {
+        host = new URL(url).hostname
+      } catch {
+        problems.push(`${file}: ${url} - not a parsable URL`)
+        continue
+      }
+      if (SKIP_HOSTS.has(host)) continue
+      if (!found.has(url)) found.set(url, new Set())
+      found.get(url).add(file)
+    }
+  }
+  return found
+}
+
+/*
+ * HEAD first: a docs page is not worth downloading to learn that it exists.
+ * Some hosts answer HEAD with 403/405 while serving GET fine, so those retry
+ * rather than get reported as dead.
+ */
+async function reachable(url) {
+  const request = (method) =>
+    fetch(url, {
+      method,
+      redirect: "follow",
+      signal: AbortSignal.timeout(15000),
+      headers: { "user-agent": "adawy-technical-docs-link-checker" }
+    })
+
+  let res = await request("HEAD")
+  if (res.status === 403 || res.status === 405 || res.status === 501) {
+    res = await request("GET")
+  }
+  return res.ok ? null : `HTTP ${res.status}`
+}
+
+if (process.argv.includes("--external")) {
+  const links = externalLinks()
+  const urls = [...links.keys()]
+  console.log(`Checking ${urls.length} external link(s)...`)
+
+  const results = await Promise.all(
+    urls.map(async (url) => {
+      try {
+        return [url, await reachable(url)]
+      } catch (error) {
+        return [url, error.name === "TimeoutError" ? "timed out" : error.message]
+      }
+    })
+  )
+
+  for (const [url, failure] of results) {
+    if (!failure) continue
+    for (const file of links.get(url)) problems.push(`${file}: ${url} - ${failure}`)
+  }
+}
+
 if (problems.length > 0) {
   console.error(`\n${problems.length} problem(s):\n`)
   for (const p of problems) console.error(`  ${p}`)
@@ -155,4 +268,6 @@ if (problems.length > 0) {
   process.exit(1)
 }
 
-console.log(`OK — ${routes.size} pages, every internal link, anchor and _meta.ts entry resolves.`)
+console.log(
+  `OK — ${routes.size} pages: frontmatter complete, and every internal link, anchor and _meta.ts entry resolves.`
+)

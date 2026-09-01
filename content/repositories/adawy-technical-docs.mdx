@@ -102,6 +102,27 @@ something here is wrong, that link is the shortest path to fixing it.
 
 ## Page conventions
 
+- **Every page carries `title`, `description` and `tags`**, and
+  `check-links.mjs` fails without them. The description feeds both the meta
+  description and the search index, so a page missing one ranks badly in the
+  site's own search. A page that teaches or explains opens its tags with its
+  [Diátaxis](https://diataxis.fr/) mode — `Tutorial`, `How-to`, `Reference`
+  or `Explanation` — because a reader who wants to *do* a thing and a reader
+  who wants to *understand* it need different pages. The repository pages are
+  the deliberate exception: they open with their world (`Group work`,
+  `Client work`, `Internal`), which is the first thing anyone needs from them.
+- **Draw a diagram; do not take a screenshot.** There is not one screenshot in
+  this handbook, and that is a decision. A picture of the Trello board or a
+  Vercel dashboard is correct on the day it is pasted and silently wrong after
+  the next UI change — the same failure the derived dates below exist to
+  prevent, except no build warns about it and nobody re-opens an image to check
+  it. A ` ```mermaid ` fence is diffable, greppable, reviewable in a PR, and
+  wrong only when the *process* changes, which is a change somebody is already
+  editing this page for. A wide left-to-right flowchart **scrolls inside its own
+  box** rather than shrinking to the column: Mermaid renders at `width="100%"`,
+  which had been scaling the git-workflow diagram from 2284px down to 670px and
+  28px tall, with every label far below readable size. `app/globals.css` puts a
+  floor under it.
 - **State the reason.** Every rule in this handbook says *why* it exists. A
   rule without a reason is a candidate for deletion; that is the house style,
   not a formality.
@@ -211,6 +232,26 @@ reader; a blockquote is someone else speaking.
    presence in its `_meta.ts`. It runs first because it needs no build output.
 2. **`npm run build`** — the real gate on content: a page can render in
    `npm run dev` and still fail to prerender.
+
+`.github/workflows/external-links.yml` runs weekly and on demand:
+
+3. **`node scripts/check-links.mjs --external`** - requests every off-site URL
+   on the site and fails if one is gone. It is deliberately *not* in the PR
+   gate: it needs the network, and a third party being briefly down would fail
+   a branch that changed nothing. Weekly, a failure means "a link now points at
+   nothing" rather than "your branch is broken". `localhost` URLs are skipped —
+   they are instructions to the reader, not destinations.
+
+## Who reviews a change
+
+`.github/CODEOWNERS` routes every pull request. Ownership lives in that one
+file rather than an `owner:` field on each page: at the department's current
+size every page resolves to the same person, so the field would be 52 copies of
+one fact, and a frontmatter owner is a claim nothing enforces while CODEOWNERS
+actually requests the review. When review becomes peer-based
+([code review](/how-we-work/code-review)), sections get their own lines there
+and no page needs editing.
+
 
 ## Known traps
 
