@@ -20,6 +20,26 @@ card moves left to right:
 | 7 | **Review** | Tested on staging, checked before release |
 | 8 | **Done** | Delivered and live |
 
+The two [Definition of Done](/how-we-work/definition-of-done) gates sit between
+those lists, and one edge runs backwards:
+
+```mermaid
+flowchart LR
+  R[Requests] --> B[Backlog] --> W[This Week] --> D[Design]
+  D --> G1{{Design approved<br/>and fully specified?}}
+  G1 -- no --> D
+  G1 -- yes --> RD[Ready for Dev] --> P[In Progress] --> V[Review]
+  V --> G2{{Checks green, reviewed,<br/>opened on the deployed URL?}}
+  G2 -- no --> P
+  G2 -- yes --> DN[Done]
+```
+
+*Why draw it when the table above lists the same eight lists:* the table reads
+as a one-way conveyor, and the two things most often got wrong are the two the
+table cannot show — that a card with an ambiguous spec moves **back** to Design
+rather than forward, and that Review is a gate a human passes, not a list a card
+sits in until someone merges it.
+
 ## What every card carries
 
 - A clear title and short description

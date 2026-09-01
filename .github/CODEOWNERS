@@ -1,0 +1,28 @@
+# Who reviews a change to this handbook.
+#
+# Ownership lives here rather than in a per-page `owner:` frontmatter field on
+# 52 pages. Two reasons: with the department at its current size every page
+# resolves to the same person, so the field would be 52 copies of one fact; and
+# a frontmatter owner is a claim nothing enforces, while this file routes the
+# review request on GitHub. When the team grows past one reviewer, sections get
+# their own lines here — the page still says nothing, and the routing stays
+# true. See /about/team.mdx for the roles behind these handles.
+#
+# Last matching pattern wins, so keep the catch-all first.
+
+*                           @seifsameh14
+
+# Build, deploy and verification machinery — a change here can ship a broken
+# page with a green build, which is exactly what the checks exist to prevent.
+/app/                       @seifsameh14
+/components/                @seifsameh14
+/lib/                       @seifsameh14
+/scripts/                   @seifsameh14
+/.github/                   @seifsameh14
+/next.config.mjs            @seifsameh14
+/package.json               @seifsameh14
+
+# Design-facing content. Add the designer's GitHub handle alongside the CTO
+# when they have one on this org, so brand and UI changes reach them without
+# anyone remembering to ask.
+/content/standards/ui.mdx   @seifsameh14

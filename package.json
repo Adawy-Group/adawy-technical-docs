@@ -9,7 +9,8 @@
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "start": "next start",
-    "check-links": "node scripts/check-links.mjs"
+    "check-links": "node scripts/check-links.mjs",
+    "check-links:external": "node scripts/check-links.mjs --external"
   },
   "dependencies": {
     "next": "^16.2.12",

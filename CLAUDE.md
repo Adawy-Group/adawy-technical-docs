@@ -18,6 +18,7 @@ npm install
 npm run dev          # http://localhost:3000
 npm run build        # also runs pagefind postbuild → public/_pagefind
 npm run check-links  # node scripts/check-links.mjs
+npm run check-links:external  # same, plus every off-site URL (network; weekly in CI, not on PRs)
 npm start            # serve the production build
 ```
 
@@ -28,6 +29,11 @@ loop is exactly what CI (`.github/workflows/verify.yml`) runs, in this order:
 node scripts/check-links.mjs   # runs first — needs no build output
 npm run build                  # the real gate: a page can render in dev and fail to prerender
 ```
+
+A second workflow (`.github/workflows/external-links.yml`) runs
+`check-links.mjs --external` weekly. It is **not** a PR gate on purpose: it
+needs the network, so a third party being down would fail an unrelated branch.
+`.github/CODEOWNERS` routes review; ownership is not per-page frontmatter.
 
 ## Architecture
 
@@ -57,7 +63,16 @@ version of this section — update it alongside any change here.
 
 - Frontmatter carries `title`, `description` (it feeds the meta description and
   the search index) and `tags` — two or three, from the vocabulary already in
-  use, rendered as pills in the header strip.
+  use, rendered as pills in the header strip. **All three are required on every
+  page** and `check-links.mjs` fails without them. A page that teaches or
+  explains leads with its Diátaxis mode (`Tutorial`, `How-to`, `Reference`,
+  `Explanation`); repository pages lead with their world (`Group work`,
+  `Client work`, `Internal`) instead, because which world a repo belongs to is
+  the first thing a reader needs from it.
+- **Diagrams, never screenshots.** There is deliberately not one screenshot in
+  `content/` — a picture of a Trello board or a Vercel dashboard goes stale
+  silently on the next UI change and nothing fails. Use a ` ```mermaid ` fence:
+  it diffs, greps and reviews, and only goes wrong when the process does.
 - **Every rule states its *Why*.** House style, not decoration — a rule without
   a reason is a candidate for deletion.
 - **Cross-section links must be absolute** (`/standards/coding`). A relative
