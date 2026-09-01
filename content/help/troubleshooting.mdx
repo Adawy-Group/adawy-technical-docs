@@ -23,7 +23,7 @@ so there is one table to update rather than two that drift.
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
 | Dependency errors that make no sense in `adawy-platform`, `aladawy-pack` or `aladawy-shop` | You ran `npm install` in a pnpm repo | Delete `node_modules` and any `package-lock.json`, then `pnpm install`. Only this handbook uses npm |
-| Wrong Node version errors | You skipped the version manager | `fnm use` / `nvm use` in the repo root; CI runs Node 22 |
+| Wrong Node version errors | You skipped the version manager | `fnm use` / `nvm use` in the repo root. **CI does not run one version everywhere** — Node 22 in `adawy-platform` and this handbook, Node 24 in `jumeira` and `aladawy-pack`. Read the workflow |
 | CI fails on formatting after a green local `turbo lint` | `format:check` is a separate root-level gate, not a turbo task | Run `pnpm format:check` before pushing — [testing](/standards/testing) |
 | A class exists in your source but not in the served CSS, and restarting changes nothing | A stale Turbopack CSS chunk — the dev server does not always invalidate it | `rm -rf apps/<app>/.next` and restart. Reach for this early rather than re-reading your Tailwind config |
 | A shared-package change doesn't appear in the running app | Stale cache, or the dev task isn't watching `packages/` | Restart the filtered dev task; if it persists, `pnpm turbo build --force` the package |
@@ -40,6 +40,8 @@ so there is one table to update rather than two that drift.
 | `turbo --affected` deploys everything unexpectedly | A root config file changed, or the base commit is unusable (new branch, force-push) | Expected. Every fallback deploys everything on purpose — under-deploying ships stale code |
 | A Vercel deploy fails with `Project not found`, both ids masked | The project was created while the CLI was logged into a different Vercel account, so the id is valid but in another team | The preflight step prints the resolved project name — check which team owns it |
 | A deploy is green but built the wrong app | The Vercel project's root directory is unset or points elsewhere | Set it to `apps/<app>` in Vercel → Settings → Build & Deployment |
+| A `--prebuilt` deploy is created and then dies with `ENOENT: lstat '/vercel/path0/.next/package.json'`, and production silently stays on the old build | A `.vercelignore` excluded `.next/` or `node_modules/`. Each function's `.vc-config.json` has a `filePathMap` pointing back into the project, and the build machine expands the bundle from those files | Allow both directories through. The CLI's default ignore list already covers them for a source deploy — [deployment](/how-we-work/deployment#deploy-safety-rails) |
+| Merging to `main` deployed nothing, and the Actions tab shows no run | The repo's workflow has no `push` trigger. `jumeira` is `workflow_dispatch`-only because the account's Actions minutes are spent | Dispatch it from the Actions tab, or deploy by hand after running all five gates — [deployment](/how-we-work/deployment#client-projects-deploy-the-same-way) |
 
 ## Bilingual and RTL
 
@@ -59,6 +61,9 @@ so there is one table to update rather than two that drift.
 | An element strands mid-animation and stays there until reload | A per-frame write memo was not dropped when the DOM moved under it | Route writes through the stage writer and reset it wherever layout moved. `docs/pitfalls.md` in the platform repo |
 | A colour tween flashes red on its first frame | A computed theme token serialized as `lab(…)` and GSAP's parser read it as `rgb(…)` | Resolve through the repo's colour helper, which normalizes via a 1×1 canvas. Never regex the string |
 | A 3D object sits a few px off its DOM target on desktop only | Screen px were projected against `window.innerWidth`, which counts the scrollbar | Divide by the canvas box the runtime already tracks |
+| A pinned section has a spacer but the timeline never advances — no error, no log | The trigger was created after ScrollTrigger's batch refresh, so it kept `start: 0` and no `end` and was never measured | Anything built outside the initial commit must refresh itself. Check `start`/`end` on the trigger before assuming the tween is wrong |
+| A scroll-driven scene shows a frame from the middle of the film during an unrelated beat | A scrub is being driven from a shared value several tweens take turns writing. GSAP renders children in reverse on a backward playhead, so each tween writes its own `from` on the way past | Derive the value from the playhead, not from whatever last wrote it — [`jumeira`](/repositories/jumeira#traps-that-have-already-cost-someone-a-day) |
+| A strip of background opens under a pinned scene after the first scroll on a phone | The scene was sized in `dvh`. A pin freezes the computed height as pixels, so it froze at the *small* viewport and the retracting address bar grew the frame | Size the pinned element `h-screen`. Only content inside it may use `dvh` |
 
 ## This documentation site
 
