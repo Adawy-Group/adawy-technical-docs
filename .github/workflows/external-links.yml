@@ -1,0 +1,33 @@
+name: External links
+
+# Off-site URLs rot without anyone touching this repo, so checking them on a
+# pull request would be checking the wrong thing: it gates a branch on whether
+# a third party happens to be up. This job asks the same question weekly, where
+# a failure means "a link in the handbook now points at nothing" rather than
+# "your branch is broken".
+
+on:
+  schedule:
+    # Mondays, 06:00 UTC — a failure is waiting at the start of the week
+    # rather than arriving mid-review.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # No `npm ci`: the checker is dependency-free by design, and installing
+      # the site's toolchain to make one HTTP request would be the slowest
+      # part of this job.
+      - name: Request every off-site link
+        run: node scripts/check-links.mjs --external
