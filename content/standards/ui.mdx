@@ -41,11 +41,54 @@ presentations: **grid-based, large negative space, structured composition,
 technical alignment, clean hierarchy.** Avoid overdesigned layouts, random
 graphic elements, visual clutter, excessive effects.
 
+## The token layers
+
+Every repo in the org themes through tokens rather than literals, and the ones
+that do it well use the **same three layers, in this order**:
+
+| Layer | What it holds | Who reads it |
+| ----- | ------------- | ------------ |
+| `@theme` | The raw design scales, exactly as the design file states them | Nothing in a component. Never edited per page |
+| `:root` / `.dark` | The semantic contract — `background`, `foreground`, `primary`, `border`… | **This is the only layer components use** |
+| `@theme inline` | Maps the contract into Tailwind's utility namespace | The utilities |
+
+Use **shadcn/ui's own token names** in the semantic layer. Anything pulled from
+the registry then inherits the brand with no edits, which is the whole point —
+and it means `--secondary` is the brand accent while `--accent` is shadcn's
+*hover surface*, not a brand accent. Reach for `--secondary` when you mean the
+brand's colour.
+
+**Put the theme class on `<html>`, never on a wrapper inside `<body>`.** The
+root background is what paints the overscroll area, so a wrapper-scoped `.dark`
+leaves a white band the moment the page is rubber-banded past its end. Set
+`colorScheme` to match so the UA paints scrollbars and form controls dark too.
+
+<Callout type="important">
+  **The layering is worth a test, because none of these mistakes look like
+  mistakes.** [`jumeira`](/repositories/jumeira) holds three rules in a
+  stylesheet test: no colour literal outside the scale layer, **no colour
+  literal inside `:root` or `.dark`** — the semantic layer is references only —
+  and no cross-section `z-index` written as a number. All three were prose
+  first, and writing the test found four live violations, including a gradient
+  stop documented as the midpoint of two steps and typed out as the hex it
+  happened to resolve to. Moving either step would have left it behind, and
+  nothing would have failed ([pattern 6](/architecture/patterns)).
+</Callout>
+
+A stacking scale belongs in the tokens for the same reason. A section ordering
+its own children can stay on bare `0`/`1`/`2` — each section is its own stacking
+context, so those cannot reach out of it and naming them globally would say the
+opposite. What must be named is the **cross-section deck**, which is otherwise
+the same five numbers written out in five stylesheets.
+
 ## Motion
 
 Cinematic and intentional — GSAP (the platform's single animation library)
 with Lenis smooth scrolling, both wired once in `@adawy/motion` and imported
-only from there. Controlled pacing, structured cuts, minimal transitions.
+only from there. **Client repos reimplement that gateway rather than importing
+it** — one module for GSAP and plugin registration, one for the scroll
+instance, and a lint rule confining both ([client projects](/how-we-work/client-projects)).
+The pattern transfers; the package does not. Controlled pacing, structured cuts, minimal transitions.
 Never TikTok-style editing, meme transitions, or hyperactive motion.
 **Always respect `prefers-reduced-motion`** — the shared primitives handle
 this (Lenis falls back to native scroll; reveals render static), and custom
@@ -86,7 +129,7 @@ The org runs two, and the split is historical rather than principled:
 | Library | Where | |
 | ------- | ----- | --- |
 | **Base UI** | `@adawy/ui` in the platform, `zad-alhkoul`, `adawy-group-links` | **Where new work starts** — it is what the shared package uses |
-| Radix | `aladawy-pack`, `aladawy-shop`, `jumeira` | Fine where it is. Not a reason to migrate a working site |
+| Radix | `aladawy-pack`, `aladawy-shop`, `jumeira` (on the unified `radix-ui` package) | Fine where it is. Not a reason to migrate a working site |
 
 *Why it matters to know:* the two have different APIs for the same shapes, so a
 component copied between repos will not compile, and a fix found in one does

@@ -106,7 +106,7 @@ running proves your toolchain before anything harder depends on it.
     A storefront where nothing has a price. Quote by grade, not checkout.
   </Cards.Card>
   <Cards.Card title="jumeira" href="/repositories/jumeira" arrow>
-    One pinned scroll carrying two scrubbed films. The hardest client build.
+    One pinned scroll carrying three scrubbed films. The hardest client build.
   </Cards.Card>
   <Cards.Card title="zad-alhkoul" href="/repositories/zad-alhkoul" arrow>
     English-default, `src/`-rooted, and a three-layer design system.
@@ -131,7 +131,7 @@ know is not — so here is the honest matrix.
 | `adawy-group-links` | pnpm 11.5 | in `CLAUDE.md` | ✅ | ✅ | en · ar |
 | `aladawy-pack` | pnpm 11.4 | ❌ | ✅ | ✅ | en · ar |
 | `aladawy-shop` | pnpm | ✅ | ❌ | ✅ | ar · en |
-| `jumeira` | pnpm 11.5 | ✅ | ✅ | ✅ | ar · en |
+| `jumeira` | pnpm 11.5 | ✅ +4 more | ⚠️ manual | ✅ | ar · en |
 | `zad-alhkoul` | pnpm 11.5 | in `CLAUDE.md` | ✅ | ❌ | en · ar |
 | `baron-menu` | — none | ❌ | ❌ | ❌ | en · ar |
 | `adawy-technical-docs` | **npm** | ❌ | ✅ | ❌ | English only |
@@ -159,6 +159,16 @@ know is not — so here is the honest matrix.
 - **`aladawy-shop` has no CI at all.** It has tests and it has a `test` script;
   nothing runs them on a push. Its four gates are yours to run by hand until
   that is fixed.
+- **`jumeira`'s CI exists but never fires by itself.** The workflow is
+  `workflow_dispatch`-only because the account's Actions minutes are spent, so
+  an automatic trigger would queue a run that never starts. In practice its
+  gates live on a developer's machine exactly like `aladawy-shop`'s — start it
+  from the Actions tab, or run all five before you push
+  ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
+- **`jumeira` splits its contract across five files.** `AGENTS.md` is the entry
+  point, and `SECTIONS.md`, `CHROME.md`, `FILMS.md` and `PRODUCT.md` carry what
+  is scoped to one place. Read the one that covers what you are touching
+  ([why](/how-we-work/working-with-ai#every-repo-carries-an-agentsmd)).
 - **`zad-alhkoul` has no test framework.** Its locale parity is guarded by a
   standalone Node script instead ([why that is not the same
   thing](/repositories/zad-alhkoul#testing-what-is-actually-there)).

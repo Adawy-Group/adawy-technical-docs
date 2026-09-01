@@ -1,6 +1,6 @@
 ---
 title: jumeira
-description: Client pre-launch site for Jumeira Catering, Benghazi — one pinned, scroll-scrubbed film, and the delivery rules that make scrubbing video work on a Libyan phone.
+description: Client pre-launch site for Jumeira Catering, Benghazi — one pinned scroll carrying three frame-sequence films, and the delivery rules that make scrubbing them work on a Libyan phone.
 tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Pre-launch']
 ---
 
@@ -15,8 +15,8 @@ Private · standalone Next.js 16 app · not part of the monorepo
 <Stats>
   <Stat value="AR" label="default locale" hint="`/ar` first, `/en` second" />
   <Stat value="1" label="page route" hint="the whole site is one scroll" />
-  <Stat value="2" label="films" hint="one continuous timeline" />
-  <Stat value="8" label="video files" hint="2 cuts × 2 bandwidth tiers" />
+  <Stat value="3" label="films" hint="all three are folders of frames" />
+  <Stat value="0" label="video elements" hint="every film draws to a canvas" />
 </Stats>
 
 It is the second-largest codebase in the org after
@@ -24,6 +24,14 @@ It is the second-largest codebase in the org after
 demanding one per page: a single route whose entire content is a scroll-driven
 film. If you are looking for the department's hardest client engineering, it is
 here.
+
+<Callout type="warning">
+  **This page describes the shape, not the measurements.** Frame counts, byte
+  budgets, pin lengths and scroll shares all live in the repo's own contract
+  files and are held there by tests — see [where the contract
+  lives](#where-the-contract-lives). Numbers copied into a handbook rot
+  silently, and this page had rotted that way once already.
+</Callout>
 
 ## What it is for
 
@@ -43,15 +51,34 @@ is a film rather than a page of claims.
 | | |
 | --- | --- |
 | Framework | Next.js 16 (App Router, Turbopack), React 19 |
-| Language | TypeScript, strict — plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` |
+| Language | TypeScript 6, strict — plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` |
 | Styling | Tailwind CSS v4 + shadcn/ui (`new-york`, `rtl: true`) on radix-ui |
-| Motion | GSAP + ScrollTrigger. **No smooth-scroll library** — see below |
+| Motion | GSAP + ScrollTrigger, **plus Locomotive Scroll v5 as the single scroll authority** — see [below](#the-scroll-authority-is-a-reversed-decision) |
 | i18n | next-intl — `ar` (default) + `en`, `localePrefix: 'always'`, `hreflang` `ar-LY` |
 | Tests | Vitest, in two projects: `node` and a jsdom one for `*.browser.test.ts` |
-| Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, self-hosted |
+| Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, through `next/font/google` at build time |
 
 No forms, no server actions, no API routes, no state library. The only stateful
 things on the page are a scrub position, a theme and an audio element.
+
+## Where the contract lives
+
+The repo's architectural contract outgrew one file and **split by scope, not by
+size**. Read the one that covers what you are touching; do not read all five.
+
+| File | Covers | Read it before touching |
+| ---- | ------ | ----------------------- |
+| `AGENTS.md` | The rules that cross a section boundary — module gateways, the design-token layers, the pin, the drift system, the enforcement table | Anything |
+| `SECTIONS.md` | Every section of the page, one heading each, in reading order | That section's directory under `components/` |
+| `CHROME.md` | The site menu, the sound control, the intro curtain — the fixed layers over the document | `components/layout/`, `lib/audio/` |
+| `FILMS.md` | The three films as media: masters, crops, delivery order, the draw path | `public/hero/`, `public/cta/`, `masters/` |
+| `PRODUCT.md` | Who the page is for and what it must feel like | Any judgement call about tone |
+
+**The division is the rule:** a constraint governing two sections stays in
+`AGENTS.md`; a measurement taken on one section moves to its companion. *Why it
+matters beyond one repo:* an agent reads roughly the first 150k characters of a
+document, so a contract past that length silently stops being a contract
+([working with AI](/how-we-work/working-with-ai#every-repo-carries-an-agentsmd)).
 
 ## Commands
 
@@ -59,32 +86,43 @@ things on the page are a scrub position, a theme and an audio element.
 pnpm install
 pnpm dev                 # http://localhost:3000 → redirects to /ar
 
-pnpm lint typecheck test  # what CI gates on
-pnpm format:check
+# the five gates, in the order CI runs them
+pnpm typecheck && pnpm lint && pnpm test && pnpm format:check && pnpm build
 ```
 
-Two asset bakes are **hand-run and need tools the standard machine setup does
-not install** — `pnpm bake:brand` needs Python 3, `pnpm bake:track` needs bash
-and ffmpeg. Their output is committed, so a fresh clone builds without either
-([dev environment](/onboarding/environment)).
+<Callout type="important">
+  **All five, not three.** `format:check` and `build` are gates here exactly as
+  they are everywhere else, and `build` is the only one that catches a prerender
+  failure a dev server hides
+  ([testing](/standards/testing#the-gates-that-block-a-merge)).
+</Callout>
+
+Asset bakes are **hand-run and need tools the standard machine setup does not
+install** — `pnpm bake:brand` and `pnpm bake:clients` need Python 3,
+`pnpm bake:track` needs bash and ffmpeg. There are more bake scripts in
+`scripts/` than there are `pnpm` aliases for them; the rest are invoked
+directly. All of their output is committed, so a fresh clone builds without any
+of it ([dev environment](/onboarding/environment),
+[pattern 7](/architecture/patterns)).
 
 ## The one idea to understand first
 
-**The whole page is a single GSAP ScrollTrigger pin — 1140% of the viewport —
-carrying two films and an ending in one continuous timeline.**
+**The page opens on a single GSAP ScrollTrigger pin carrying two films and an
+ending in one continuous timeline**, and then nine ordinary sections scroll past
+underneath it.
 
-It was built as two pinned sections once, and *"it read as two: the first pin
+It was built as two pinned sections once, and read as two: the first pin
 released, the scene scrolled away and the next scrolled in, so a cut appeared
-where the footage had none."* The services film opens on the exact frame the
-opening film closes on, which is the one place a pin boundary would show. So
-the second scene takes the parent timeline as an argument rather than building
-its own.
+where the footage had none. The services film opens on the exact frame the
+opening film closes on, which is the one place a pin boundary would show. So the
+second scene **takes the parent timeline as an argument** rather than building
+its own, and the ending writes into that same timeline for the same reason.
 
-The scene is split across eleven files **by what the code is, not by how big it
-got**: markup / choreography / film-as-media / arithmetic, per half. The three
-arithmetic modules import nothing at all, which is exactly what lets them be
-tested in Node with no DOM — the same rule the platform applies to its
-`lib/` layer ([testing](/standards/testing)).
+The scene is split **by what the code is, not by how big it got**: markup /
+choreography / film-as-media / arithmetic, per movement. The arithmetic modules
+import nothing at all, which is exactly what lets them be tested in Node with no
+DOM — the same rule the platform applies to its `lib/` layer
+([testing](/standards/testing)).
 
 <Callout type="info">
   Markup and timeline share elements through a `MARKER` constant map, never
@@ -92,64 +130,143 @@ tested in Node with no DOM — the same rule the platform applies to its
   React prop is an attribute, so an animated element is otherwise spelled twice
   with nothing to catch a rename."* A test holds every `data-*` selector in the
   stylesheet to a `MARKER` value. This is the same idea as the platform's typed
-  anchors ([platform architecture](/architecture/platform-architecture)).
+  anchors ([platform architecture](/architecture/platform-architecture),
+  [pattern 3](/architecture/patterns)).
 </Callout>
 
-## Scrubbing video, and what it costs
+## The films are frame sequences, not video
 
-Nothing on this page ever *plays*. Both films are scrubbed against the
+Nothing on this page ever *plays*. Every film is scrubbed against the
 scrollbar, and almost every unusual decision in the repo follows from that.
 
-- **Frame rate is matched to the pin, not to playback.** The opening film is
-  10 fps, the services film 24 — *"10 fps is not a playback rate; it is how
-  finely the footage is cut against the scrollbar."* Dropping frames was
-  measured as a better lever than raising CRF: 10 fps at CRF 26 came out both
-  smaller **and** higher quality than 12 fps at CRF 27.
-- **Every file is all-intra.** A seek is only as fast as the nearest keyframe
-  behind it, and reverse scrubbing is the first thing that falls apart without
-  it.
-- **The scrub is clamped to what has actually downloaded.** A `<video>` asked
-  for a frame it does not hold *neither stalls nor reports anything* — it keeps
-  showing its last decoded frame while `currentTime` runs away from it.
-  Measured on a throttled phone, unclamped showed **1 frame across 3150 px of
-  scroll**; clamped showed **19**.
-- **Two cuts × two tiers.** Cuts follow the screen's shape and can change on
-  rotation; tiers follow what the connection turns out to carry, are decided
-  once, and only ever go down. Every cut of a film holds the same frames at the
-  same timestamps, so a rotation or a downshift can restore `currentTime`.
-- **The second film is queued behind the first, not merely time-gated.** At low
-  bandwidth both films split the line and *"neither film could move and both
-  were being paid for."* The rule, stated in the repo: **one film that scrubs
-  beats two that do not.**
-- **It stays a `<video>`, never a canvas frame sequence.** Measured twice: file
-  size is a wash, but `currentTime` seek runs ~2.4 ms on the phone's hardware
-  decoder against ~20 ms for a WebP bitmap draw — past the frame budget.
+**All three are folders of WebP drawn onto a canvas** — the opening film, the
+services film and the closing panel's film. There is no `video` element left on
+the site, and with the element went the codec ladder, the two bandwidth tiers,
+the two responsive cuts per film, the playback-rate measurement and the buffer
+clamp that used to hold the scrub back to what had downloaded.
 
-**Nothing downloads until the reader asks for it.** The `<video>` carries no
-`src` in the markup and `preload="none"`, because Chrome pulled 6.8 MB just
-deciding what the film was under `preload="metadata"` — on a page that is
-otherwise about half a megabyte.
+<Callout type="warning">
+  **This was a knowing trade, not a measurement that changed.** `FILMS.md` keeps
+  the decode table that argued against it: a `currentTime` seek runs on the
+  phone's hardware decoder and barely moves under CPU throttling, while a WebP
+  decode is software on the same throttled CPU and its worst case blows through
+  the frame budget. What the swap bought is **one pipeline for three films
+  instead of two**, and the deletion of every mechanism that existed to choose
+  between formats. Roughly half of `FILMS.md` is now the record of the pipeline
+  that was removed, kept deliberately — it is why the sequences are shaped the
+  way they are.
+</Callout>
+
+Five delivery rules survived the conversion, and each one fails silently if
+broken:
+
+- **A sequence's last frame is load-bearing, so it is fetched second** — right
+  behind the first in-flight batch, out of order. The opening film's last frame
+  is the branded plate the About copy is read on *and* the frame the services
+  film match-cuts from; the services film's is the black the ending is composed
+  against. In strict order the last frame was also the last byte, and an
+  ordinary first visit reached the About beat with the plate still in the
+  kitchen.
+- **A jump lane fetches whatever frame the scrub currently names** when
+  delivery has not reached it — single-flight, latest-wins, high priority, the
+  in-order queue untouched. That is what keeps a menu jump or a fast reader
+  honest on a young transfer.
+- **The draw blits decoded bitmaps, not images.** Painting an
+  `HTMLImageElement` records a paint op in a fraction of a millisecond and then
+  re-decodes the WebP on the raster path, which was measured as the whole of the
+  scrub's jank on a throttled CPU. A byte-budgeted window of `ImageBitmap`s
+  around each playhead is the answer; predecoding a whole film is not, because
+  the RAM runs to gigabytes.
+- **The second film is queued behind the first, not merely time-gated.** At low
+  bandwidth both films split the line: *"Neither film could move and both were
+  being paid for."* The services sequence becomes *eligible* at a timeline mark
+  and only starts transferring once the opening film has finished its own.
+- **A recut renames its frame folder.** The folders are served `immutable` for
+  a year, so re-baking in place hands a returning visitor a film spliced from
+  two bakes, and nothing errors.
+
+**Nothing downloads until the reader could plausibly want it.** The canvases
+carry no source in the markup; delivery arms a beat after the intro curtain
+releases the page, or on the first gesture that could scrub, whichever comes
+first — standing down entirely for a data-saver visitor, and waiting for a real
+gesture on a portrait phone.
 
 <Callout type="warning">
   **Do not measure media with Resource Timing.**
   `performance.getEntriesByType` does not surface media range requests, so it
-  reports 0 bytes for a film and looks fine while CI fails. That mistake is how
-  the 6.8 MB shipped in the first place.
+  reported 0 bytes for the old video element and looked fine while CI failed.
+  That mistake is how a 6.8 MB preload shipped in the first place
+  ([performance checklist](/guides/performance-checklist#verify)).
 </Callout>
 
-## Why there is no Lenis here
+## The scroll authority is a reversed decision
 
-Every other Next.js project in the org pairs GSAP with Lenis. This one removed
-it, and `scroll-behavior: smooth` is banned outright.
+This page used to say there was no Lenis here, and gave a good reason. **That
+decision has since been reversed, and the reason it gave is the reason it could
+be.**
 
-The page is one pinned scene, so **nothing visibly scrolls during the pin**
-except the scrubbed timeline, and ScrollTrigger's own `scrub: 0.5` catch-up
-already produces the glide. Lenis added a second scroll authority whose lerp
-stacked on top of the scrub and read as seek lag.
+The original finding stands as written: Lenis's lerp stacked on top of
+ScrollTrigger's numeric `scrub: 0.5` catch-up, and two smoothings in series read
+as seek lag. What changed is which of the two was removed. The repo now runs
+**Locomotive Scroll v5 — which is Lenis, rebuilt on it — as the one smoothing
+authority**, confined to a single gateway module, and **every scrub on the page
+is `scrub: true`**. No number goes back into a scrub.
 
-*Why this matters beyond one repo:* smooth scroll is a house default, not a
-house law. When a page's scroll *is* the animation, the second authority is the
-bug ([UI standards](/standards/ui)).
+It animates the window's own scroll rather than proxying it, so `position:
+sticky`, `position: fixed` and ScrollTrigger all read true positions. Touch is
+left native, because momentum scrolling is already the smoothest input a phone
+has. Under `prefers-reduced-motion` the instance is never constructed at all.
+And it is built only after the intro curtain releases the page, because a Lenis
+that exists but has not started intercepts wheel events and answers them with
+nothing.
+
+**`scroll-behavior: smooth` stays banned**, and that ban is the durable half of
+the original note: it is a second smoothing authority in one CSS line, whichever
+library sits underneath it.
+
+*Why this matters beyond one repo:* the rule was never "no smooth scroll" — it
+is **one authority for one question**. Stacking a library's lerp on a scrub's
+catch-up is the bug; either one alone is fine
+([pattern 5](/architecture/patterns), [tech stack](/architecture/tech-stack)).
+
+## Nothing is built until the reader scrolls
+
+The heaviest thing this page does at load is now **nothing**, and that is
+deliberate. Every scene build — the opening pin included — is registered with a
+build queue and run on the reader's **first scroll gesture**, not in React's
+commit.
+
+The reasoning is worth carrying: a pinned scene at rest and an unpinned one at
+rest are the same pixels, because the pin only does anything once the page
+moves. So the invariant is not *built before first paint* but **correct before
+the first scroll lands** — and a gesture's listeners run before its scroll is
+applied, so a build that runs synchronously inside the gesture satisfies it.
+Inserting the pin spacer relays out a document thirteen thousand pixels tall;
+doing that in React's commit was worth hundreds of milliseconds of blocking time
+and failed the CI budget on `main`.
+
+Two more consequences shape the codebase:
+
+- **Six sections do not hydrate at all.** They are server components whose only
+  client code is a marker island that renders nothing, names its scene, and
+  dynamically imports that scene's motion module inside the queue's drain. A
+  section with real state — the carousel, the sector rail, the FAQ accordion —
+  stays a client component.
+- **Images are held rather than lazy.** `loading="lazy"` is read against the
+  layout the *parser* has, which has no pin spacers in it yet, so a section
+  twelve viewports down is about one viewport down at the moment the browser
+  decides
+  ([the measured version](/guides/performance-checklist#lazy-loading-is-read-against-the-parse-time-layout)).
+  A helper runs `getImageProps` so the optimiser still computes the candidate
+  set, parks the URLs on attributes the browser does not fetch, and sets them
+  two viewports out.
+
+<Callout type="info">
+  **Arm the pictures before the reduced-motion guard, not after.** A section's
+  photographs are the section, not an effect on it — a reader who asked for less
+  motion still gets the images. Both call sites return the observer's teardown
+  from the reduced-motion path for exactly this reason.
+</Callout>
 
 ## Arabic is the default, and the design language
 
@@ -174,36 +291,88 @@ Two consequences worth carrying to your own work:
   **A number inside Arabic prose needs its own bidi isolate — isolating a
   parent is not enough.** Space-separated digit groups reorder, so a phone
   number renders back-to-front. Nothing on the holding page prints a number
-  today, which means this bites the moment the contact block lands.
+  today, which means this bites the moment the contact block lands
+  ([i18n & RTL](/standards/i18n-rtl#the-traps-that-only-appear-in-arabic)).
 </Callout>
 
-<details>
-<summary>Traps that have already cost someone a day</summary>
+**The Arabic page carries roughly three times the font bytes of the English
+one**, and no amount of tuning fixed it: an Arabic page needs its own faces
+*and* the Latin ones for the wordmark and the language switcher, and
+`next/font` decides its preloads at build time from the module graph, of which
+there is one for both locales. Committing the woff2 files and choosing the
+preload per locale is the known fix, and it is a pre-launch item rather than a
+tuning knob ([i18n & RTL](/standards/i18n-rtl#the-traps-that-only-appear-in-arabic)).
 
-- **The intro curtain overlay must never be removed from the DOM.** The
-  controller called `overlay.remove()` once; React still held the fiber, and
-  the next client-side navigation died in the unmount commit with no error
-  boundary above the layout. The symptom was *switching locale showed an error
-  page, every time, in both directions.* Retire it by dropping its attribute
-  and letting CSS hide it.
-- **The curtain's release chain must never be able to reject.**
-  `Animation.finished` rejects with `AbortError` when its element leaves the
-  DOM, and `Promise.race` settles on the first settlement — including a
-  rejection — so the timeout ceiling cannot rescue it and the reader gets a
-  page that will not scroll.
-- **Anything the curtain hides needs its own CSS failsafe keyframe.** The
-  header had none, and a fixed transparent strip went on swallowing clicks
-  whenever a release never came.
+## Traps that have already cost someone a day
+
+<details>
+<summary>The intro curtain</summary>
+
+- **The overlay must never be removed from the DOM.** The controller called
+  `overlay.remove()` once; React still held the fiber, and the next client-side
+  navigation died in the unmount commit with no error boundary above the layout.
+  The symptom was *switching locale showed an error page, every time, in both
+  directions.* Retire it by dropping its attribute and letting CSS hide it.
+- **The release chain must never be able to reject.** `Animation.finished`
+  rejects with `AbortError` when its animation is cancelled, and `Promise.race`
+  settles on the first settlement — including a rejection — so the timeout
+  ceiling cannot rescue it and the reader gets a page that will not scroll.
+- **The playout deliberately returns no teardown.** The release has to happen on
+  every path, including one where the component unmounts mid-build; a cleanup
+  that cancelled it would leave the page locked until a CSS failsafe fires
+  seconds later. A root attribute is what makes a second call a no-op.
+- **Anything the curtain hides needs its own CSS failsafe keyframe.** The header
+  had none, and a fixed transparent strip went on swallowing clicks whenever a
+  release never came.
 - **Check curtain timing on a throttled network, not a local load.** The
   truncation only appears once first paint passes 300 ms, which is every real
   connection and no local one. CPU throttling barely moves it.
-- **`requestVideoFrameCallback` is not trustworthy under CPU throttling** — it
-  under-reports badly enough to look like a catastrophic frame drop that is not
-  happening. Track `currentTime` against scroll instead.
-- **Re-encode from the masters, never from the files in `public/`.** Deriving
-  the light cuts from the full cuts cost measurable quality across all four.
-  After any re-encode, check that keyframe count still equals frame count in
-  all eight files, or all-intra has been lost and reverse scrubbing with it.
+
+</details>
+
+<details>
+<summary>The pin and the scrub</summary>
+
+- **A pinned scene is sized `h-screen`, never `dvh`.** A pin freezes the
+  element's computed height as pixels, so a dynamic unit measured once stops
+  being dynamic: `dvh` froze at the *small* viewport, the first scroll retracted
+  the phone's address bar, and a permanent strip of background opened under the
+  film. `100vh` is the one height the address bar cannot move — and `h-screen`
+  rather than `h-lvh`, because a browser that does not know `lvh` drops the
+  declaration entirely and leaves a pinned scene with no height at all.
+- **A trigger created after ScrollTrigger's batch refresh is never measured.**
+  The symptom is a pin with no travel: an enabled trigger, a spacer with no
+  padding, a scrubbed timeline that never advances, and nothing errors or logs.
+  Anything built outside the initial commit has to refresh itself.
+- **Never drive a scrub from a value that several tweens take turns writing.**
+  GSAP renders a timeline's children in reverse when the playhead moves back, so
+  one render landing short of the run walked seven tweens to their own `from` in
+  turn — painting six frames from the middle of the film over settled copy. The
+  reader's report was *an aeroplane cabin flashing over the About text*. Derive
+  the frame from the playhead instead.
+- **A beat composed against a particular frame has to bring that frame's ground
+  with it.** The closing composition is read against the film's last frame,
+  which is near-black — on a connection that never delivers it, the same copy
+  lands over a lit photograph of a kitchen. A plain black card fading in under
+  the beat is what makes the beat independent of delivery.
+
+</details>
+
+<details>
+<summary>The bakes</summary>
+
+- **Bake from `masters/`, never from the files in `public/`.** The frames
+  supplied for the opening film once were the shipped H.264 exported back out —
+  verified by aligning them frame by frame — and they were 35 frames short,
+  which is exactly the stretch carrying the branded plate three other things are
+  composed against. The bake script now reads the master itself and takes no
+  source argument.
+- **Do not assume the next master is cropped like the last.** The current one
+  carries 12px of pure black down both edges on every frame, which `cover` would
+  show as a seam down the hero. The master before it had none. Measure.
+- **A recut renames its frame folder**, because the folders are served
+  `immutable` for a year
+  ([above](#the-films-are-frame-sequences-not-video)).
 
 </details>
 
@@ -215,8 +384,13 @@ the other ships a half-indexed site — the meta tags and the `X-Robots-Tag`
 header disagree — and a colocated test is the only thing that catches it. Full
 procedure: [Client Projects](/how-we-work/client-projects#the-go-live-switch).
 
-Two things this repo does that the generic checklist does not cover:
+Three things this repo does that the generic checklist does not cover:
 
+- **CI is manual, and it is the only place the gates are enforced.** The
+  workflow has no `push` or `pull_request` trigger — the account's Actions
+  minutes are spent, so an automatic trigger would only queue a run that never
+  starts. Until they are back, run all five gates yourself before pushing
+  ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
 - **The site URL falls back to a hard-coded pre-launch host, not an env var.**
   CI runs `vercel build` on a GitHub runner where no `VERCEL_*` host variables
   exist, so the env-var version read back `undefined`, every page prerendered

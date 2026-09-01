@@ -13,13 +13,14 @@ anything harder depends on it.
 ## Prerequisites
 
 <Checklist id="env-prereqs">
-  <Task>**Node.js 22** through a version manager (`fnm` or `nvm`), not a system package. CI runs 22; the platform requires ≥ 20.</Task>
+  <Task>**Node.js 22** through a version manager (`fnm` or `nvm`), not a system package. The platform requires ≥ 20 and its CI runs 22 — `jumeira` and `aladawy-pack` run 24, so check the repo's workflow rather than assuming one version.</Task>
   <Task>**pnpm** — `corepack enable` is the simplest route. Every repo except this handbook uses it.</Task>
   <Task>**Git**, configured with your name and work email.</Task>
   <Task>**An SSH key on your GitHub account.** Every clone command here is `git@github.com:…`, so without one the very first command fails with `Permission denied (publickey)`. [GitHub's guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) — generate, then add to your account, then `ssh -T git@github.com` to confirm.</Task>
   <Task>**The Vercel CLI** (`npm i -g vercel`), then `vercel login`. Needed for `vercel env pull` and for the one repo that deploys by hand.</Task>
   <Task>**An editor** with TypeScript, ESLint and Prettier integration.</Task>
   <Task>**Python 3** — only if you will touch `baron-menu`, `jumeira` or `zad-alhkoul`, whose asset scripts need it.</Task>
+  <Task>**ffmpeg and a bash shell** — only for [`jumeira`](/repositories/jumeira)'s audio and film bakes. Neither is needed to build or run it: every bake's output is committed, so a fresh clone needs none of this.</Task>
 </Checklist>
 
 <Callout type="info">

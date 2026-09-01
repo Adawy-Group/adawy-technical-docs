@@ -19,6 +19,13 @@ FTP uploads, no editing on production, no exceptions.
 | **Preview** | A unique URL per pull request | The `deploy` job runs `vercel deploy` on every push to a PR branch |
 | **Production** | The project's live URL | The `deploy` job runs `vercel deploy --prod` on merge to `main` |
 
+<Callout type="info">
+  **That table is the pipeline where it fires on its own, which is not
+  everywhere** — [`jumeira`](/repositories/jumeira) has no automatic trigger at
+  all ([why, and what to do instead](#client-projects-deploy-the-same-way)).
+  Read a repo's own workflow before assuming a merge deployed anything.
+</Callout>
+
 **There is no third environment.** Where this handbook says "staging", it means
 the production deployment *before its custom domain is attached* — the Vercel
 project URL that leadership reviews. Same build, same pipeline, different
@@ -84,6 +91,15 @@ everything costs roughly what verifying the changed app alone would.
   variable the runner does not have. **The rule underneath is: never let a
   build environment decide a URL you publish.** Prebuilt is safe once the
   origin is resolved in your own code, and unsafe when it is not.
+- **A `--prebuilt` deploy uploads more than `.vercel/output`, and
+  `.vercelignore` has to allow it.** Each function's `.vc-config.json` carries a
+  `filePathMap` pointing at files elsewhere in the project — hundreds under
+  `node_modules/.pnpm/` and `.next/` — and the build machine expands the bundle
+  from them. Ignore either directory and the deployment is **created and then
+  fails on the first missing file** (`ENOENT: lstat '/vercel/path0/.next/package.json'`),
+  while production quietly stays on the previous build. The CLI's own default
+  ignore list covers both, which is why this only bites once someone adds a
+  `.vercelignore`.
 - **Each PR gets one previews comment**, rewritten in place rather than piling
   up, and each deploy is registered with GitHub so the PR carries a native
   "View deployment" link.
@@ -129,7 +145,7 @@ site is **`noindex`-ed until launch**, flipped by a single `PRODUCTION_HOST`
 switch. An indexable staging deployment competes with the client's real domain
 in search — see [Client Projects](/how-we-work/client-projects#the-go-live-switch).
 
-Two repos deploy differently, and both are worth knowing before you push:
+Three repos deploy differently, and all three are worth knowing before you push:
 
 - **`baron-menu` has no CI** and deploys with `vercel deploy --prod --yes` from
   the folder. Its URL must never change, because the QR code is printed on
@@ -138,6 +154,22 @@ Two repos deploy differently, and both are worth knowing before you push:
   nothing runs them on a push. Until that is fixed its gates are yours to run
   by hand before you merge — a gap, not a design
   ([the matrix](/repositories#what-the-repos-actually-share)).
+- **`jumeira`'s CI is manual.** The workflow gates and deploys exactly as
+  described above, but only when someone dispatches it, so **merging to `main`
+  ships nothing** and a green history proves nothing about a commit nobody ran
+  it on. Run all five gates locally before pushing, and either dispatch the
+  workflow or deploy by hand:
+
+  ```bash
+  pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build
+  vercel pull --yes --environment=production
+  vercel build --prod
+  vercel deploy --prebuilt --prod
+  ```
+
+  The Vercel Git integration is not an option there: the project is on a plan
+  that cannot connect a private organisation-owned repo, which is the same
+  constraint that put the platform on the CLI.
 
 ## Launch weeks
 

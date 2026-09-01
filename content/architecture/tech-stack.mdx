@@ -62,7 +62,7 @@ publishing switch that keeps the site out of the index before launch.
 | Choice | Who differs, and why |
 | ------ | -------------------- |
 | Primitive library | `aladawy-pack` and `aladawy-shop` are on Radix; `jumeira` on Radix; `zad-alhkoul` and `adawy-group-links` on Base UI. Base UI is where new work starts — it is what `@adawy/ui` uses |
-| Smooth scroll | Most pair GSAP with Lenis. [`jumeira`](/repositories/jumeira#why-there-is-no-lenis-here) removed it, because on a page whose scroll *is* the animation a second scroll authority is the bug |
+| Smooth scroll | Everyone pairs GSAP with Lenis, but not the same way. Most take it as a library; [`jumeira`](/repositories/jumeira#the-scroll-authority-is-a-reversed-decision) takes it through **Locomotive Scroll v5**, which is Lenis rebuilt, and pays for it by making **every** scrub on the page `scrub: true` — a numeric scrub under a smoothed wheel is two smoothings in series, and it reads as seek lag |
 | Forms | Only the repos that take an enquiry carry react-hook-form + zod. A site with no form ships neither |
 | State | `aladawy-shop` alone uses **Redux Toolkit**, justified by a quote that persists across routes and reloads. That is genuinely cross-cutting client state, and it is a project-specific choice, not a house pattern |
 | Tests | Vitest in five repos; [`zad-alhkoul`](/repositories/zad-alhkoul) has none, which is a gap rather than a decision |

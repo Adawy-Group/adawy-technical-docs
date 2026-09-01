@@ -30,6 +30,42 @@ regressions and gets run.
 Core Web Vitals sanity, at any of the three: **LCP &lt; 2.5s, CLS &lt; 0.1,
 INP &lt; 200ms.**
 
+### When the composite score cannot be the gate
+
+[`jumeira`](/repositories/jumeira) is the standing exception, and the shape of
+it is reusable. Lab runs of a page that is one pinned film swing about ten
+points around an LCP heuristic, so a merge bar on the composite score is a coin
+toss. Its Lighthouse CI therefore reports **performance as a warning** and puts
+the *errors* on things that do not swing:
+
+| Asserted as an error | Why it does not swing |
+| -------------------- | --------------------- |
+| Per-type transfer size — document, stylesheet, script, font, image | Bytes are bytes. A regression here is a real regression, every run |
+| Total blocking time | Main-thread work, not a modelled paint |
+| Cumulative layout shift | Deterministic for a given layout |
+| Largest contentful paint, as a ceiling well above the target | Catches a collapse, ignores the noise |
+
+Accessibility stays a hard error at 90; SEO is switched off entirely while the
+site ships `noindex` before launch, because the one failing audit is the
+publishing switch working
+([client projects](/how-we-work/client-projects#the-go-live-switch)).
+
+*The generalization:* **assert the inputs, warn on the score.** A budget on
+transferred bytes fails the PR that added the bytes; a budget on a composite
+score fails whichever PR happened to run on a noisy machine, and the first
+response to that is people ignoring the check.
+
+<Callout type="warning">
+  **A score can also have a floor you cannot code your way under.** Measured on
+  `jumeira` by blocking scripts at the audit and re-scoring: its own client code
+  is worth about **4 points**, the fonts **3**, and **React's arrival on the
+  page 20** — the same route scores 100 with all JavaScript blocked. Its Arabic
+  route also sits about ten points below its English one on identical scripts,
+  and that gap is font bytes an Arabic page genuinely needs. Before treating a
+  score as a bug, find out what the page costs with all JavaScript blocked —
+  otherwise you are optimising against a constant.
+</Callout>
+
 ## Before you open the PR
 
 - [ ] **Images** through `next/image` — WebP/AVIF, responsive `sizes`,
@@ -39,6 +75,8 @@ INP &lt; 200ms.**
       loop), poster frame, `preload="none"`, starts after paint, respects
       `prefers-reduced-motion`. Long term: video CDN (Cloudflare Stream/Mux),
       not files served from the app.
+- [ ] **Below-the-fold images are deferred by something that knows the
+      finished layout** — see [the trap below](#lazy-loading-is-read-against-the-parse-time-layout).
 - [ ] **Client JavaScript** — is each `"use client"` boundary necessary?
       Server Components for static-heavy pages; dynamic-import anything heavy
       and below the fold.
@@ -46,6 +84,33 @@ INP &lt; 200ms.**
       loaded only where used.
 - [ ] **Third-party scripts** — every one is a performance tax; each needs a
       reason, and analytics loads after interaction/idle.
+
+### Lazy loading is read against the parse-time layout
+
+**`loading="lazy"` defers by position, and the position it reads is the one the
+*parser* has** — before any pin spacer, sticky hold or scene has been built. A
+section that sits twelve viewports down in the finished document can be about
+one viewport down at the moment the browser decides, and every image in it is
+fetched on load.
+
+Measured on `jumeira`'s production alias: nine images, 158,978 bytes, every one
+requested between 272 ms and 297 ms — **before hydration had run at all.** CI
+failed `resource-summary:image:size` at 204,148 bytes against a 153,600 budget,
+and it had been over the line for a full release without failing, because one of
+the three audit runs was blocked badly enough to fetch only four of them and the
+assertion takes the best run.
+
+Two things follow:
+
+- **"It is far down the page" is not an exemption; it is the trap.** Deferring a
+  section's own build to a gesture makes it *worse*, because at parse time the
+  section is nearer the top than it will ever be again.
+- **Defer with something that knows the real layout.** Run `getImageProps` so
+  the optimiser still computes the candidate set, park the URL and `srcset` on
+  attributes the browser does not fetch, and set them from an
+  `IntersectionObserver` a couple of viewports out. **Arm them before any
+  `prefers-reduced-motion` guard** — a section's photographs are the section,
+  not an effect on it.
 
 ## Verify
 
@@ -59,7 +124,10 @@ INP &lt; 200ms.**
       `performance.getEntriesByType` does not surface media range requests, so
       it reports 0 bytes for a video and looks fine while the page is pulling
       megabytes. That mistake shipped a 6.8 MB preload in
-      [`jumeira`](/repositories/jumeira) once already.
+      [`jumeira`](/repositories/jumeira) once already. Its films are frame
+      sequences now, which Resource Timing *does* see — but the habit is the
+      one worth keeping, because the panel is the only thing that shows you the
+      order requests actually went out in.
 
 ## After deploy
 
