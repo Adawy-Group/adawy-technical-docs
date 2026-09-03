@@ -89,7 +89,7 @@ defensible, which is the actual standard.
 | Content | **In the repo** (MDX/config, reviewed via PR) | Site content is managed by the team in git for now; a CMS is a future decision, made when the content volume demands it |
 | Search | **Meilisearch** (self-hosted) | Strong Arabic morphology support; no subscription |
 | Authentication | **Better Auth** | Open source, multi-tenant, no per-user fees; user data stays in our database |
-| AI | **Vercel AI SDK + Claude & Gemini APIs** | Provider-agnostic; Gemini leads on Egyptian Arabic, Claude on English business prose |
+| AI | **Vercel AI SDK**, provider-agnostic | Gemini leads on Egyptian Arabic; the English business-prose model is picked per task behind the SDK |
 | Vector storage | **pgvector** | Same PostgreSQL database; no extra service at this scale |
 
 ## Operations

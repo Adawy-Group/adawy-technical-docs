@@ -21,7 +21,3 @@ public/_pagefind/
 
 # internal planning docs — not published
 docs/superpowers/
-.claude/
-
-# Claude Code (local agent context, not published)
-CLAUDE.md
