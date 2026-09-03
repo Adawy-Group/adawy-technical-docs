@@ -22,16 +22,15 @@ already paid for.
 | `adawy-platform` | `AGENTS.md` | The shadcn contract — why you edit the vendored component instead of out-specifying it from the call site, and which registry components were deliberately *not* adopted |
 | `jumeira` | `AGENTS.md` **+ four companions** | The standalone-repo contract, the RTL lint rules and the trap ledger — split across `SECTIONS.md`, `CHROME.md`, `FILMS.md` and `PRODUCT.md`, [see below](#a-contract-can-outgrow-one-file) |
 | `aladawy-shop` | `AGENTS.md` | The quote-not-cart domain model, the two content trees, the commands to run before calling work done |
-| `zad-alhkoul` | **`CLAUDE.md`** | The three-layer design system and the generated files |
-| `adawy-group-links` | **`CLAUDE.md`** | The monochrome palette rule, the Arabic brand spelling, RTL-safe motion, the baked pattern |
+| `zad-alhkoul` | `AGENTS.md` **(generated stub only)** | The three-layer design system and the generated files — written up only in an untracked local notes file |
+| `adawy-group-links` | `AGENTS.md` **(generated stub only)** | The monochrome palette rule, the Arabic brand spelling, RTL-safe motion, the baked pattern — same gap |
 | `aladawy-pack` | — | **Nothing.** Its constraints are in the README and the source comments |
 | `baron-menu` | — | **Nothing.** `PRODUCT.md` carries the zero-build-step principle instead |
 | `adawy-technical-docs` | — | **Nothing tracked.** This handbook is its own contract |
 
-Where both files exist, `CLAUDE.md` is usually one line — `@AGENTS.md` —
-pointing at the same file, so there is one document rather than two that
-disagree. In two repos it is the other way round: the file Next.js generates
-sits in `AGENTS.md` and the real contract is in `CLAUDE.md`.
+In `zad-alhkoul` and `adawy-group-links` the file Next.js generates sits in
+`AGENTS.md` and the real contract lives only in an untracked local notes file
+on one developer's disk — which, for the team, is the same as having none.
 
 <Callout type="important">
   **Three repos have no contract file at all**, which is the gap this section
@@ -46,10 +45,10 @@ ledger written at the end of a project is written from memory, and the detail
 that made the bug expensive is the first thing to go.
 
 <Callout type="warning">
-  One warning from the platform repo's own audit: a `CLAUDE.md` that is
-  `.gitignore`d holds knowledge on exactly one person's disk. If an AI
-  instruction file contains something the team needs, it belongs in a tracked
-  file — `AGENTS.md`, the repo's `docs/`, or this handbook.
+  One warning from the platform repo's own audit: an untracked agent-notes
+  file holds knowledge on exactly one person's disk. If an AI instruction file
+  contains something the team needs, it belongs in a tracked file —
+  `AGENTS.md`, the repo's `docs/`, or this handbook.
 </Callout>
 
 ### A contract can outgrow one file

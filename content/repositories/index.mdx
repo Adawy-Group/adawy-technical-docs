@@ -128,11 +128,11 @@ know is not — so here is the honest matrix.
 | | Package manager | AGENTS.md | CI | Tests | Bilingual |
 | --- | --- | --- | --- | --- | --- |
 | `adawy-platform` | pnpm 10.33 | ✅ | ✅ | ✅ | en · ar · fr |
-| `adawy-group-links` | pnpm 11.5 | in `CLAUDE.md` | ✅ | ✅ | en · ar |
+| `adawy-group-links` | pnpm 11.5 | ⚠️ stub | ✅ | ✅ | en · ar |
 | `aladawy-pack` | pnpm 11.4 | ❌ | ✅ | ✅ | en · ar |
 | `aladawy-shop` | pnpm | ✅ | ❌ | ✅ | ar · en |
 | `jumeira` | pnpm 11.5 | ✅ +4 more | ⚠️ manual | ✅ | ar · en |
-| `zad-alhkoul` | pnpm 11.5 | in `CLAUDE.md` | ✅ | ❌ | en · ar |
+| `zad-alhkoul` | pnpm 11.5 | ⚠️ stub | ✅ | ❌ | en · ar |
 | `baron-menu` | — none | ❌ | ❌ | ❌ | en · ar |
 | `adawy-technical-docs` | **npm** | ❌ | ✅ | ❌ | English only |
 
@@ -153,8 +153,9 @@ know is not — so here is the honest matrix.
 
 - **`aladawy-pack` and `baron-menu` have no `AGENTS.md`**, and in
   `adawy-group-links` and `zad-alhkoul` the file holds only the block Next.js
-  generates — the real constraints are in `CLAUDE.md`. If you are the next
-  person into one of those repos, writing it is the highest-value small PR
+  generates — the real constraints live in an untracked local notes file. If
+  you are the next person into one of those repos, writing it is the
+  highest-value small PR
   available ([working with AI](/how-we-work/working-with-ai)).
 - **`aladawy-shop` has no CI at all.** It has tests and it has a `test` script;
   nothing runs them on a push. Its four gates are yours to run by hand until
