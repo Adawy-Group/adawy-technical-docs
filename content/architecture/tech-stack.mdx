@@ -35,7 +35,7 @@ these states, and nothing on this page is in a fourth one.
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Monorepo | **Turborepo + pnpm** — `apps/` per brand + eight shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Monorepo | **Turborepo + pnpm** — `apps/` per brand + nine shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`, `brand-app`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
 | Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team. Note: middleware is `proxy.ts` in this version |
 | Styling | **Tailwind CSS v4 + shadcn/ui** (`@adawy/ui`, `@adawy/design`) | Tokens are CSS-first (`@theme`): `@adawy/design` defines the token structure, each brand overrides the values — accessible, owned by the team, no component library subscription |
 | Motion | **GSAP + Lenis** (`@adawy/motion`) | The brand guidelines require cinematic, scroll-driven motion; GSAP is the industry standard and Lenis provides smooth scrolling, driven by GSAP's ticker so they share one clock. Wired once in `@adawy/motion` — the package ships primitives, brands own choreography |
@@ -44,7 +44,7 @@ these states, and nothing on this page is in a fourth one.
 | Forms | **React Hook Form + Zod** | Type-safe forms with one validation schema shared between client and server ([forms & enquiries](/guides/forms-and-enquiries)) |
 | Transactional email | **Resend** | Contact and quote submissions; reached through a single delivery seam so the provider is swappable |
 | Testing | **Vitest**, colocated | Pure logic is extracted specifically so it can be tested without a DOM ([testing](/standards/testing)) |
-| Lint & format | **ESLint 9 (flat config) + Prettier**, both gating CI | `@adawy/eslint-config` machine-enforces the architecture — the rules in this handbook fail the build rather than waiting for a reviewer ([coding](/standards/coding#linting--formatting)) |
+| Lint & format | **ESLint 10 (flat config) + Prettier**, both gating CI | `@adawy/eslint-config` machine-enforces the architecture — the rules in this handbook fail the build rather than waiting for a reviewer ([coding](/standards/coding#linting--formatting)) |
 
 ## What a client project is required to run
 
@@ -61,11 +61,11 @@ publishing switch that keeps the site out of the index before launch.
 
 | Choice | Who differs, and why |
 | ------ | -------------------- |
-| Primitive library | `aladawy-pack` and `aladawy-shop` are on Radix; `jumeira` on Radix; `zad-alhkoul` and `adawy-group-links` on Base UI. Base UI is where new work starts — it is what `@adawy/ui` uses |
+| Primitive library | `aladawy-pack` and `aladawy-shop` are on Radix; `jumeira` on Radix; `zad-alhkoul`, `adawy-group-links` and `aladawy-links` on Base UI. Base UI is where new work starts — it is what `@adawy/ui` uses |
 | Smooth scroll | Everyone pairs GSAP with Lenis, but not the same way. Most take it as a library; [`jumeira`](/repositories/jumeira#the-scroll-authority-is-a-reversed-decision) takes it through **Locomotive Scroll v5**, which is Lenis rebuilt, and pays for it by making **every** scrub on the page `scrub: true` — a numeric scrub under a smoothed wheel is two smoothings in series, and it reads as seek lag |
 | Forms | Only the repos that take an enquiry carry react-hook-form + zod. A site with no form ships neither |
 | State | `aladawy-shop` alone uses **Redux Toolkit**, justified by a quote that persists across routes and reloads. That is genuinely cross-cutting client state, and it is a project-specific choice, not a house pattern |
-| Tests | Vitest in five repos; [`zad-alhkoul`](/repositories/zad-alhkoul) has none, which is a gap rather than a decision |
+| Tests | Vitest in every Next.js repo; only [`baron-menu`](/repositories/baron-menu), which has no build step, runs none |
 
 *Why state a floor instead of a stack:* a stack list goes stale the first time
 a project makes a defensible different choice, and then the handbook is either

@@ -2,6 +2,7 @@ export default {
   index: 'The Repository Map',
   'adawy-platform': 'adawy-platform',
   'adawy-group-links': 'adawy-group-links',
+  'aladawy-links': 'aladawy-links',
   'aladawy-pack': 'aladawy-pack',
   'aladawy-shop': 'aladawy-shop',
   jumeira: 'jumeira',

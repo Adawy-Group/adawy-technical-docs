@@ -1,6 +1,6 @@
 ---
 title: Dev Environment Setup
-description: Everything needed to get any of the eight repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
+description: Everything needed to get any of the nine repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
 tags: ['Tutorial', 'Day 1', '~45 min']
 ---
 
@@ -19,8 +19,8 @@ anything harder depends on it.
   <Task>**An SSH key on your GitHub account.** Every clone command here is `git@github.com:…`, so without one the very first command fails with `Permission denied (publickey)`. [GitHub's guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) — generate, then add to your account, then `ssh -T git@github.com` to confirm.</Task>
   <Task>**The Vercel CLI** (`npm i -g vercel`), then `vercel login`. Needed for `vercel env pull` and for the one repo that deploys by hand.</Task>
   <Task>**An editor** with TypeScript, ESLint and Prettier integration.</Task>
-  <Task>**Python 3** — only if you will touch `baron-menu`, `jumeira` or `zad-alhkoul`, whose asset scripts need it.</Task>
-  <Task>**ffmpeg and a bash shell** — only for [`jumeira`](/repositories/jumeira)'s audio and film bakes. Neither is needed to build or run it: every bake's output is committed, so a fresh clone needs none of this.</Task>
+  <Task>**Python 3** — only if you will touch `jumeira` or `zad-alhkoul`, whose asset scripts need it (and `baron-menu`, only as the simplest local server). `zad-alhkoul`'s hero-film bake also needs ffmpeg.</Task>
+  <Task>**ffmpeg, ImageMagick and a bash shell** — only for [`jumeira`](/repositories/jumeira)'s film-frame and brand bakes (its audio bake needs macOS `afconvert`). Neither is needed to build or run it: every bake's output is committed, so a fresh clone needs none of this.</Task>
 </Checklist>
 
 <Callout type="info">
@@ -54,13 +54,14 @@ If those two pass, your toolchain is correct.
 
 | Repo | Manager | Install → run | Serves | Env vars |
 | ---- | ------- | ------------- | ------ | -------- |
-| [`adawy-platform`](/repositories/adawy-platform) | pnpm 10.33 | `pnpm install` → `pnpm turbo dev --filter=group` | `/en` | `apps/group/.env.example` |
-| [`adawy-group-links`](/repositories/adawy-group-links) | pnpm 11.5 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
-| [`aladawy-pack`](/repositories/aladawy-pack) | pnpm 11.4 | `pnpm install` → `pnpm dev` | `/en` | none to boot |
-| [`aladawy-shop`](/repositories/aladawy-shop) | pnpm | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
-| [`jumeira`](/repositories/jumeira) | pnpm 11.5 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
-| [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 11.5 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
-| [`baron-menu`](/repositories/baron-menu) | **none** | serve the folder | one page | none |
+| [`adawy-platform`](/repositories/adawy-platform) | pnpm 11.26 | `pnpm install` → `pnpm turbo dev --filter=group` | `/en` | `apps/group/.env.example` |
+| [`adawy-group-links`](/repositories/adawy-group-links) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
+| [`aladawy-links`](/repositories/aladawy-links) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
+| [`aladawy-pack`](/repositories/aladawy-pack) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/en` | none to boot |
+| [`aladawy-shop`](/repositories/aladawy-shop) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`jumeira`](/repositories/jumeira) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
+| [`baron-menu`](/repositories/baron-menu) | **none** to run (npm for its image script) | serve the folder | one page | none |
 | `adawy-technical-docs` | **npm** | `npm install` → `npm run dev` | `/` | none |
 
 All of them run on **port 3000** by default, so run one at a time or pass
@@ -70,7 +71,8 @@ All of them run on **port 3000** by default, so run one at a time or pass
 <Callout type="warning">
   **Getting the package manager wrong produces a dependency tree the lockfile
   does not describe, and errors that make no sense.** This handbook is the only
-  npm repo in the org; everything else is pnpm. Check which repo you are in
+  npm repo in the org (`baron-menu` keeps an npm lockfile only for its image
+  script); everything else is pnpm. Check which repo you are in
   before you install.
 </Callout>
 
@@ -91,14 +93,15 @@ pnpm turbo lint typecheck test build
 pnpm format:check
 ```
 
-Workspace names: `group`, `studio`, `pack`, `@adawy/ui`, `@adawy/design`,
-`@adawy/motion`, `@adawy/i18n`, `@adawy/site`, `@adawy/holding`,
+Workspace names: `group`, `studio`, `pack`, `print`, `supplies`, `marketing`,
+`bizdev`, `@adawy/ui`, `@adawy/design`,
+`@adawy/motion`, `@adawy/i18n`, `@adawy/site`, `@adawy/holding`, `@adawy/brand-app`,
 `@adawy/eslint-config`, `@adawy/typescript-config`.
 
 A single test runs from inside the app:
 
 ```bash
-pnpm --filter=group exec vitest run lib/ease.test.ts
+pnpm --filter=group exec vitest run messages/parity.test.ts
 pnpm --filter=group exec vitest                       # watch mode
 ```
 
@@ -116,10 +119,12 @@ pnpm format:check
 Two run something different, and running the wrong one means a red CI on a
 green local:
 
-- **`zad-alhkoul`** has no `test` script. Its whole gate is one composed
-  command: **`pnpm verify`** (typecheck → lint → format:check → check:i18n →
-  build).
-- **`baron-menu`** needs no install at all — serve the folder:
+- **`zad-alhkoul`**'s whole gate is one composed command: **`pnpm verify`**
+  (typecheck → lint → format:check → check:i18n → check:fonts → test → build →
+  test:smoke). Run that rather than the four above, or you skip the font and
+  smoke checks CI runs.
+- **`baron-menu`** needs no install to run — serve the folder (`npm install`
+  is only for `convert-images.mjs`, which needs `sharp`):
 
   ```bash
   python3 -m http.server 8848   # → http://localhost:8848

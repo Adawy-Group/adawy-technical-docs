@@ -1,0 +1,205 @@
+---
+title: aladawy-links
+description: Aladawy Pack's link-in-bio page — the adawy-group-links construction rebranded for a client, one screen in two locales, shipped by hand with no CI.
+tags: ['Client work', 'Next.js 16', 'One route', 'No CI']
+---
+
+# `aladawy-links`
+
+**Client project.** The "link in bio" page for **Aladawy Pack**, the
+flexible-packaging manufacturer behind [`aladawy-pack`](/repositories/aladawy-pack):
+one screen carrying the website, the company profile PDF, Instagram, Facebook,
+LinkedIn and a WhatsApp chat, with the 10th of Ramadan plant's contact details
+and the Mansoura head office under them — in English and Arabic, light and
+dark.
+
+Private · standalone Next.js 16.3 app · Vercel project `aladawy-links`
+(team `adawy-s-projects`) · **deployed by hand**
+
+<Callout type="warning">
+  ***Aladawy* Pack is a client, not a Group brand.** Adawy Pack (`apps/pack` in
+  [`adawy-platform`](/repositories/adawy-platform)) is a different company one
+  letter away. This page belongs with [`aladawy-pack`](/repositories/aladawy-pack),
+  the same client's website.
+</Callout>
+
+<Stats>
+  <Stat value="1" label="route" hint="everything else 404s inside the locale" />
+  <Stat value="6" label="destinations" hint="count and order enforced by a test" />
+  <Stat value="2" label="map pins" hint="10th of Ramadan plant · Mansoura head office" />
+  <Stat value="0" label="CI workflows" hint="removed on purpose" />
+</Stats>
+
+## Same page as `adawy-group-links`, different brand
+
+The README puts it plainly: *same page, same construction and the same motion
+as* [`adawy-group-links`](/repositories/adawy-group-links), the parent Group's
+link page. The two repositories have the same file tree, the same
+`package.json` dependency set and versions, and byte-identical shared modules
+(the theme reveal, for one). Everything that page explains about the
+construction applies here unchanged — the always-on locale prefix, the
+JS-gated GSAP entrance, the clip-path theme reveal, the baked pattern tile,
+silent-on-failure copy buttons, the "never letterspace Arabic" rule. Read that
+page for the reasons; this one covers what differs.
+
+| | `adawy-group-links` | `aladawy-links` |
+| --- | --- | --- |
+| World | Group work (and an open placement question) | **Client work** |
+| Mark | Adawy six-piece mark on a 4×4 grid | **AP monogram** — four pieces (two half-discs, a slanted bar, an upright), traced from the master artwork, landscape |
+| Wordmark | Vector SVG | **PNG painted through a CSS mask** (`public/brand/wordmark.png`) — no vector master exists |
+| Fonts | Montserrat + Cairo | **Archivo** (display) + **Inter** (body) + **IBM Plex Sans Arabic** — the set aladawypack.com uses |
+| Destinations | 7 — website, WhatsApp **second**, profile, Instagram, Facebook, LinkedIn, TikTok | 6 — website, profile, Instagram, Facebook, LinkedIn, WhatsApp **last**; no TikTok |
+| WhatsApp | Localized, escaped opener message | Bare `wa.me` link, no prefilled text |
+| Contact | Head office + six-branch list | 10th of Ramadan plant address + Mansoura head office, each with a coordinate map pin |
+| Arabic brand | عدوى (dotless) | **العدوي باك** — and the test rejects عدوى |
+| CI / deploy | GitHub Actions workflow (deploy job gated on a token) | **None** — `vercel deploy --prod` by hand |
+
+The two are **copies, not a shared package**. A fix to the shared
+construction made in one repo does not reach the other; carry it across by
+hand.
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16.3.5 (App Router), React 19.3 |
+| Language | TypeScript, strict — `@typescript/native` (TypeScript 7) installed alongside, `typescript` aliased to `@typescript/typescript6` |
+| Styling | Tailwind CSS v4 (CSS-first) + shadcn/ui (base-nova) on `@base-ui/react`, RTL |
+| Theme | next-themes with the hand-rolled circular clip-path reveal |
+| Motion | GSAP 3 (`@gsap/react`), gated on JavaScript and reduced motion |
+| i18n | next-intl 4 — `en` (default) + `ar`, `localePrefix: 'always'` |
+| Fonts | Archivo, Inter, IBM Plex Sans Arabic (static 400–700), all `preload: false` |
+| Tests | Vitest 5 — five files |
+| Lint / format | ESLint 10 (`eslint-config-next` 16.3.5), Prettier 3 + `prettier-plugin-tailwindcss` |
+| Tooling | pnpm **11.26.0** (pinned in `packageManager`); Node ≥ 22.18 per the README (no `engines` field) |
+| Agent contract | `AGENTS.md` holds **only** the block `next dev` generates — no repo-specific rules |
+
+No API routes, no server actions, no forms, no database. Seven client
+components, the same seven as the Group page; no `error.tsx` boundary.
+
+## Layout
+
+```text
+app/[locale]/        page.tsx (the whole site) · [...rest] → not-found ·
+                     layout.tsx · not-found.tsx · opengraph-image.tsx
+app/                 robots.ts · sitemap.ts · fonts.ts · globals.css · icons
+components/brand/    aladawy-mark.tsx · aladawy-wordmark.tsx ·
+                     lib/aladawy-mark.ts · lib/mark-pattern-tile.ts (+ test)
+components/…         backdrop · chrome · contact · entrance · links · ui
+lib/                 links.ts · contact.ts · site.ts (+ tests)
+messages/            en.json · ar.json (+ parity and brand-spelling tests)
+i18n/ + proxy.ts     next-intl routing
+scripts/             build-pattern-tile.ts (pnpm pattern:bake)
+public/              aladawy-pack-company-profile.pdf · brand/wordmark.png ·
+                     pattern/tile-{ink,chalk}.png
+```
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev             # http://localhost:3000 → redirects to /en
+pnpm build           # production build, both locales prerendered
+pnpm lint
+pnpm typecheck       # next typegen && tsc --noEmit — keep the typegen half
+pnpm test            # vitest
+pnpm format:check    # or pnpm format to write
+pnpm pattern:bake    # re-rasterise public/pattern/*.png from the tile geometry
+```
+
+`typecheck` runs `next typegen` first for the same reason as on the Group
+page: the layout uses Next 16's generated `LayoutProps<"/[locale]">`, which
+does not exist until typegen has run.
+
+## What differs, with its reasons
+
+**The Arabic brand is العدوي باك, and the test knows the trap next door.**
+`messages/brand-spelling.test.ts` fails on العدوى, الأدوي, الادوي, الإدوي and
+الأدوى, fails when العدوي is not followed by باك, and requires the correct form
+to appear more than three times. The first trap is specific to this repo:
+
+> عدوى is how the parent group writes *its* name (عدوى جروب), and copying that
+> here gives Arabic search two brands where there is one.
+
+Anyone porting a string from `adawy-group-links` is exactly the person who
+would make that mistake, which is why it is a test and not a review note.
+
+**Two map pins, by coordinates.** The printed address is the 10th of Ramadan
+plant — *"where a visitor with a delivery or a press check is going"*. Mansoura
+is named on its own line with its own pin, because the company profile lists
+it as the head office and as the street address of two of the three plants.
+Both use `maps.google.com/?q=lat,lng` rather than a Google place link, because
+a coordinate *"lands on the gate itself and cannot drift the way a
+Google-titled place can when someone re-labels or merges the listing."*
+
+**One phone number, derived everywhere.** `lib/contact.ts` holds `PHONE_TEL`
+once; the display form, the `tel:` href and the `wa.me` link all come from it,
+because *"a wrong digit here opens a stranger's chat rather than the
+factory's."* WhatsApp is the last door — *"the one door that starts a
+conversation rather than opening a page"* — and opens a chat with no
+prefilled message.
+
+**The wordmark is a CSS mask, and two details hold it up.** A mask keeps the
+PNG `currentColor` (ink in light, chalk in dark) without a `filter: invert`
+that would also invert the field behind it. The aspect ratio
+(`aspect-[523/184]`) must stay a **class**: the wordmark is an entrance
+target, GSAP's `clearProps: "all"` strips inline styles when the timeline
+ends, and a masked box has no intrinsic size — as an inline style the wordmark
+renders for a second, then collapses to nothing. The `<h1>` around it is a
+plain block rather than a flex row for the same reason: flex stretch would
+override the ratio.
+
+**No colour at all.** Black, white and industrial gray, zero-chroma tokens
+(bar shadcn's stock `--destructive`). The README's reason: *"the only colour
+Aladawy Pack puts on screen is product photography, and there is none here."*
+The social glyphs, WhatsApp included, are monochrome and hand-drawn to
+lucide's grammar.
+
+## Tests
+
+| Test | What would otherwise ship broken |
+| ---- | -------------------------------- |
+| `lib/links.test.ts` | Exactly six destinations, website first and WhatsApp last; unique keys; external links are `https:`; the profile PDF exists under `public/`; the WhatsApp card's detail line equals `CONTACT.phone.display` in both locales |
+| `lib/contact.test.ts` | `tel:` equals the displayed number minus spaces; the inbox is a lowercase address; `wa.me` uses the dialled digits; the head-office pin differs from the address pin; head office and the two address lines are named in both locales |
+| `messages/parity.test.ts` | Identical key trees in `en` and `ar`, no empty strings |
+| `messages/brand-spelling.test.ts` | The Arabic brand form, as above |
+| `components/brand/lib/mark-pattern-tile.test.ts` | Six outlines and one solid; every shape inside the tile so the raster repeats without a seam; a one-pixel hairline at on-screen size |
+
+## Deployment — by hand, on purpose
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test && pnpm format:check && pnpm build
+vercel deploy --prod
+```
+
+There is **no CI and no push-to-deploy** — the repo has no `.github/`
+directory and GitHub reports zero workflows. It used to have the same
+workflow as `adawy-group-links`; commit `7e79121` removed it, reasoning that
+the page *"changes a few times a year — a link, a number, a new profile PDF"*
+and that the pipeline was more moving parts than that earns. Its deploy job
+had never run anyway: gated on a `VERCEL_TOKEN` that was never set, every push
+produced a green check that had deployed nothing.
+
+<Callout type="important">
+  **Nothing runs the checks for you.** Run all five commands above before
+  `vercel deploy --prod`, because a broken `tel:` link or a wrong Arabic brand
+  form goes live otherwise. Vercel's Git integration is not an option either:
+  the Hobby plan refuses to connect a private organisation repo (the API
+  answers `repo_owned_by_org`).
+</Callout>
+
+`lib/site.ts` resolves the public origin as `NEXT_PUBLIC_SITE_URL` →
+`https://$VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`. A custom
+domain such as `links.aladawypack.com` is anticipated but not attached;
+`NEXT_PUBLIC_SITE_URL` (the only variable in `.env.example`, optional) is how
+metadata would pick it up. See [Deployment](/how-we-work/deployment).
+
+## Recent history
+
+- **2026-09-19** — pnpm pinned to 11.26.0; Next 16.3.5, React 19.3, ESLint 10,
+  TypeScript 7 and Vitest 5.
+- **2026-09-02 → 03** — Next, TypeScript, React and type packages aligned with
+  the rest of the Group; agent-tool mentions dropped from tracked files.
+- **2026-08-23** — the page built and reconciled against the company profile;
+  the deploy workflow dropped; the profile PDF updated to the 2025 bilingual
+  brochure; WhatsApp added as the sixth door.

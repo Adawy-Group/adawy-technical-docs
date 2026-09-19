@@ -20,10 +20,10 @@ FTP uploads, no editing on production, no exceptions.
 | **Production** | The project's live URL | The `deploy` job runs `vercel deploy --prod` on merge to `main` |
 
 <Callout type="info">
-  **That table is the pipeline where it fires on its own, which is not
-  everywhere** — [`jumeira`](/repositories/jumeira) has no automatic trigger at
-  all ([why, and what to do instead](#client-projects-deploy-the-same-way)).
-  Read a repo's own workflow before assuming a merge deployed anything.
+  **That table is the pipeline where CI exists, which is not everywhere** —
+  `baron-menu`, `aladawy-shop` and `aladawy-links` have no workflow at all
+  ([what to do instead](#client-projects-deploy-the-same-way)). Read a repo's
+  own workflow before assuming a merge deployed anything.
 </Callout>
 
 **There is no third environment.** Where this handbook says "staging", it means
@@ -35,8 +35,8 @@ address.
 looking for a staging server, and there is not one. The pipeline is
 deliberately two-stage — a per-PR preview and a production deploy on merge —
 because a third environment needs its own data, its own variables and its own
-drift, and a two-person team maintaining eight repositories cannot pay for that
-eight times over.
+drift, and a two-person team maintaining nine repositories cannot pay for that
+nine times over.
 
 From week one there is a **live link** that fills with real pages — anyone in
 leadership can open it at any time. Progress is something you can click, not a
@@ -59,8 +59,8 @@ Two asymmetries are deliberate:
 - **Verification is never filtered; deployment always is.** Over-verifying
   costs a cache hit. Under-deploying ships stale code. Every fallback in the
   affected check deploys *everything*.
-- **A change to `packages/ui` deploys all three apps**, because it genuinely
-  reaches all three. A change under `apps/group` deploys one.
+- **A change to `packages/ui` deploys all seven apps**, because it genuinely
+  reaches all seven. A change under `apps/group` deploys one.
 
 Unchanged packages come back from Turborepo's remote cache, so verifying
 everything costs roughly what verifying the changed app alone would.
@@ -91,6 +91,9 @@ everything costs roughly what verifying the changed app alone would.
   variable the runner does not have. **The rule underneath is: never let a
   build environment decide a URL you publish.** Prebuilt is safe once the
   origin is resolved in your own code, and unsafe when it is not.
+  (`adawy-group-links`' deploy job is written this way but currently always
+  skips — the repo has no `VERCEL_TOKEN` secret — so its production ships by
+  hand with `vercel deploy --prod`; see [its page](/repositories/adawy-group-links).)
 - **A `--prebuilt` deploy uploads more than `.vercel/output`, and
   `.vercelignore` has to allow it.** Each function's `.vc-config.json` carries a
   `filePathMap` pointing at files elsewhere in the project — hundreds under
@@ -139,13 +142,15 @@ everything costs roughly what verifying the changed app alone would.
 
 ## Client projects deploy the same way
 
-Client repositories run the same Git-based pipeline on their own Vercel
-projects, with one addition that matters more than anything above: a client
+Client repositories run the same pipeline on their own Vercel projects —
+through a GitHub Actions job and the Vercel CLI where they have CI, because
+Vercel's Hobby plan refuses to connect a private organisation-owned repo
+(`repo_owned_by_org`) — with one addition that matters more than anything above: a client
 site is **`noindex`-ed until launch**, flipped by a single `PRODUCTION_HOST`
 switch. An indexable staging deployment competes with the client's real domain
 in search — see [Client Projects](/how-we-work/client-projects#the-go-live-switch).
 
-Three repos deploy differently, and all three are worth knowing before you push:
+Four repos deploy differently, and all four are worth knowing before you push:
 
 - **`baron-menu` has no CI** and deploys with `vercel deploy --prod --yes` from
   the folder. Its URL must never change, because the QR code is printed on
@@ -154,22 +159,15 @@ Three repos deploy differently, and all three are worth knowing before you push:
   nothing runs them on a push. Until that is fixed its gates are yours to run
   by hand before you merge — a gap, not a design
   ([the matrix](/repositories#what-the-repos-actually-share)).
-- **`jumeira`'s CI is manual.** The workflow gates and deploys exactly as
-  described above, but only when someone dispatches it, so **merging to `main`
-  ships nothing** and a green history proves nothing about a commit nobody ran
-  it on. Run all five gates locally before pushing, and either dispatch the
-  workflow or deploy by hand:
-
-  ```bash
-  pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build
-  vercel pull --yes --environment=production
-  vercel build --prod
-  vercel deploy --prebuilt --prod
-  ```
-
-  The Vercel Git integration is not an option there: the project is on a plan
-  that cannot connect a private organisation-owned repo, which is the same
-  constraint that put the platform on the CLI.
+- **`aladawy-links` has no CI either, on purpose.** A link page changes a few
+  times a year, so the pipeline was more moving parts than the site is worth.
+  Run its five gates, then `vercel deploy --prod`
+  ([the repo page](/repositories/aladawy-links)).
+- **`jumeira`'s CI adds a Lighthouse job.** It runs on every pull request and
+  every push to `main` — so **a merge to `main` is a production deploy** — and
+  can still be dispatched by hand (`checks only`, `preview` or `production`).
+  After a production deploy a mobile Lighthouse run checks the live site
+  against budgets ([the repo page](/repositories/jumeira)).
 
 ## Launch weeks
 

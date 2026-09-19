@@ -1,126 +1,373 @@
 ---
 title: aladawy-shop
-description: Client storefront for Aladawy Shop — why nothing has a price, how the quote builder works, and the two content trees that must stay in sync.
+description: Client storefront for Aladawy Shop — retail and wholesale prices and the one function that decides how they show, the quote builder, the two content trees, and the traps already hit.
 tags: ['Client work', 'Next.js 16', 'Arabic-default']
 ---
 
 # `aladawy-shop`
 
+<Badge tone="client">Client</Badge>
+
 **Client project.** The storefront for **Aladawy Shop**, a packaging,
 disposables and kitchen-supply house serving restaurants, bakeries, groceries
 and households in Egypt.
 
-Private · standalone Next.js 16 app · not part of the monorepo
+Private · standalone Next.js 16 app · not part of the monorepo · live at
+`aladawy-shop.vercel.app`
 
 Bilingual Arabic/English with real RTL, **Arabic-default** (`/` redirects to
-`/ar`, not `/en`). 57 catalogue lines across 6 categories. No account, no
-payment: the checkout is a **quote request**.
+`/ar`, not `/en`). 53 catalogue lines across 6 categories. No database, no
+account, no payment: the catalogue is committed TypeScript and the checkout is
+a **quote request** ([ADR-005](/architecture/adrs)).
+
+<Stats>
+  <Stat label="Catalogue lines" value="53" />
+  <Stat label="Categories" value="6" />
+  <Stat label="Locales" value="ar · en" />
+  <Stat label="Package manager" value="pnpm 11.26.0" />
+</Stats>
 
 ## The domain fact that shapes the whole codebase
 
-**Nothing has a price.** Packaging is not sold at a list price — it is quoted
-by *grade*. Every product carries a **price band per grade** (economy /
-standard / premium) in EGP. The customer picks a grade and a quantity; the
-running figure is a **range** that a human later settles against live stock.
+**Every line has two prices, and they do not always disagree.** The counter's
+price list states سعر القطاعي (retail) and سعر الجملة (wholesale) per unit in
+EGP, and `lib/content/catalog.ts` mirrors it as `pricing: { retail,
+wholesale? }`. The customer picks a tier and a quantity, and the running figure
+is an **exact total**. What the counter settles before anything ships is
+*stock*, not price.
+
+The two columns agree more often than they differ. Of the 53 lines, 19 carry a
+real wholesale discount, 24 state the same figure twice, and 10 leave
+wholesale blank — so the interface says which of three situations a line is in
+rather than always showing a pair:
 
 ```
-Foil Plates · code 0301 · sold by the pack · min 10, in steps of 5
-  Economy    34–48 EGP / pack
-  Standard   48–66 EGP / pack
-  Premium    66–92 EGP / pack
+Glue Sticks · code 384 · sold by the pack · min 10, in steps of 5
+  Retail       160 EGP / pack        ← a real choice
+  Wholesale    120 EGP / pack
+
+Lemon Squeezer · code 149 · sold by the piece
+  45 EGP / piece — one price, retail and wholesale
+
+Large Strainer · code 397 · sold by the piece
+  60 EGP / piece — wholesale price on request
 ```
 
-Three consequences you must respect when editing:
+The rules that follow from it:
 
-1. **A range is never collapsed** to a midpoint or an average. A single figure
-   reads as a price, which is the one thing it must not do.
-2. **`lib/store/quote-slice.ts` is a quote, not a cart.** Grade *and* option
-   are part of a line's identity (`slug::band::option`) — the same foil plate
-   in economy and in premium are two different things to quote.
-3. **Payment is absent by design, not by omission.** The business does not take
-   online payment today. The code is shaped so it can arrive without a
-   rewrite: the quote slice already carries everything an order needs, and
-   `app/api/quote/route.ts` already validates the full payload server-side.
+1. **`pricingShape()` in `lib/content/catalog.ts` is the only place the rule
+   lives.** It returns `choice` (wholesale is lower), `single` (the two agree)
+   or `retail-only` (wholesale blank). The product page, the card, the filter
+   facet and the rehydration guard all read it. *Why:* a radio group offering
+   two identical figures, or one with an empty side, offers a choice that does
+   not exist, and a price list that does that stops being believed.
+2. **An absent `wholesale` is not the same as one equal to `retail`.** Blank
+   means the figure has to be asked for (`wholesaleOnRequest`); equal means
+   there is nothing to ask (`onePriceNote`). Do not collapse them into one
+   field.
+3. **Use `formatPrice`, not `formatNumber`, for money.** `formatNumber` pins
+   `maximumFractionDigits: 0` because quantities are whole; سلك مواعير is 5.75
+   at wholesale against 6 at retail, and rounding would print the wholesale
+   price as the higher of the two.
+4. **`lib/store/quote-slice.ts` is a quote, not a cart.** Tier **and** option
+   are part of a line's identity (`slug::tier::option`), because the same tape
+   at retail and at wholesale are two different things to quote.
+5. **Stock is deliberately not in the catalogue.** A committed TypeScript file
+   goes stale within a week, and telling someone an item is out of stock when
+   the counter has it is worse than saying nothing.
+6. **Payment is absent by design, not by omission.** The business does not
+   take online payment today. The quote slice already carries everything an
+   order needs, priced, and `app/api/quote/route.ts` already validates the full
+   payload server-side, so a checkout can arrive without a rewrite.
+
+The catalogue test enforces the shape: a positive retail price on every line,
+wholesale never above retail, and a tier choice offered only where wholesale is
+genuinely lower.
 
 ## Stack
 
 | | |
 | --- | --- |
-| Framework | Next.js 16 (App Router, Turbopack, React 19) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4, shadcn/ui (radix base, RTL) |
-| State | Redux Toolkit — quote, saved lines, recently viewed |
-| Forms | react-hook-form + zod, schemas shared with the API routes |
-| i18n | next-intl, `ar` (default) + `en` |
-| Motion | GSAP + Lenis, all of it reduced-motion aware |
-| Images | sharp, baked to AVIF/WebP ahead of build |
-| Tests | Vitest |
+| Framework | Next.js 16.3.5 (App Router, Turbopack), React 19.3 |
+| Language | TypeScript — `tsc` is TypeScript 7, the API is TS 6 (see below) |
+| Styling | Tailwind CSS v4, shadcn/ui on the unified `radix-ui` package (RTL) |
+| State | Redux Toolkit — quote, saved lines, recently viewed, overlays |
+| Forms | react-hook-form + zod 4, schemas shared with the API routes |
+| i18n | next-intl 4, `ar` (default) + `en` |
+| Motion | GSAP 3.15 + Lenis, all of it reduced-motion aware |
+| UI extras | cmdk (search palette), sonner (toasts), vaul (drawer) |
+| Images | sharp 0.35, baked to AVIF/WebP ahead of build |
+| Tests | Vitest 5 |
+| Package manager | `pnpm@11.26.0` (pinned in `packageManager`) |
 
 This is the only repo in the org using **Redux Toolkit** — justified by a
 quote that persists across routes and reloads, which is genuinely
 cross-cutting client state. Do not take it as a house pattern.
 
+**TypeScript 7 runs side by side with 6.** `@typescript/native` (TS 7)
+provides the `tsc` binary, while `typescript` is aliased to
+`@typescript/typescript6` because typescript-eslint and Next still load the TS
+6 API. **ESLint 10** wraps `eslint-config-next`'s configs in `@eslint/compat`'s
+`fixupConfigRules`, because its react, jsx-a11y and import plugins still call
+context APIs ESLint 10 removed — drop the wrapper once they catch up.
+
 ## Commands
 
 ```bash
 pnpm install
-pnpm dev              # http://localhost:3000 → redirects to /ar
+pnpm dev                      # http://localhost:3000 → redirects to /ar
 pnpm build && pnpm start
 
-pnpm lint             # React Compiler rules are errors here
-pnpm typecheck
-pnpm test
-pnpm test messages/parity     # single file
-pnpm format:check
+pnpm format:check             # prettier --check
+pnpm lint                     # eslint — React Compiler rules are errors here
+pnpm typecheck                # tsc --noEmit (TypeScript 7)
+pnpm test                     # vitest run
+pnpm test messages/parity     # single file (vitest path filter)
+pnpm format                   # prettier --write
 
 ALADAWY_SOURCE_DIR=/path/to/jpgs pnpm assets:bake   # manual; output is committed
-pnpm og:bake                                        # re-cuts public/og.png
+pnpm og:bake                                        # re-cuts public/og.png from app/icon.png
 ```
 
 Run `format:check → lint → typecheck → test → build` before calling work done.
+*Why:* nothing else runs them — see [CI and deploy](#ci-and-deploy).
 
 ## Layout
 
 ```
-app/[locale]/           home, shop, product, quote, wishlist, about, contact
-app/api/                quote + contact endpoints
-components/             brand, layout, home, shop, product, quote, motion, ui
-lib/content/            the catalogue — slugs, SKUs, units, price bands
-lib/store/              Redux slices, selectors, localStorage persistence
-lib/schemas/            zod schemas shared by forms and routes
-lib/shop/               filter parsing, matching and sorting
-messages/               en.json, ar.json + the parity test that keeps them honest
-scripts/bake-assets.ts  image pipeline
+app/[locale]/                 routes
+  page.tsx                    home
+  shop/                       the filtered catalogue
+  product/[slug]/             product page + quote builder
+  p/[code]/route.ts           code lookup → redirect to the product
+  quote/ wishlist/            per-visitor pages (noindex)
+  about/ contact/
+  error.tsx, not-found.tsx
+app/api/quote/, api/contact/  enquiry endpoints (rate-limited, re-validated)
+app/global-error.tsx, robots.ts, sitemap.ts
+components/                   brand, contact, home, layout, motion, product, quote, shop, ui
+lib/content/catalog.ts        the catalogue — slugs, codes, units, retail/wholesale prices
+lib/content/governorates.ts   the quote form's governorate list
+lib/store/                    Redux slices (quote, wishlist, recent, ui), selectors, persistence
+lib/schemas/                  zod schemas shared by forms and routes (+ quote-request.test.ts)
+lib/shop/filters.ts           URL filter parsing, matching and sorting
+lib/seo/                      page metadata + JSON-LD
+lib/format.ts                 formatNumber, formatPrice, formatRange
+lib/rate-limit.ts             per-IP throttle for the enquiry routes
+lib/enquiry.ts                the single delivery seam
+lib/site.ts                   PRODUCTION_HOST, siteUrl, ogImage(), contact details
+messages/                     en.json, ar.json + parity.test.ts
+proxy.ts                      next-intl locale routing (Next 16's middleware)
+scripts/bake-assets.ts        product photography → AVIF/WebP
+scripts/bake-og.ts            the site-wide share card
 ```
 
 ## Content lives in two trees, and they must stay in sync
 
-`lib/content/catalog.ts` holds **only what does not translate** — slugs, SKUs,
-categories, units, minimums, price bands. Every human-readable string lives in
-`messages/{en,ar}.json` under `Products.items.<slug>`, keyed by the same slug.
-
-`messages/parity.test.ts` fails the build when the two locales diverge. This is
-the same pattern as [`aladawy-pack`](/repositories/aladawy-pack) — see
+`lib/content/catalog.ts` holds **only what does not translate** — slugs,
+codes, categories, units, minimums, steps, prices. Every human-readable string
+lives in `messages/{en,ar}.json` under `Products.items.<slug>`, keyed by the
+same slug. Adding a product is one catalogue entry plus one block in **both**
+message files. This is the same pattern as
+[`aladawy-pack`](/repositories/aladawy-pack) — see
 [i18n & RTL](/standards/i18n-rtl) for the rule and the reasoning.
+
+`messages/parity.test.ts` is the gate, in three groups:
+
+- **Locale parity** — same keys in both locales, no empty strings, the same
+  ICU arguments in both, and Arabic plurals carrying the `two`/`few`
+  categories the language actually has.
+- **Catalogue coverage** — every product named in both locales, no orphaned
+  message blocks, every declared option translated, no option label without a
+  catalogue option.
+- **Catalogue integrity** — unique slugs and codes, codes printed exactly as
+  the price list prints them, the pricing rules above, and every minimum a
+  whole number of steps.
+
+*Why a test and not a review step:* `next-intl` fails at render time, so a
+drifted key would otherwise surface as a broken prerendered page.
+
+## i18n and RTL
+
+- Middleware is **`proxy.ts` at the repo root**, not `middleware.ts` — Next.js
+  16 renamed the entry point.
+- **Import `Link`, `redirect`, `usePathname`, `useRouter` from
+  `@/i18n/navigation`**, never from `next/link` or `next/navigation`. *Why:*
+  the raw ones drop the locale prefix and 404. `useSearchParams` is the
+  exception — a query string carries no locale.
+- Every page calls `setRequestLocale(locale)` before `getTranslations`. *Why:*
+  that is what keeps the route statically prerendered.
+- `getDirection()` in `i18n/routing.ts` is the only place `rtl` is decided.
+- Use logical utilities (`ps-`/`pe-`, `ms-`/`me-`, `start-`/`end-`), never
+  `pl-`/`left-`. Arabic is the default, so physical sides are wrong by default.
+
+Four RTL traps already hit:
+
+- **Arabic is never tracked.** Letter-spacing severs cursive joins, so
+  `:lang(ar)` zeroes every `--tracking-*` variable plus `.eyebrow` and the
+  display sizes. Latin inside an Arabic page keeps its tracking by carrying its
+  own `lang`.
+- **Numeric ranges reverse.** An en dash is bidi-neutral, so `34–48` inside
+  Arabic renders max-first. `formatRange()` wraps the expression in an LTR
+  isolate; its one remaining call site is the shop's price-filter chip. A lone
+  price has no separator to mis-order, which is why `formatPrice()` needs no
+  isolate.
+- **`Sheet` takes physical sides.** `side="right"` is the *start* edge in
+  Arabic. Use `useInlineSide()` from `lib/use-inline-side.ts`.
+- **Arabic needs its own leading.** The display scale runs at 0.86
+  line-height, which clips shaddas. The `:lang(ar)` overrides at the bottom of
+  `globals.css` are deliberately *unlayered*, because unlayered CSS outranks
+  Tailwind's `@layer utilities`.
+
+Numerals stay Latin in both locales (`ar-EG-u-nu-latn`). *Why:* codes and
+prices are read against a printed counter list that uses Latin digits.
+
+## Brand, colour and type
+
+The 2025 identity is four colours — `#000000`, `#1d1d1d`, `#c0272d`, `#ffffff`
+— and the product photography carries the rest. Sections land on
+`.surface-paper` (white), `.surface-field` (black) or `.surface-brand`
+(`#c0272d`), and all three re-declare the same slots (`--ink`, `--ink-muted`,
+`--line`, `--surface`) so a component works on any of them without knowing
+which.
+
+- **Anything that must invert per surface belongs in `@theme inline`**, not
+  plain `@theme`, which resolves a `var()` once into `:root` and freezes it.
+  That block also aliases every shadcn colour onto these slots, which is why
+  unmodified shadcn primitives invert correctly.
+- **`--signal` is live interface state** (selected tier, active filter, quote
+  count, primary button): brand red on paper and field, white on a brand
+  surface so the CTA does not vanish. `--brand` is the identity red and never
+  inverts. `primary` points at `--signal`, not `--ink`.
+- **The greys are contrast-bound, not taste-bound.** `--ink-faint` (eyebrows,
+  codes, hints) must clear WCAG AA 4.5:1; `--line` is a 1.35:1 decorative
+  hairline and must never border a form control — `--line-control` exists for
+  that. Verify any change with a contrast calculation, not by eye.
+- Radii are zeroed globally except `rounded-full`.
+
+Type: Latin display is Inter (stand-in for Helvetica Now Display, `opsz`
+axis), Latin body Montserrat; Arabic display Tajawal, Arabic body Cairo; codes
+Geist Mono in both locales. Never put a Latin display face on an Arabic
+heading — the swap lives in `app/fonts.ts` and the `:lang(ar)` cascade.
 
 ## Features worth knowing about before you change something
 
-- **Catalogue filtering lives in the URL** and is applied on the server, so a
-  filtered view is shareable and arrives in the HTML. Do not move it to client
-  state.
-- **Search folds Arabic orthography** — `اطباق` finds `أطباق` — and matches SKU
-  codes as well as names.
-- **Quote and wishlist persist to localStorage** and are **re-validated against
-  the catalogue on read**, so a retired product can never strand a line.
-- **Prices are bidi-isolated** and use Latin numerals in both locales. A price
-  range inside Arabic text without isolation renders with its bounds swapped.
+- **Catalogue filtering lives in the URL** —
+  `?category=&wholesale=&unit=&tag=&min=&max=&q=&sort=`, parsed by
+  `lib/shop/filters.ts` and applied on the **server**, so a filtered view is
+  shareable and arrives in the HTML. Redux holds only what the URL cannot
+  (quote, saved lines, recently viewed, overlay state); the two never mirror
+  each other, so there is no sync to get wrong.
+- **Search folds Arabic orthography** — hamza, tāʾ marbūṭa, alef maqṣūra,
+  tatweel and diacritics, so `معلقه` finds `معلقة` — and matches item codes as
+  well as names, via a ⌘K palette and an inline field. Leading zeros fold too,
+  so an old `?q=0059` still resolves to `59`.
+- **`/p/<code>` looks up a رقم الصنف read down the phone** and redirects to the
+  canonical product URL with a **307**, not 308. *Why:* a code is the one
+  identifier a supplier can reassign, which is also why the canonical URL is the
+  slug. An unknown code falls through to `/shop?q=<code>` rather than a 404,
+  because the digit was probably mistyped. It lives under `[locale]` so
+  `proxy.ts` resolves `/p/384` to `/ar/p/384` without a second locale rule.
+- **Quote and wishlist persist to localStorage**, versioned, and are
+  **re-validated against the catalogue on read** (tier included, via
+  `tiersOf()`), so a retired product or a changed price shape can never strand
+  a line.
 
-## Going live
+## Forms and enquiries
 
-`lib/enquiry.ts` is the single delivery seam — today a structured log line,
-and wiring a real provider is one function body
+Each form has a `lib/schemas/*.ts` zod schema shared by the client and its API
+route, which re-validates. Error messages are i18n keys in the `Errors`
+namespace.
+
+- **The resolver only sees form state.** `quoteContactSchema` excludes
+  `lines`, which live in the store; the route uses `quoteRequestSchema`, which
+  adds them back. *Why:* validating `lines` in the resolver fails on a field
+  with no input, and the form silently refuses to submit.
+- **Use `Controller` for `Select`**, not `watch()` + `setValue`. *Why:*
+  `watch()` returns a function the React Compiler refuses to memoise, which
+  opts the whole component out of compilation.
+- **The honeypot parses when filled**, so the route answers `200` and drops the
+  message rather than returning `422` and teaching the bot which field caught
+  it.
+- **Egyptian mobiles** are accepted in national (`01012345678`) and
+  `+20`/`0020`/bare-`20` forms, normalised to one stored shape.
+- **Both routes are rate-limited** by `lib/rate-limit.ts`: 6 requests per IP
+  per minute, in memory and therefore per instance. *Why:* it stops the naive
+  flood these forms attract without pulling Redis into a site with no runtime
+  state; that function is the one place to swap for a real limiter.
+
+`lib/enquiry.ts` is the single delivery seam — today a structured
+`console.info`, and wiring a provider is one function body
 ([forms & enquiries](/guides/forms-and-enquiries)). It is deliberately not
 half-wired: a misconfigured mail transport fails silently in production.
 
-The `PRODUCTION_HOST` publishing switch works the same way as in
-`aladawy-pack` — see [Client Projects](/how-we-work/client-projects).
+## Tests
+
+Vitest 5, `**/*.test.ts`, `@/` aliased in `vitest.config.ts`. Two files:
+
+- `messages/parity.test.ts` — locale parity, catalogue coverage and catalogue
+  integrity (above).
+- `lib/schemas/quote-request.test.ts` — every accepted phone shape and its
+  normalisation, at least one line, tier must be a real tier id, whole positive
+  quantities, an empty email input accepted but a malformed one rejected, a
+  required governorate, and a filled honeypot that still parses.
+
+## CI and deploy
+
+**There is no CI.** The repo has no `.github/workflows`, so nothing runs the
+tests, lint or typecheck on a push — the gates are yours to run by hand before
+you merge. That is a gap, not a design
+([the matrix](/repositories#what-the-repos-actually-share)). The repo also
+records no deploy mechanism; production is `aladawy-shop.vercel.app`.
+
+`.gitattributes` pins checkouts to LF. *Why:* Prettier enforces LF, so a
+Windows checkout with `core.autocrlf=true` would fail `format:check` on every
+file.
+
+## SEO and going live
+
+**`PRODUCTION_HOST` is set** — to `aladawy-shop.vercel.app` in both
+`lib/site.ts` and `next.config.ts` (restated there because Next loads the
+config outside the app bundle, where `@/` does not resolve). The two must
+match. *Why it was set on the Vercel alias:* with it `null`, every absolute URL
+(og:image, canonical, JSON-LD) pointed at the per-deployment hostname, which
+sits behind Vercel deployment protection, so scrapers got an SSO redirect
+instead of the share card. When the shop gets its own domain, change both
+files together ([Client Projects](/how-we-work/client-projects)).
+
+On the production host, `X-Robots-Tag` is stated positively:
+`index, follow, max-image-preview:large, max-snippet:-1` for pages, `noindex,
+follow` for `/<locale>/quote` and `/<locale>/wishlist` (their contents live in
+localStorage, so crawlers see an empty shell), and `noindex, nofollow` for
+`/api/*`. Preview and branch deploys send `noindex, nofollow` everywhere.
+
+- Inner pages get metadata from `lib/seo/page-metadata.ts`, which sets
+  `openGraph` and `twitter` explicitly. *Why:* returning either object
+  replaces the inherited one rather than merging, and would drop the share
+  card.
+- `jsonLdScript()` escapes `<` so no catalogue field can close the script tag.
+  A product emits `Offer` with a real `price`, or `AggregateOffer` bounded by
+  its two figures when `pricingShape()` says `choice`.
+- **One share card for the whole site**, `public/og.png` (1200×630, PNG, no
+  text), with dimensions stated only in `ogImage()`. It is a PNG because
+  scrapers that decline AVIF/WebP leave the preview blank; products share it
+  because a 1:1 photo gets centre-cropped. `pnpm og:bake` cuts it from
+  `app/icon.png` so the card and favicon are the same black.
+
+## Assets
+
+`pnpm assets:bake` reads originals from outside the repo
+(`ALADAWY_SOURCE_DIR`, keyed by WooCommerce post id) and writes AVIF/WebP pairs
+into `public/products/` (`<slug>.avif` / `<slug>.webp`). Output is committed, so a fresh clone builds without the sources. The bake uses
+`fit: cover` with attention cropping so each photo's own grey sweep fills the
+card. **Do not inset the image in the card** — that reintroduces the letterbox
+the bake exists to remove.
+
+## Agent guidance
+
+`AGENTS.md` is the full contract (it opens with the Next.js "this is not the
+Next.js you know" rules block): the domain, both content trees, i18n and RTL
+traps, colour and type, forms, shadcn quirks (`CommandDialog` needs its own
+`<Command>` wrapper; the form primitive is `field.tsx`, not `form.tsx`),
+assets, SEO and conventions. Read it before editing — this page summarises it,
+the file is authoritative.

@@ -37,6 +37,25 @@ npm run build                  # the real gate on content
   which repo you are in before installing.
 </Callout>
 
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Nextra 4 (`nextra` + `nextra-theme-docs`) on Next.js 16, React 19 |
+| Language | TypeScript — two compilers side by side (below) |
+| Search | Pagefind, built by `postbuild` |
+| Diagrams | Mermaid, rendered from fenced code blocks |
+| CI | GitHub Actions on Node 22 — `verify` on every PR, `external-links` weekly |
+| Hosting | Vercel, through its Git integration — merging to `main` deploys |
+
+**`tsc` is TypeScript 7; the `typescript` package is still 6.** Two
+devDependencies do this: `@typescript/native` (aliased to TypeScript 7) owns
+the `tsc` binary, and `typescript` is aliased to `@typescript/typescript6`,
+which ships its CLI as `tsc6`. The split exists because Nextra's Twoslash code
+blocks (through `@shikijs/twoslash`) call the compiler API, and TypeScript 7.0
+does not ship one. Typecheck with `npx tsc --noEmit`; do not "clean up" either
+alias until Twoslash supports 7, or the build loses its compiler.
+
 ## Layout
 
 ```

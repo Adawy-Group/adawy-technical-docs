@@ -24,12 +24,14 @@ flowchart TD
             IN["@adawy/i18n<br/>locales + direction"]
             SEOP["@adawy/site<br/>identity · routes · metadata"]
             UT["@adawy/holding<br/>holding-page shell"]
+            BA["@adawy/brand-app<br/>holding-app shell"]
             LINT["@adawy/eslint-config<br/>@adawy/typescript-config<br/>the rules, machine-enforced"]
         end
         subgraph APPS["apps/ — a thin app per flagship + one multi-tenant app"]
             G["group"]
             S["studio"]
             P["pack"]
+            H["print · supplies<br/>marketing · bizdev"]
             N["sites<br/>long-tail brands, ADR-008"]
         end
         PKGS --> APPS
@@ -49,14 +51,15 @@ flowchart TD
 
 | | Built today | Decided, not built |
 | --- | --- | --- |
-| Apps | `group`, `studio`, `pack` | `sites`, `api` |
-| Packages | all **eight** `@adawy/*` | — |
+| Apps | `group`, `studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev` | `sites`, `api` |
+| Packages | all **nine** `@adawy/*` | — |
 | Domains | adawygroup.com | adawystudio.com, adawypack.com |
 | Behind them | — | the backend, PostgreSQL, both portals |
 
-`apps/studio` and `apps/pack` are **holding pages** — one branded screen each,
-sharing `@adawy/holding`. They are real apps with real deploys, which is why a
-change to `packages/ui` verifies and deploys three apps rather than one.
+Every app except `group` is a **holding page** — one branded screen each, on
+`@adawy/holding` (and, for `apps/print` so far, the newer `@adawy/brand-app`
+shell). They are real apps with real deploys, which is why a change to
+`packages/ui` verifies and deploys seven apps rather than one.
 
 ## Why this shape (the business reason)
 

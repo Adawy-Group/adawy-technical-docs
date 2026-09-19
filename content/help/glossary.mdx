@@ -56,9 +56,10 @@ other businesses, one standalone repo each
 ([ADR-010](/architecture/adrs), [client projects](/how-we-work/client-projects)).
 
 **Holding page** — a single branded screen standing in for an unbuilt site.
-`apps/studio` and `apps/pack` are holding pages today, and so are the current
-states of `jumeira` and `zad-alhkoul`. They are real apps with real deploys,
-which is why a shared-package change verifies three apps.
+Every platform app except `apps/group` is a holding page today (`studio`,
+`pack`, `print`, `supplies`, `marketing`, `bizdev`), and so is the current
+state of `jumeira`. They are real apps with real deploys,
+which is why a shared-package change verifies seven apps.
 
 **Group microsite** — Adawy Group's own property that is not a brand site.
 There is one, [`adawy-group-links`](/repositories/adawy-group-links), and its
@@ -157,8 +158,9 @@ how this team thinks.
 **Verify job** — the CI job running lint, typecheck, test and build across
 every app and package, unfiltered on purpose so one app's change cannot break a
 sibling. It is called `verify` in the platform, this handbook and
-`aladawy-pack`; `checks` in `jumeira`; and it is split across two workflows in
-`zad-alhkoul`. Read the repo's own workflow before quoting a job name.
+`aladawy-pack`; `Checks` in `jumeira`; and in `zad-alhkoul` it is a reusable
+`verify.yml` workflow that both `ci.yml` and `deploy.yml` call, so its check
+reads `verify / …`. Read the repo's own workflow before quoting a job name.
 
 **Affected** — the Turborepo resolution deciding which apps a change actually
 reaches, and therefore which get deployed. Verification is never filtered;

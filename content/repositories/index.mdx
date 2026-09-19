@@ -6,14 +6,14 @@ tags: ['Reference', 'Start here']
 
 # The Repository Map
 
-**Eight repositories.** Knowing which world a repo belongs to tells you which
+**Nine repositories.** Knowing which world a repo belongs to tells you which
 rules apply to it before you open a single file.
 
 <Stats>
-  <Stat value="8" label="repositories" hint="in the Adawy-Group org" />
+  <Stat value="9" label="repositories" hint="in the Adawy-Group org" />
   <Stat value="1" label="Group monorepo" hint="every brand site" />
-  <Stat value="5" label="client projects" hint="one repo each" />
-  <Stat value="7" label="bilingual" hint="all but this handbook" />
+  <Stat value="6" label="client projects" hint="one repo each" />
+  <Stat value="8" label="bilingual" hint="all but this handbook" />
 </Stats>
 
 | Repository | World | What it is | Stack |
@@ -21,9 +21,10 @@ rules apply to it before you open a single file.
 | [`adawy-platform`](/repositories/adawy-platform) | <Badge tone="group">Group</Badge> | The monorepo behind every Adawy Group brand site | Turborepo + pnpm, Next.js 16 |
 | [`adawy-group-links`](/repositories/adawy-group-links) | <Badge tone="group">Group</Badge> | The Group's own link-in-bio page — standalone, and an [open question](#the-third-case-and-the-open-question) | Next.js 16, standalone |
 | [`aladawy-pack`](/repositories/aladawy-pack) | <Badge tone="client">Client</Badge> | Website for Aladawy Pack for Printing & Packaging | Next.js 16, standalone |
-| [`aladawy-shop`](/repositories/aladawy-shop) | <Badge tone="client">Client</Badge> | Quote-request storefront for Aladawy Shop | Next.js 16 + Redux, standalone |
+| [`aladawy-links`](/repositories/aladawy-links) | <Badge tone="client">Client</Badge> | Aladawy Pack's link-in-bio page — `adawy-group-links` rebranded | Next.js 16, standalone |
+| [`aladawy-shop`](/repositories/aladawy-shop) | <Badge tone="client">Client</Badge> | Quote-request storefront for Aladawy Shop, retail and wholesale prices | Next.js 16 + Redux, standalone |
 | [`jumeira`](/repositories/jumeira) | <Badge tone="client">Client</Badge> | Pre-launch film site for Jumeira Catering, Benghazi | Next.js 16, standalone |
-| [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | Site for Zad Al-Hkoul for Agricultural Crops | Next.js 16, standalone |
+| [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | One-page scroll-story site for Zad Al-Hkoul for Agricultural Crops, pre-launch | Next.js 16, standalone |
 | [`baron-menu`](/repositories/baron-menu) | <Badge tone="client">Client</Badge> | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
 | [`adawy-technical-docs`](/repositories/adawy-technical-docs) | <Badge tone="internal">Internal</Badge> | This handbook | Nextra 4 |
 
@@ -36,8 +37,8 @@ monorepo, `adawy-platform`, on shared `@adawy/*` packages. This is where
 the only place they apply.
 
 **Client work** is software the department builds *for other businesses*.
-Aladawy Pack, Aladawy Shop, Jumeira Catering, Zad Al-Hkoul and Baron are
-customers of the department, not Group brands. Each gets **its own standalone
+Aladawy Pack (its website and its link page), Aladawy Shop, Jumeira Catering,
+Zad Al-Hkoul and Baron are customers of the department, not Group brands. Each gets **its own standalone
 repository**, deliberately not coupled to `@adawy/*` — see
 [ADR-010](/architecture/adrs) for why, and
 [Client Projects](/how-we-work/client-projects) for how to run one.
@@ -51,7 +52,9 @@ discipline. What they do not share is **code**.
 [`adawy-group-links`](/repositories/adawy-group-links) is Adawy Group's own
 property in a standalone repository, which is neither pattern. It is a
 one-screen microsite rather than a brand site, and the repository itself
-records no reason for sitting outside the monorepo.
+records no reason for sitting outside the monorepo. Its twin,
+[`aladawy-links`](/repositories/aladawy-links), is *not* part of the question:
+it belongs to a client, so a standalone repo is exactly what ADR-010 asks for.
 
 Until that is decided, read the rule as stated above — **Group brand *sites*
 live in the monorepo** — and treat the microsite as a single open case, not a
@@ -65,7 +68,8 @@ precedent. Starting a new Group property outside the platform is still an
   - **Adawy** Pack is a Group brand. It lives at `apps/pack` inside
     `adawy-platform`.
   - **Alad**awy Pack (Aladawy Pack for Printing & Packaging, est. 1971) is a
-    client. It lives in the `aladawy-pack` repository.
+    client. Its website lives in `aladawy-pack`, its link-in-bio page in
+    `aladawy-links`.
 
   They have different owners, different domains, different codebases, and
   different rules. When someone says "the pack site", ask which one.
@@ -80,6 +84,7 @@ precedent. Starting a new Group property outside the platform is still an
 | A new Adawy Group brand site | `adawy-platform` → a new `apps/<brand>` ([guide](/guides/launch-new-brand)) |
 | The Group's link-in-bio page | `adawy-group-links` |
 | The Aladawy Pack website | `aladawy-pack` |
+| Aladawy Pack's link-in-bio page | `aladawy-links` |
 | The Aladawy Shop storefront | `aladawy-shop` |
 | The Jumeira Catering site | `jumeira` |
 | The Zad Al-Hkoul site | `zad-alhkoul` |
@@ -94,22 +99,25 @@ running proves your toolchain before anything harder depends on it.
 
 <Cards num={3}>
   <Cards.Card title="adawy-platform" href="/repositories/adawy-platform" arrow>
-    The monorepo. One WebGL canvas, three locales, eight shared packages.
+    The monorepo. Seven apps, one WebGL canvas, three locales, nine shared packages.
   </Cards.Card>
   <Cards.Card title="adawy-group-links" href="/repositories/adawy-group-links" arrow>
-    One screen, two locales, five tests — and an open placement question.
+    One screen, seven doors, two locales — and an open placement question.
   </Cards.Card>
   <Cards.Card title="aladawy-pack" href="/repositories/aladawy-pack" arrow>
     A monochrome marketing site with a surface system worth learning.
   </Cards.Card>
+  <Cards.Card title="aladawy-links" href="/repositories/aladawy-links" arrow>
+    The Group's link page, rebuilt for a client. Same construction, different brand.
+  </Cards.Card>
   <Cards.Card title="aladawy-shop" href="/repositories/aladawy-shop" arrow>
-    A storefront where nothing has a price. Quote by grade, not checkout.
+    Retail and wholesale prices, and a quote request where the checkout would be.
   </Cards.Card>
   <Cards.Card title="jumeira" href="/repositories/jumeira" arrow>
     One pinned scroll carrying three scrubbed films. The hardest client build.
   </Cards.Card>
   <Cards.Card title="zad-alhkoul" href="/repositories/zad-alhkoul" arrow>
-    English-default, `src/`-rooted, and a three-layer design system.
+    English-default, `src/`-rooted feature folders, a three-layer design system, 126 tests.
   </Cards.Card>
   <Cards.Card title="baron-menu" href="/repositories/baron-menu" arrow>
     No framework, no build step, on purpose. Edit one file to change the menu.
@@ -127,13 +135,14 @@ know is not — so here is the honest matrix.
 
 | | Package manager | AGENTS.md | CI | Tests | Bilingual |
 | --- | --- | --- | --- | --- | --- |
-| `adawy-platform` | pnpm 10.33 | ✅ | ✅ | ✅ | en · ar · fr |
-| `adawy-group-links` | pnpm 11.5 | ⚠️ stub | ✅ | ✅ | en · ar |
-| `aladawy-pack` | pnpm 11.4 | ❌ | ✅ | ✅ | en · ar |
-| `aladawy-shop` | pnpm | ✅ | ❌ | ✅ | ar · en |
-| `jumeira` | pnpm 11.5 | ✅ +4 more | ⚠️ manual | ✅ | ar · en |
-| `zad-alhkoul` | pnpm 11.5 | ⚠️ stub | ✅ | ❌ | en · ar |
-| `baron-menu` | — none | ❌ | ❌ | ❌ | en · ar |
+| `adawy-platform` | pnpm 11.26 | ✅ | ✅ | ✅ | en · ar · fr |
+| `adawy-group-links` | pnpm 11.26 | ⚠️ stub | ⚠️ deploy skipped | ✅ | en · ar |
+| `aladawy-links` | pnpm 11.26 | ⚠️ stub | ❌ | ✅ | en · ar |
+| `aladawy-pack` | pnpm 11.26 | ❌ | ✅ | ✅ | en · ar |
+| `aladawy-shop` | pnpm 11.26 | ✅ | ❌ | ✅ | ar · en |
+| `jumeira` | pnpm 11.26 | ✅ +4 more | ✅ | ✅ | ar · en |
+| `zad-alhkoul` | pnpm 11.26 | ⚠️ stub | ✅ | ✅ | en · ar |
+| `baron-menu` | npm (image script only) | ❌ | ❌ | ❌ | en · ar |
 | `adawy-technical-docs` | **npm** | ❌ | ✅ | ❌ | English only |
 
 **What is genuinely universal:**
@@ -144,6 +153,8 @@ know is not — so here is the honest matrix.
   ships. The README is the tour; `AGENTS.md` is the contract.
 - **Bilingual with real RTL** in every product repo — `baron-menu` included —
   with every human-readable string in a message file rather than in a component
+  (`baron-menu`, having no framework, keeps them in one `I18N` table in
+  `script.js` and the `*Ar` fields of `data/menu.js`)
   ([i18n & RTL](/standards/i18n-rtl)). This handbook is the exception, English
   only by decision ([ADR-007](/architecture/adrs)).
 - **Prettier settles formatting.** Where CI exists it gates on it; formatting is
@@ -152,30 +163,29 @@ know is not — so here is the honest matrix.
 **Where the gaps are, and what they mean:**
 
 - **`aladawy-pack` and `baron-menu` have no `AGENTS.md`**, and in
-  `adawy-group-links` and `zad-alhkoul` the file holds only the block Next.js
-  generates — the real constraints live in an untracked local notes file. If
+  `adawy-group-links`, `aladawy-links` and `zad-alhkoul` the file holds only the
+  block Next.js generates. `zad-alhkoul` and `aladawy-links` at least carry
+  their constraints in a tracked README; `adawy-group-links` keeps them in an
+  untracked local notes file. If
   you are the next person into one of those repos, writing it is the
   highest-value small PR
   available ([working with AI](/how-we-work/working-with-ai)).
 - **`aladawy-shop` has no CI at all.** It has tests and it has a `test` script;
-  nothing runs them on a push. Its four gates are yours to run by hand until
-  that is fixed.
-- **`jumeira`'s CI exists but never fires by itself.** The workflow is
-  `workflow_dispatch`-only because the account's Actions minutes are spent, so
-  an automatic trigger would queue a run that never starts. In practice its
-  gates live on a developer's machine exactly like `aladawy-shop`'s — start it
-  from the Actions tab, or run all five before you push
-  ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
+  nothing runs them on a push. Its gates are yours to run by hand until that is
+  fixed.
+- **`aladawy-links` has no CI, on purpose.** Its workflow was removed because
+  a page that changes a few times a year was not worth the pipeline; run its
+  five gates, then `vercel deploy --prod`.
+- **`adawy-group-links`' deploy job always skips.** `verify` runs on every push
+  and PR, but the repo has no `VERCEL_TOKEN` secret, so production ships by
+  hand ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
 - **`jumeira` splits its contract across five files.** `AGENTS.md` is the entry
   point, and `SECTIONS.md`, `CHROME.md`, `FILMS.md` and `PRODUCT.md` carry what
-  is scoped to one place. Read the one that covers what you are touching
+  is scoped to one place (plus `masters/README.md` for the film masters). Read the one that covers what you are touching
   ([why](/how-we-work/working-with-ai#every-repo-carries-an-agentsmd)).
-- **`zad-alhkoul` has no test framework.** Its locale parity is guarded by a
-  standalone Node script instead ([why that is not the same
-  thing](/repositories/zad-alhkoul#testing-what-is-actually-there)).
 - **The CI job is not called the same thing everywhere** — `verify` here and in
-  `aladawy-pack`, `checks` in `jumeira`, split across two workflows in
-  `zad-alhkoul`. Read the repo's own workflow before quoting a job name in a
+  `aladawy-pack` and `adawy-group-links`, `Checks` in `jumeira`, and a reusable
+  `verify.yml` called by two workflows in `zad-alhkoul`. Read the repo's own workflow before quoting a job name in a
   PR.
 
 <Callout type="info">

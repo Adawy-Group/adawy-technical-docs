@@ -1,7 +1,7 @@
 ---
 title: jumeira
 description: Client pre-launch site for Jumeira Catering, Benghazi — one pinned scroll carrying three frame-sequence films, and the delivery rules that make scrubbing them work on a Libyan phone.
-tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Pre-launch']
+tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Pre-launch', 'GSAP']
 ---
 
 # `jumeira`
@@ -10,11 +10,14 @@ tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Pre-launch']
 catering and premium buffet company in **Benghazi, Libya**, feeding corporates,
 hospitals, oil fields, aviation, conferences and weddings.
 
-Private · standalone Next.js 16 app · not part of the monorepo
+<Badge tone="client">Client</Badge> Private · standalone Next.js 16.3 app ·
+`pnpm@11.26.0` · not part of the monorepo, and **no `@adawy/*` dependencies** —
+the client must be able to take the repo and keep building. Patterns from the
+handbook carry over; packages do not.
 
 <Stats>
   <Stat value="AR" label="default locale" hint="`/ar` first, `/en` second" />
-  <Stat value="1" label="page route" hint="the whole site is one scroll" />
+  <Stat value="2" label="page routes" hint="the scroll, plus a noindex privacy holding page" />
   <Stat value="3" label="films" hint="all three are folders of frames" />
   <Stat value="0" label="video elements" hint="every film draws to a canvas" />
 </Stats>
@@ -50,16 +53,76 @@ is a film rather than a page of claims.
 
 | | |
 | --- | --- |
-| Framework | Next.js 16 (App Router, Turbopack), React 19 |
-| Language | TypeScript 6, strict — plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` |
-| Styling | Tailwind CSS v4 + shadcn/ui (`new-york`, `rtl: true`) on radix-ui |
-| Motion | GSAP + ScrollTrigger, **plus Locomotive Scroll v5 as the single scroll authority** — see [below](#the-scroll-authority-is-a-reversed-decision) |
-| i18n | next-intl — `ar` (default) + `en`, `localePrefix: 'always'`, `hreflang` `ar-LY` |
-| Tests | Vitest, in two projects: `node` and a jsdom one for `*.browser.test.ts` |
-| Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, through `next/font/google` at build time |
+| Framework | Next.js **16.3.5** (App Router, Turbopack), React **19.3** — `middleware.ts` is `proxy.ts` here, as Next 16 renamed it |
+| Language | **TypeScript 7 and 6 side by side**: `tsc` (so `pnpm typecheck`) is TS 7 through `@typescript/native`, while `typescript` is aliased to `@typescript/typescript6` because typescript-eslint and Next still load the TS 6 API. Strict, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, target ES2022 |
+| Styling | Tailwind CSS v4 + shadcn/ui (`new-york`, `rtl: true`) on the unified `radix-ui` package; one stylesheet entry, `app/globals.css`, importing `app/styles/*.css` in order |
+| Motion | GSAP 3.15 + ScrollTrigger (`@gsap/react`), **plus Locomotive Scroll v5 as the single scroll authority** — see [below](#the-scroll-authority-is-a-reversed-decision) |
+| i18n | next-intl 4 — `ar` (default) + `en`, `localePrefix: 'always'`, `hreflang` `ar-LY` |
+| Lint / format | **ESLint 10** — `eslint-config-next`'s react, jsx-a11y and import plugins still call context APIs ESLint 10 removed, so their configs go through `@eslint/compat`'s `fixupConfigRules`; `eslint-plugin-unicorn` 75, `simple-import-sort`. Prettier 3 with the Tailwind plugin |
+| Tests | **Vitest 5**, in two projects: `node` and a jsdom `dom` project for `*.browser.test.ts` — [below](#tests) |
+| Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, through `next/font/google` at build time, none preloaded |
+| Package manager | **pnpm 11.26.0** (`packageManager`; CI's `pnpm/action-setup` reads the same field, so local and CI installs match). `minimumReleaseAge: 4320` in `pnpm-workspace.yaml` |
+| Runtime | Node **24** in CI and on Vercel |
+| Hosting | Vercel (Hobby), deployed by the Vercel CLI from GitHub Actions — [CI and deploys](#ci-and-deploys) |
 
 No forms, no server actions, no API routes, no state library. The only stateful
-things on the page are a scrub position, a theme and an audio element.
+things on the page are a scrub position, a theme and an audio element — and the
+music is opt-in: the page is silent and downloads no audio until the reader
+presses the disc in the corner.
+
+The other routes are all generated rather than static: `/og` (a Satori card per
+page, in both scripts), `robots.ts`, `sitemap.ts`, `manifest.ts` and
+`/llms.txt`. Every URL in them is built from the same locale helpers as the
+page canonicals, so none can describe a page differently from the page itself.
+`/llms.txt` is deliberately **not** gated on the publishing switch — it invites
+nothing to crawl — while `robots.txt` and the sitemap are.
+
+## Layout
+
+```text
+app/[locale]/          page.tsx (the scroll), privacy/, error.tsx, not-found.tsx;
+                       the locale layout owns <html>, dir and JSON-LD
+app/styles/            the stylesheet, split at its own section banners
+app/og/, llms.txt/     generated card and text route; robots.ts, sitemap.ts, manifest.ts
+components/home/       the pinned opening scene: markup, timeline, film per half,
+                       plus the ending's band, sketch field and geometry
+components/media/      film-canvas.ts (every film's fetch and draw), frame-window.ts
+                       (the bitmap window, decoded in a worker), HeldImage
+components/<section>/  sectors, selected-work, numbers, manifesto, why,
+                       testimonials, faq, cta, footer - one directory per section
+components/layout/     page chrome: header, site menu, intro curtain, sound control,
+                       smooth scroll, drift field
+components/ui/         vendored shadcn primitives - no barrel, on purpose
+lib/content/           structural data only (keys, icon names, years) - no copy
+lib/motion/            markers, build queue, gsap + smooth-scroll gateways, drift
+lib/seo/, lib/site.ts  metadata, JSON-LD, URL builders; the publishing switch
+lib/audio/             the track and the player that outlives the tree
+i18n/                  routing (the one place locales are declared), request, navigation
+messages/              ar.json / en.json + parity and client-namespace tests
+scripts/               hand-run asset bakes (Python, shell); output is committed
+masters/               the camera masters - gitignored, only README.md is tracked
+```
+
+Every `components/*`, `lib/content`, `lib/motion`, `lib/seo` and `hooks`
+directory has an `index.ts` barrel: import through it from outside, relatively
+from inside, *because a module the barrel re-exports cannot import the barrel
+without a cycle*. `lib/motion/gsap.ts`, `smooth-scroll.ts` and `build-queue.ts`
+sit **outside** their barrel, because each pulls GSAP in and the barrel has to
+stay importable from a server component.
+
+The page, top to bottom:
+
+```mermaid
+flowchart TD
+  C[Intro curtain] --> P
+  subgraph P [One ScrollTrigger pin, one timeline]
+    O[Opening film] --> S[Services film<br/>match cut from the opening's last frame]
+    S --> E[The ending<br/>composed on the services film's black]
+  end
+  P --> SE[Sectors] --> W[Selected work] --> N[Numbers] --> M[Manifesto]
+  M --> Y[Why Jumeira] --> T[Testimonials] --> F[FAQ]
+  F --> CT[Closing panel<br/>third film] --> FO[Footer]
+```
 
 ## Where the contract lives
 
@@ -71,8 +134,12 @@ size**. Read the one that covers what you are touching; do not read all five.
 | `AGENTS.md` | The rules that cross a section boundary — module gateways, the design-token layers, the pin, the drift system, the enforcement table | Anything |
 | `SECTIONS.md` | Every section of the page, one heading each, in reading order | That section's directory under `components/` |
 | `CHROME.md` | The site menu, the sound control, the intro curtain — the fixed layers over the document | `components/layout/`, `lib/audio/` |
-| `FILMS.md` | The three films as media: masters, crops, delivery order, the draw path | `public/hero/`, `public/cta/`, `masters/` |
+| `FILMS.md` | The three films as media: masters, crops, delivery order, the draw path | `public/hero/`, `public/cta/`, `masters/`, `components/media/` |
 | `PRODUCT.md` | Who the page is for and what it must feel like | Any judgement call about tone |
+
+`masters/README.md` is a sixth, narrower document: the spec of every camera
+master, which bake still reads which one, and why they must be backed up
+outside the repo (they are gitignored, so `git clean -xdf` deletes them).
 
 **The division is the rule:** a constraint governing two sections stays in
 `AGENTS.md`; a measurement taken on one section moves to its companion. *Why it
@@ -87,7 +154,7 @@ pnpm install
 pnpm dev                 # http://localhost:3000 → redirects to /ar
 
 # the five gates, in the order CI runs them
-pnpm typecheck && pnpm lint && pnpm test && pnpm format:check && pnpm build
+pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build
 ```
 
 <Callout type="important">
@@ -98,12 +165,21 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm format:check && pnpm build
 </Callout>
 
 Asset bakes are **hand-run and need tools the standard machine setup does not
-install** — `pnpm bake:brand` and `pnpm bake:clients` need Python 3,
-`pnpm bake:track` needs bash and ffmpeg. There are more bake scripts in
-`scripts/` than there are `pnpm` aliases for them; the rest are invoked
-directly. All of their output is committed, so a fresh clone builds without any
+install**. All of their output is committed, so a fresh clone builds without any
 of it ([dev environment](/onboarding/environment),
-[pattern 7](/architecture/patterns)).
+[pattern 7](/architecture/patterns)):
+
+| Bake | Needs |
+| ---- | ----- |
+| `pnpm bake:brand` — logo, wordmark, symbol, favicons | Python 3 + ImageMagick (`magick`) |
+| `pnpm bake:clients` — the sixteen client marks | Python 3 + Pillow |
+| `pnpm bake:track` — the background music, to AAC | bash + `afconvert`, i.e. **macOS** — the script chose it because there is no ffmpeg on the project's machines |
+| `scripts/bake-film-frames.py`, `bake-services-frames.py` | Python 3, Pillow and ffmpeg; the opening film reads `masters/Final.mp4` |
+| the other `scripts/bake-*.py` (cta frames, faq, footer, menu, numbers, why, selected work, outro sketch) | Python 3 + Pillow, run directly — there is no `pnpm` alias |
+
+`scripts/measure-films.mjs` and `measure-cta.mjs` are the harnesses the film
+measurements in `FILMS.md` came from — re-run them rather than trusting a
+figure copied anywhere else.
 
 ## The one idea to understand first
 
@@ -148,17 +224,18 @@ clamp that used to hold the scrub back to what had downloaded.
 <Callout type="warning">
   **This was a knowing trade, not a measurement that changed.** `FILMS.md` keeps
   the decode table that argued against it: a `currentTime` seek runs on the
-  phone's hardware decoder and barely moves under CPU throttling, while a WebP
-  decode is software on the same throttled CPU and its worst case blows through
-  the frame budget. What the swap bought is **one pipeline for three films
-  instead of two**, and the deletion of every mechanism that existed to choose
-  between formats. Roughly half of `FILMS.md` is now the record of the pipeline
-  that was removed, kept deliberately — it is why the sequences are shaped the
-  way they are.
+  phone's hardware decoder, while a WebP decode is software on the same
+  throttled CPU. What the swap bought is **one pipeline for three films instead
+  of two**, and the deletion of every mechanism that existed to choose between
+  formats. Roughly half of `FILMS.md` is now the record of the pipeline that was
+  removed, kept deliberately — it is why the sequences are shaped the way they
+  are.
 </Callout>
 
-Five delivery rules survived the conversion, and each one fails silently if
-broken:
+All three films fetch and draw through **one module,
+`components/media/film-canvas.ts`**; each film's own module keeps only its
+policy (arming, probe, held frame, gate). The rules it holds each fail silently
+if broken:
 
 - **A sequence's last frame is load-bearing, so it is fetched second** — right
   behind the first in-flight batch, out of order. The opening film's last frame
@@ -167,23 +244,30 @@ broken:
   against. In strict order the last frame was also the last byte, and an
   ordinary first visit reached the About beat with the plate still in the
   kitchen.
-- **A jump lane fetches whatever frame the scrub currently names** when
-  delivery has not reached it — single-flight, latest-wins, high priority, the
-  in-order queue untouched. That is what keeps a menu jump or a fast reader
-  honest on a young transfer.
-- **The draw blits decoded bitmaps, not images.** Painting an
-  `HTMLImageElement` records a paint op in a fraction of a millisecond and then
-  re-decodes the WebP on the raster path, which was measured as the whole of the
-  scrub's jank on a throttled CPU. A byte-budgeted window of `ImageBitmap`s
-  around each playhead is the answer; predecoding a whole film is not, because
-  the RAM runs to gigabytes.
+- **The queue follows the playhead, not frame 0.** It asks for the first frame
+  not in hand at or ahead of the reader at high priority, and backfills behind
+  (nearest first, low priority) only once nothing ahead is missing — and not at
+  all while the playhead is parked on the last frame. The old in-order queue
+  plus a single-flight "jump lane" spent every byte on frames the reader had
+  already passed once they outran the link, and the picture moved in leaps; the
+  jump lane is gone because *the queue is the jump lane now*.
+- **Every frame is fetched once, decoded once, in a Worker, and blitted as an
+  `ImageBitmap` — there is no image path.** The films used to fetch through an
+  `HTMLImageElement` and `decode()` it, then the bitmap window decoded the same
+  bytes again; the first decode starved the second and the draw fell back to
+  painting images, which is a raster-path decode on the main thread. A
+  main-thread `createImageBitmap` with a crop and resize still blocks on both
+  Chromium and WebKit; the same call in a worker does not. The window
+  (`frame-window.ts`) is **byte-budgeted**, not frame-counted, because
+  predecoding a whole film runs to gigabytes of RAM. Where `createImageBitmap`
+  is missing, nothing is fetched and each film's designed fallback stands.
 - **The second film is queued behind the first, not merely time-gated.** At low
   bandwidth both films split the line: *"Neither film could move and both were
   being paid for."* The services sequence becomes *eligible* at a timeline mark
   and only starts transferring once the opening film has finished its own.
 - **A recut renames its frame folder.** The folders are served `immutable` for
-  a year, so re-baking in place hands a returning visitor a film spliced from
-  two bakes, and nothing errors.
+  a year (`next.config.ts`), so re-baking in place hands a returning visitor a
+  film spliced from two bakes, and nothing errors.
 
 **Nothing downloads until the reader could plausibly want it.** The canvases
 carry no source in the markup; delivery arms a beat after the intro curtain
@@ -209,8 +293,9 @@ The original finding stands as written: Lenis's lerp stacked on top of
 ScrollTrigger's numeric `scrub: 0.5` catch-up, and two smoothings in series read
 as seek lag. What changed is which of the two was removed. The repo now runs
 **Locomotive Scroll v5 — which is Lenis, rebuilt on it — as the one smoothing
-authority**, confined to a single gateway module, and **every scrub on the page
-is `scrub: true`**. No number goes back into a scrub.
+authority**, confined to a single gateway module (`lib/motion/smooth-scroll.ts`),
+and **every scrub on the page is `scrub: true`**. No number goes back into a
+scrub.
 
 It animates the window's own scroll rather than proxying it, so `position:
 sticky`, `position: fixed` and ScrollTrigger all read true positions. Touch is
@@ -276,32 +361,43 @@ further — *"every type decision is judged in Arabic first. A treatment that is
 beautiful in Latin caps and merely acceptable in Arabic has failed the majority
 of the audience."*
 
-Two consequences worth carrying to your own work:
+Consequences worth carrying to your own work:
 
 - **Physical direction utilities are lint errors here even inside
   `components/ui/`** — the vendored primitives are held to the same rule as
   everything else, because a shadcn default that ships `ml-2` mirrors wrongly
   in Arabic exactly like your own code would ([i18n & RTL](/standards/i18n-rtl)).
+  The same `no-restricted-syntax` rule bans template literals in `className`
+  (they lose utility conflicts; use `cn()`) there too, and everywhere outside
+  `components/ui/` it also bans `overflow-x-hidden`, which creates a scroll
+  container that traps RTL layouts (use `overflow-x-clip`).
 - **Locale facts live in one module.** `HREFLANG` is a `Record<Locale, string>`
   rather than a `locale === 'ar' ? 'ar-LY' : locale` written out in three files.
   Adding a third locale is now a **type error until it is mapped**, instead of
   three silent `else` branches.
+- **Message keys are typed.** `global.d.ts` augments next-intl's `AppConfig`, so
+  a key renamed in one message file and not the other fails `pnpm typecheck`
+  rather than rendering its own path — and `messages/parity.test.ts` keeps the
+  Arabic tree identical to the English one it is typed against.
+- **Ordinals are Arabic-Indic, figures are not.** `getNumberLocale` asks for
+  `-u-nu-arab` by name, because ICU's default for `ar` and `ar-LY` is Western
+  digits; the headline statistics stay Western in both locales.
 
 <Callout type="warning">
   **A number inside Arabic prose needs its own bidi isolate — isolating a
   parent is not enough.** Space-separated digit groups reorder, so a phone
-  number renders back-to-front. Nothing on the holding page prints a number
-  today, which means this bites the moment the contact block lands
+  number renders back-to-front
   ([i18n & RTL](/standards/i18n-rtl#the-traps-that-only-appear-in-arabic)).
 </Callout>
 
-**The Arabic page carries roughly three times the font bytes of the English
-one**, and no amount of tuning fixed it: an Arabic page needs its own faces
-*and* the Latin ones for the wordmark and the language switcher, and
-`next/font` decides its preloads at build time from the module graph, of which
-there is one for both locales. Committing the woff2 files and choosing the
-preload per locale is the known fix, and it is a pre-launch item rather than a
-tuning knob ([i18n & RTL](/standards/i18n-rtl#the-traps-that-only-appear-in-arabic)).
+**No font is preloaded, on purpose.** `next/font` decides its preloads at build
+time from the module graph, of which there is one for both locales — so `/ar`
+and `/en` both preloaded the same five files at high priority, half of them the
+script the reader could not read, ahead of the stylesheet and the LCP image.
+With `preload: false` the browser discovers faces from the stylesheet, resolves
+`unicode-range` first and fetches only what the page has glyphs for; `display:
+swap` means the fallback paints immediately either way
+([i18n & RTL](/standards/i18n-rtl#the-traps-that-only-appear-in-arabic)).
 
 ## Traps that have already cost someone a day
 
@@ -367,14 +463,104 @@ tuning knob ([i18n & RTL](/standards/i18n-rtl#the-traps-that-only-appear-in-arab
   which is exactly the stretch carrying the branded plate three other things are
   composed against. The bake script now reads the master itself and takes no
   source argument.
+- **The services sequence is not its master re-exported.** It is a re-render
+  that re-times the morphs, with more frames than the master, so exporting
+  frames from the master would give back a coarser edit. Its boundaries are
+  indices into the sequence; re-read them off the frames if it is recut.
 - **Do not assume the next master is cropped like the last.** The current one
   carries 12px of pure black down both edges on every frame, which `cover` would
   show as a seam down the hero. The master before it had none. Measure.
+- **The masters are not in git and must be backed up elsewhere.** `Final.mp4`
+  is 239 MiB, over GitHub's hard limit, so `masters/` is gitignored — and it is
+  now the *only* way to rebuild the opening film's frames at all.
 - **A recut renames its frame folder**, because the folders are served
   `immutable` for a year
   ([above](#the-films-are-frame-sequences-not-video)).
 
 </details>
+
+## Tests
+
+**Vitest 5, 46 test files in two projects split by filename**, so neither
+project has to know about the other:
+
+- **`node`** (32 files, `*.test.ts`) — the default place to write, and it runs
+  in about 200 ms because nothing in it needs a DOM. It holds the cross-file
+  agreements nothing else would catch: `PRODUCTION_HOST` across `lib/site.ts`
+  and `next.config.ts`, the two message trees (`messages/parity.test.ts`), the
+  client namespaces the layout forwards against every `useTranslations` in a
+  `"use client"` module, the `MARKER` names the stylesheet spells by hand, the
+  curtain's exit timing against `app/styles/intro.css`, the manifest's colours
+  against the theme, the design-token layers, the frame counts against the
+  files on disk, and the pure arithmetic behind each scene (beats, geometry,
+  marquee wrap, menu travel, lightbox paging).
+- **`dom`** (14 files, `*.browser.test.ts`, jsdom) — the browser state
+  machines that are pure logic: the music player's toggle sequence, every path
+  through the intro curtain that must end with the page released, the build
+  queue, gestures, held images, `film-canvas` and the bitmap window (including
+  its worker), each film's delivery, and the reach of the selected-work
+  section. The films are driven through shared fakes in
+  `components/media/film-canvas.fakes.ts`. It still does not render the scene.
+
+*Why the split exists:* the suite used to be node-only with a `**/*.test.ts`
+include, so no component or browser state machine could be tested — and both
+runtime defects found in one review were sitting in that hole. The film suites
+are the **only** gates that can see a short bake or a broken delivery order,
+because Lighthouse leaves media unbudgeted and never scrolls to the frames.
+
+## CI and deploys
+
+`.github/workflows/ci.yml` runs **automatically again** — on every pull request
+and every push to `main` — after a stretch in 2026-08 when the account's
+Actions minutes were spent and it was dispatch-only. `workflow_dispatch` stays
+as the by-hand route, with a `deploy` input of `checks only`, `preview` or
+`production`.
+
+```mermaid
+flowchart LR
+  PR[pull_request] --> K
+  PU[push to main] --> K
+  D[workflow_dispatch] --> K
+  K[Checks<br/>typecheck, lint, format, test, build] -->|PR from this repo| PV[Deploy preview<br/>URL commented on the PR]
+  K -->|main| PD[Deploy production<br/>jumeira-two.vercel.app]
+  PD --> L[Lighthouse mobile<br/>/ar and /en]
+```
+
+| Job | What it does |
+| --- | --- |
+| **Checks** | Node 24, `pnpm install --frozen-lockfile`, then the five gates in the order above |
+| **Deploy preview** | `vercel pull` → `vercel build` → `vercel deploy --prebuilt`; skipped for forks, which never see the token |
+| **Deploy production** | The same with `--prod`, to the pre-launch alias `https://jumeira-two.vercel.app` |
+| **Lighthouse (mobile)** | Warms the edge cache and the poster variants, then audits the production alias, three runs per URL |
+
+- **Deploys only ever follow a green `Checks`** (`needs: checks`), through the
+  Vercel CLI with a prebuilt output. *Why not the Vercel Git integration:* the
+  Hobby plan cannot connect a private organisation repo, and the CLI path only
+  deploys a build that passed CI anyway.
+- **Until the `VERCEL_TOKEN` secret exists, deploy jobs skip with a warning**
+  instead of failing, and the gates still run. `VERCEL_ORG_ID` and
+  `VERCEL_PROJECT_ID` are repo *variables*.
+- **Lighthouse budgets are hard errors on what is deterministic** —
+  accessibility ≥ 0.9, per-type transfer sizes (document, stylesheet, script,
+  font, image), TBT ≤ 400 ms, CLS ≤ 0.1, LCP ≤ 4.5 s — and **only a warning on
+  the composite performance score**, because lab runs of this page swing about
+  ±10 points around an LCP heuristic. Media is deliberately unbudgeted: a
+  total-weight budget used to force the hero film to wait for a gesture and pop
+  in mid-scrub. SEO is off while the site ships `noindex`.
+- **`.vercelignore` must not exclude `node_modules/` or `.next/`.** A
+  `--prebuilt` deploy's function configs point at files there, and ignoring
+  either creates a deployment that fails on the first missing file while
+  production stays on the previous build.
+- **Branch protection is not available on the current GitHub plan**, so a red
+  PR can still be merged — it just will not deploy. Run the gates before
+  pushing.
+
+Dependabot opens weekly grouped npm and Actions PRs with a three-day cooldown,
+held level with `minimumReleaseAge: 4320` in `pnpm-workspace.yaml`. *Why the two
+must match:* Dependabot resolves each update a second time with that release-age
+cutoff, and with no floor locally the first pass floated a day-old transitive
+dependency into the lockfile that the second pass then rejected — failing the
+whole npm run on 2026-08-19.
 
 ## Going live
 
@@ -384,12 +570,11 @@ the other ships a half-indexed site — the meta tags and the `X-Robots-Tag`
 header disagree — and a colocated test is the only thing that catches it. Full
 procedure: [Client Projects](/how-we-work/client-projects#the-go-live-switch).
 
-Three things this repo does that the generic checklist does not cover:
+Four things this repo does that the generic checklist does not cover:
 
-- **CI is manual, and it is the only place the gates are enforced.** The
-  workflow has no `push` or `pull_request` trigger — the account's Actions
-  minutes are spent, so an automatic trigger would only queue a run that never
-  starts. Until they are back, run all five gates yourself before pushing
+- **A merge to `main` is a production deploy.** CI deploys the pre-launch
+  alias on every push to `main`, so there is no separate release step to hold
+  a change back — keep unfinished work on a branch
   ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
 - **The site URL falls back to a hard-coded pre-launch host, not an env var.**
   CI runs `vercel build` on a GitHub runner where no `VERCEL_*` host variables
@@ -397,4 +582,15 @@ Three things this repo does that the generic checklist does not cover:
   with `metadataBase` on `localhost`, and link cards rendered with no image.
 - **A redirect map from the client's legacy domain is a launch blocker.** Only
   a handful of entry points are mapped today; the rest has to come off the old
-  sitemap before the domain moves ([why](/how-we-work/client-projects#launch-checklist)).
+  sitemap before `jumeira-catering.com` moves
+  ([why](/how-we-work/client-projects#launch-checklist)).
+- **The privacy page needs three changes made together**: the real text under
+  `Privacy` in both message files, `noindex: false` in
+  `app/[locale]/privacy/page.tsx`, and a `/privacy` entry in
+  `INDEXABLE_ROUTES`. Any one alone leaves a placeholder in the index or a
+  finished policy no search engine is told about, and nothing catches either.
+
+Still open before launch, per `AGENTS.md` and the README: the street address and
+`SITE.geo` coordinates (omitted rather than published as an approximate pin),
+the placeholder `SITE.founded`, and the eight testimonials, which are
+placeholders today.

@@ -17,7 +17,7 @@ tree.
 ```bash
 # platform monorepo
 pnpm turbo test                                     # everything
-pnpm --filter=group exec vitest run lib/ease.test.ts
+pnpm --filter=group exec vitest run messages/parity.test.ts
 pnpm --filter=group exec vitest run -t "message parity"
 pnpm --filter=group exec vitest                     # watch mode
 
@@ -32,18 +32,18 @@ intended change and passes on real regressions.
 
 <Callout type="info">
   **Which repos actually run tests**, because the answer is not "all of them":
-  `adawy-platform` (156 test files), `jumeira` (44 — 32 node, 12 jsdom),
-  `adawy-group-links` (5),
-  `aladawy-shop` and `aladawy-pack` (a parity test each).
-  [`zad-alhkoul`](/repositories/zad-alhkoul) has **no test framework at all**
-  and guards its locales with a standalone Node script instead;
-  `baron-menu` has no build step to hang a test off. Both are gaps rather than
-  decisions — [the matrix](/repositories#what-the-repos-actually-share).
+  `adawy-platform` (165 test files), `jumeira` (46 — 32 node, 14 jsdom),
+  `adawy-group-links` and `aladawy-links` (5 each),
+  `aladawy-shop` (parity plus the quote-request schema) and `aladawy-pack`
+  (a parity test), and [`zad-alhkoul`](/repositories/zad-alhkoul) (126 — a
+  node project, a jsdom project, and tests for its scripts).
+  `baron-menu` has no build step to hang a test off. That is a gap rather than
+  a decision — [the matrix](/repositories#what-the-repos-actually-share).
 
-  Most repos need no Vitest config file. Two carry one anyway and for good
-  reasons: `jumeira` splits its suite into a DOM-free `node` project and a
-  jsdom project selected **by filename**, and `aladawy-shop` sets its own
-  environment. A config file is fine; a separate test *tree* is not.
+  Most repos need no Vitest config file. Three carry one anyway and for good
+  reasons: `jumeira` and `zad-alhkoul` split their suites into a DOM-free
+  `node` project and a jsdom project selected **by filename**, and `aladawy-shop` pins its `@` alias
+  and its include/exclude globs. A config file is fine; a separate test *tree* is not.
 </Callout>
 
 ## Test behavior and logic, not declarative UI
@@ -130,8 +130,8 @@ in a document gets skipped on the busy week.
 Every project with a `messages/` directory asserts that all locale files share
 an identical key tree, and failing it fails the build. Most do it with
 `messages/parity.test.ts`; [`zad-alhkoul`](/repositories/zad-alhkoul) does it
-with a dependency-free Node script wired into its own CI job, because it has no
-test runner to host one.
+with a dependency-free Node script (`check:i18n`) in its `verify` chain, and
+its component tests render against the real message catalogues on top of that.
 
 **The gate is the requirement; the mechanism is not.** What is not negotiable
 is that a missing key stops a merge — see

@@ -23,6 +23,10 @@ adawy-platform/
 │   ├── group/      Adawy Group   → adawygroup.com   (the full site)
 │   ├── studio/     Adawy Studio  → holding page, no domain yet
 │   ├── pack/       Adawy Pack    → holding page, no domain yet
+│   ├── print/      Adawy Print   → holding page (on @adawy/brand-app)
+│   ├── supplies/   Adawy Supplies → holding page
+│   ├── marketing/  Adawy Marketing Solutions → holding page
+│   ├── bizdev/     Adawy Business Development → holding page
 │   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config (planned, ADR-008)
 │   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
@@ -32,15 +36,17 @@ adawy-platform/
     ├── i18n/               @adawy/i18n              (locale list, direction)
     ├── site/               @adawy/site              (identity, routes, alternates, request config)
     ├── holding/            @adawy/holding           (the shared holding-page shell)
+    ├── brand-app/          @adawy/brand-app         (the holding-app shell; apps/print so far)
     ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules)
     └── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
 ```
 
 <Callout type="info">
-  **Today** all three apps and all eight packages exist. `apps/studio` and
-  `apps/pack` are **holding pages** — one branded screen each, sharing
-  `@adawy/holding` — which is why a change to `packages/ui` verifies and
-  deploys three apps rather than one. `apps/sites` and `apps/api` are planned.
+  **Today** all seven apps and all nine packages exist. Every app but
+  `apps/group` is a **holding page** — one branded screen each, sharing
+  `@adawy/holding` (`apps/print` also runs on the newer `@adawy/brand-app`
+  shell) — which is why a change to `packages/ui` verifies and deploys seven
+  apps rather than one. `apps/sites` and `apps/api` are planned.
 
   `@adawy/seo` and `@adawy/utils` were once planned and **were never
   extracted**. `@adawy/site` took the metadata and routing role instead, and

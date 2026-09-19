@@ -15,9 +15,9 @@ for clients is a separate track with separate rules — see
 
 | System | What it is | Status |
 | ------ | ---------- | ------ |
-| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand — `apps/group`, `apps/studio`, `apps/pack` today — all on shared `@adawy/*` packages, each deployed to its own domain(s) | <Badge tone="live">Built</Badge> Phase 1 |
+| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand — `apps/group` plus six brand holding pages (`studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev`) today — all on shared `@adawy/*` packages, each deployed to its own domain(s) | <Badge tone="live">Built</Badge> Phase 1 |
 | **The multi-tenant app** | One `apps/sites` mapping hostname → brand config, for the long tail ([ADR-008](/architecture/adrs)) | <Badge tone="planned">Decided, not built</Badge> |
-| **Shared design system** | The eight `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell), plus `eslint-config` and `typescript-config`, which machine-enforce the rules the others assume | <Badge tone="live">Built</Badge> the most important technical deliverable |
+| **Shared design system** | The nine `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell), `brand-app` (the holding-app shell), plus `eslint-config` and `typescript-config`, which machine-enforce the rules the others assume | <Badge tone="live">Built</Badge> the most important technical deliverable |
 | **Backend service** | Node.js (NestJS) in the same monorepo as `apps/api` ([ADR-009](/architecture/adrs)): authentication, business logic, Odoo integration, background jobs, real-time | <Badge tone="planned">Phase 2</Badge> first build of the phase |
 | **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | <Badge tone="planned">Phase 2</Badge> the flagship |
 | **Employee portal** | One internal home: internal AI assistant, search across all company systems, operational dashboards, content engine | <Badge tone="planned">Phase 3</Badge> |
@@ -50,8 +50,8 @@ HR, and manufacturing. **We keep it permanently** and build custom layers on
 top through its APIs. Commodity functions (payroll, tax compliance) are not
 where we differentiate; client experience, dashboards, and AI are.
 
-Flow example: a client orders on Aladawy Shop → the backend writes the order
-to Odoo → Odoo handles inventory, accounting, fulfilment → the client sees
+Flow example (hypothetical — no brand takes orders online yet): a client
+orders on a Group brand site → the backend writes the order to Odoo → Odoo handles inventory, accounting, fulfilment → the client sees
 status in the portal, surfaced from Odoo via our cache. Odoo's current API is
 deprecated in Odoo 22 (late 2028), so the integration sits behind an
 abstraction layer — migrating is one or two sprints, not a rewrite.
