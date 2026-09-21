@@ -132,7 +132,12 @@ quickly reversible.
 ### Launch checklist
 
 - [ ] `PRODUCTION_HOST` set in **both** `lib/site.ts` and `next.config.ts`
-- [ ] Custom domain attached in Vercel and resolving
+- [ ] Custom domain attached in Vercel and resolving. If its DNS and email
+      live on the group's Verpex host, move it
+      [email first](/guides/move-a-domain-to-vercel)
+- [ ] The project's `*.vercel.app` domain redirects to the real one
+- [ ] A Google Search Console Domain property verified, and the sitemap
+      submitted
 - [ ] `robots.txt` and the sitemap serving the real host — check the live URL,
       not the code
 - [ ] The enquiry seam wired to a real provider, and a **test submission

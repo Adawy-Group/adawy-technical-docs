@@ -29,6 +29,7 @@ through for the 10% of occasions where the reasoning matters.
 | [010](#adr-010--group-brands-share-a-monorepo-client-projects-get-their-own-repo) | Group brands share the monorepo; each client project gets its own repo | <Badge tone="live">Built</Badge> | Everything |
 | [011](#adr-011--feature-first-app-layout-features--platform) | Routes in `app/`, things you can see in `features/`, machinery in `platform/` | <Badge tone="live">Built</Badge> | `apps/group` |
 | [012](#adr-012--machine-enforce-a-rule-wherever-the-mistake-would-not-look-like-one) | Machine-enforce a rule wherever the mistake would not look like one | <Badge tone="live">Built</Badge> | Everything |
+| [013](#adr-013--websites-on-vercel-dns-and-email-stay-on-the-old-host) | Websites moved to Vercel; DNS and email stayed on the Verpex host | <Badge tone="live">Built</Badge> | Every domain |
 
 ## How to add one
 
@@ -154,6 +155,12 @@ was wrong is the most useful thing in the file.
 - **Consequences:** Each company reads as a real company, not a corporate
   department; the ecosystem stays discoverable. Each domain points at its
   brand app's own Vercel project (Cloudflare in front).
+- **Amended by [ADR-013](#adr-013--websites-on-vercel-dns-and-email-stay-on-the-old-host):**
+  the Cloudflare layer was never built. Nothing sits in front of Vercel, and
+  DNS stays on the Verpex host's nameservers. The cross-links are built: each
+  brand page on adawygroup.com links to the brand's domain, and each brand site
+  links back and names Adawy Group as its parent organisation in its
+  structured data.
 
 ## ADR-007 — Documentation lives in this repo, public, docs-as-code
 
@@ -323,3 +330,35 @@ was wrong is the most useful thing in the file.
   `apps/group` alone, and one client repo has no CI to hang any of this on
   ([the matrix](/repositories#what-the-repos-actually-share)). Closing those is
   the work this record commits to, not something it claims is done.
+
+## ADR-013 — Websites on Vercel; DNS and email stay on the old host
+
+- **Context:** In September 2026 six domains moved their websites from the
+  Verpex reseller host, where they had run WordPress and static pages, to their
+  Vercel projects. The same host runs the domains' nameservers and their cPanel
+  mailboxes, and those mailboxes are in daily use. There were two ways to
+  move. One was to move the nameservers too, to Vercel or to Cloudflare as
+  [ADR-006](#adr-006--every-brand-keeps-its-own-domain-cross-linked-to-the-group)
+  assumed, and recreate every record there. That is fifteen to twenty per
+  zone, several of which cPanel maintains itself (DKIM keys, SPF,
+  autodiscovery, certificates for `mail.`). The other was to leave the
+  nameservers alone and change only the records the websites use.
+- **Decision:** Keep the nameservers and email on the Verpex host, and point
+  only each domain's root A record and its `www` CNAME at Vercel. Before that
+  switch, each domain's email is moved off the root: `mail.<domain>` becomes an
+  A record to the host, and the MX and calendar SRV records target it. Then
+  the old TTL is waited out, so that no cached MX follows the root to Vercel
+  ([the procedure](/guides/move-a-domain-to-vercel)).
+- **Consequences:** Two records per domain moved, and no email was lost or
+  delayed. cPanel keeps maintaining its own mail records, and rolling a
+  website back is one record that email no longer depends on. The costs are
+  real, though:
+  - DNS is edited in WHM, not beside the projects in Vercel, and Vercel's
+    DNS features (automatic records, wildcard certificates) are unavailable.
+  - The reseller hosting cannot be cancelled, because it still carries the
+    mail and the not-yet-moved domains.
+  - The host's anycast nameservers pick up edits unevenly, sometimes taking
+    half an hour, so every DNS step has to be checked on all four.
+  - **Revisit when email leaves cPanel**, for example for Google Workspace, as
+    adawygroup.com already has. At that point the nameservers can follow the
+    websites and the hosting can be dropped at renewal.

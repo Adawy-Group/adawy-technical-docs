@@ -31,11 +31,11 @@ apps/
 │   ├── features/    one per thing a visitor can point at (hero, brands, stage, …)
 │   │                each is components/ + scene/ (three.js) + lib/ (pure)
 │   └── platform/    app-wide machinery: chrome, scroll, gl, perf, sound, seo, …
-├── studio/     Adawy Studio                → holding page, no domain yet (en/ar)
-├── pack/       Adawy Pack                  → holding page, no domain yet (en/ar)
-├── print/      Adawy Print                 → holding page, no domain yet (en/ar)
-├── supplies/   Adawy Supplies              → holding page, no domain yet (en/ar)
-├── marketing/  Adawy Marketing Solutions   → holding page, no domain yet (en/ar)
+├── studio/     Adawy Studio                → adawystudio.com, holding page (en/ar)
+├── pack/       Adawy Pack                  → adawypack.com, holding page (en/ar)
+├── print/      Adawy Print                 → adawyprint.com, holding page (en/ar)
+├── supplies/   Adawy Supplies              → adawysupplies.com, holding page (en/ar)
+├── marketing/  Adawy Marketing Solutions   → adawymarketingsolutions.com, holding page (en/ar)
 └── bizdev/     Adawy Business Development  → holding page, no domain yet (en/ar)
 
 packages/
@@ -164,6 +164,18 @@ declares its subset with `satisfies readonly Locale[]`, so a code the platform
 does not know fails the build. Anything that enumerates locales must come from
 the package or that routing file, never a hand-written array
 ([i18n & RTL](/standards/i18n-rtl)).
+
+**Each app names its own domain, in one file.** `PRODUCTION_HOST` lives in
+`lib/site/production-host.ts` (`platform/seo/production-host.ts` in
+`apps/group`). It is the switch for indexing, the canonical origin and the
+sitemap, and it only turns them on for the production deployment serving that
+host, so previews stay `noindex`. Every app names its domain except `bizdev`,
+which has none yet. A holding page on a domain also links back to
+adawygroup.com and names Adawy Group as its parent organisation in its
+structured data (`@adawy/holding`'s `siteUrl`). The group's brand pages link
+out through each brand's `site` in `BRAND_PAGES`. Old WordPress URLs that search
+engines still list are permanent redirects in `apps/group/next.config.ts`
+([Domains, DNS & Email](/architecture/domains-and-email)).
 
 **The layering in `apps/group` is enforced, not suggested.** `platform/` never
 imports `features/`, a feature reaches another only through its barrel,

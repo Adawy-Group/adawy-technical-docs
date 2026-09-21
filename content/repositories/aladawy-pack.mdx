@@ -253,6 +253,10 @@ re-shooting.
 
 The site is **not indexable** while it lives on `*.vercel.app`, which is
 deliberate: staging must never outrank the client's real site.
+`aladawypack.com` itself still serves the client's old WordPress site, and its
+DNS and email live on the group's Verpex host. Moving it is
+[Moving a Domain to Vercel](/guides/move-a-domain-to-vercel), with the email
+moved first, since the client's staff use those mailboxes.
 `PRODUCTION_HOST` is `null` today in both files that state it.
 
 To publish, set `PRODUCTION_HOST` in **both** `lib/site.ts` and

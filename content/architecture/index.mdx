@@ -39,6 +39,7 @@ flowchart TD
     G --> DG["adawygroup.com"]
     S --> DS["adawystudio.com"]
     P --> DP["adawypack.com"]
+    H --> DH["adawyprint.com · adawysupplies.com<br/>adawymarketingsolutions.com<br/>(bizdev: no domain yet)"]
     APPS --> BE["apps/api — Node.js + NestJS<br/>auth · business logic · integrations"]
     BE --> ODOO["Odoo (system of record)<br/>finance · inventory · payroll · manufacturing"]
     BE --> DB[("PostgreSQL + pgvector")]
@@ -46,17 +47,19 @@ flowchart TD
     BE --> EMP["Employee portal<br/>internal AI · search · dashboards"]
 
     classDef planned stroke-dasharray: 5 4;
-    class N,BE,DB,PORTAL,EMP,DS,DP planned;
+    class N,BE,DB,PORTAL,EMP planned;
 ```
 
 | | Built today | Decided, not built |
 | --- | --- | --- |
 | Apps | `group`, `studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev` | `sites`, `api` |
 | Packages | all **nine** `@adawy/*` | — |
-| Domains | adawygroup.com | adawystudio.com, adawypack.com |
+| Domains | adawygroup.com, adawystudio.com, adawypack.com, adawyprint.com, adawysupplies.com, adawymarketingsolutions.com | Business Development's, and the long tail's through `sites` |
 | Behind them | — | the backend, PostgreSQL, both portals |
 
-Every app except `group` is a **holding page** — one branded screen each, on
+Every app except `group` is a **holding page**, and all but `bizdev` are live
+on their own domains ([Domains, DNS & Email](/architecture/domains-and-email)).
+They are one branded screen each, on
 `@adawy/holding` (and, for `apps/print` so far, the newer `@adawy/brand-app`
 shell). They are real apps with real deploys, which is why a change to
 `packages/ui` verifies and deploys seven apps rather than one.
@@ -90,7 +93,7 @@ department.
     versus what is only decided.
   </Cards.Card>
   <Cards.Card title="Decision Records" href="/architecture/adrs" arrow>
-    Twelve decisions, their context and their trade-offs. The fastest way to
+    Thirteen decisions, their context and their trade-offs. The fastest way to
     absorb how this team thinks.
   </Cards.Card>
   <Cards.Card title="Design Patterns" href="/architecture/patterns" arrow>
@@ -104,6 +107,10 @@ department.
   <Cards.Card title="Vocabulary & Map" href="/architecture/glossary" arrow>
     `apps/group`'s own language — which route each feature serves, and what a
     take, a driver or a closer is.
+  </Cards.Card>
+  <Cards.Card title="Domains, DNS & Email" href="/architecture/domains-and-email" arrow>
+    Who serves each domain's records, website and mailboxes, and the records
+    that must never be deleted.
   </Cards.Card>
   <Cards.Card title="Our Systems" href="/architecture/systems" arrow>
     Every system we run or are replacing, and how they connect — including

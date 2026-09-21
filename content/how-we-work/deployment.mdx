@@ -31,6 +31,12 @@ the production deployment *before its custom domain is attached* — the Vercel
 project URL that leadership reviews. Same build, same pipeline, different
 address.
 
+Once a domain is attached, the production deployment *is* the domain. The
+project's `*.vercel.app` address then redirects to it, so the site is not
+served twice. adawygroup.com and five brand domains are in that state today;
+[Moving a Domain to Vercel](/guides/move-a-domain-to-vercel) is the procedure
+that got them there, because their DNS and email live on another host.
+
 *Why that is worth stating:* people arriving from a three-environment setup go
 looking for a staging server, and there is not one. The pipeline is
 deliberately two-stage — a per-PR preview and a production deploy on merge —
