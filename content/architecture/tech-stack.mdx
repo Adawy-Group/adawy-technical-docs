@@ -98,6 +98,10 @@ defensible, which is the actual standard.
 | ---- | ------ | ------- |
 | **Vercel** | <Badge tone="live">Running</Badge> | Frontend hosting, one project per app. On the **Hobby** plan today, which is why deploys are CLI-driven from GitHub Actions rather than Vercel's dashboard Git integration — connecting a private org-owned repo needs Pro ([deployment](/how-we-work/deployment)) |
 | **GitHub** | <Badge tone="live">Running</Badge> | Code hosting and CI, in the `Adawy-Group` org |
+| **Verpex** (reseller hosting) | <Badge tone="live">Running</Badge> | DNS for every group domain, through its nameservers, plus cPanel email and the old sites of domains not yet moved. Kept on purpose ([ADR-013](/architecture/adrs), [Domains, DNS & Email](/architecture/domains-and-email)) |
+| **Name.com** | <Badge tone="live">Running</Badge> | Domain registrar. Renewals happen here, not at the host |
+| **Google Workspace** | <Badge tone="live">Running</Badge> | Email for adawygroup.com; every other domain's email is cPanel on the Verpex host |
+| **Google Search Console** | <Badge tone="live">Running</Badge> | Indexing and search performance for the six live domains, each a Domain property verified by DNS |
 | **Trello** | <Badge tone="live">Running</Badge> | The department Kanban board ([how we work](/how-we-work)) |
 | **Figma** | <Badge tone="live">Running</Badge> | Design and design-to-code handoff |
 | **Notion** | <Badge tone="live">Running</Badge> | Company-wide documentation. **Not** the engineering source of truth — that is this handbook ([ADR-007](/architecture/adrs)) |

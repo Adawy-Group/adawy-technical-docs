@@ -34,7 +34,7 @@ custom sections, or bespoke motion?**
 | ---- | ---- | --- |
 | 1. Scaffold the app under `apps/<brand>` from the closest existing app | Few hours | Developer |
 | 2. Define the brand's tokens — colors, fonts, logos — on the `@adawy/design` structure | Few hours | Designer, with dev support |
-| 3. Create the Vercel project and point the brand's domain | Few minutes | CTO (or any developer) |
+| 3. Create the Vercel project and move the brand's domain to it | ~2 hours, mostly waiting | CTO (or any developer) |
 | 4. Populate content (MDX/config in the app, via PR) | 2–5 days | Team, with copy from marketing |
 | 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + developer |
 | 6. Quality review and launch | 1–2 days | CTO |
@@ -49,7 +49,10 @@ custom sections, or bespoke motion?**
    structure — never edited copies of shared components. Include both logo
    variants (light/dark) and the EN + AR font stacks.
 3. **Domain:** each app is its own Vercel project; add the domain there and
-   verify the preview serves the new brand before announcing anything.
+   verify the production deployment serves the new brand before announcing
+   anything. A group domain's DNS and email live on the Verpex host, so the
+   website moves in two phases, email first:
+   [Moving a Domain to Vercel](/guides/move-a-domain-to-vercel).
 4. **Content:** lives in the app as MDX and configuration, in English and
    Arabic, and lands via reviewed PRs like any other change. Marketing
    supplies the copy; the team commits it
@@ -62,7 +65,13 @@ custom sections, or bespoke motion?**
    (CI enforces zero axe violations already), RTL verified on a real phone,
    metadata/OG/structured data set (`@adawy/site` plus the app's own `lib/`),
    analytics live, footer "part of Adawy Group" cross-link present, corporate
-   directory updated.
+   directory updated. For search, check these too:
+   - `PRODUCTION_HOST` names the domain.
+   - The project's `*.vercel.app` redirects to the domain.
+   - The brand's `site` is set in the group's `BRAND_PAGES`, so adawygroup.com
+     links to it.
+   - A Search Console Domain property is verified and the sitemap submitted.
+   - IndexNow has been sent the URLs.
 
 ## Pitfalls
 
@@ -73,3 +82,7 @@ custom sections, or bespoke motion?**
   the next person can't tell identity from implementation.
 - **Don't launch without the redirect map** if the brand had an old site —
   losing existing search ranking costs more than the build did.
+- **Don't point the domain at Vercel before its email is moved off the root.**
+  cPanel routes mail through the bare domain by default, so the website switch
+  silently takes the email with it
+  ([why](/architecture/domains-and-email#the-trap-email-rode-on-the-websites-address)).

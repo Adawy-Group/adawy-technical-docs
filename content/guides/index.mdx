@@ -1,6 +1,6 @@
 ---
 title: Guides
-description: Practical how-tos for recurring tasks - launching a brand site, building an intake form, and holding the performance budget.
+description: Practical how-tos for recurring tasks - launching a brand site, moving a domain to Vercel, building an intake form, and holding the performance budget.
 tags: ['How-to', 'Reference']
 ---
 
@@ -13,6 +13,10 @@ steps → pitfalls. A guide assumes you already know *why* — that is what
 <Cards num={3}>
   <Cards.Card title="Launching a New Brand Site" href="/guides/launch-new-brand" arrow>
     The configuration-not-build workflow that turns six weeks into one.
+  </Cards.Card>
+  <Cards.Card title="Moving a Domain to Vercel" href="/guides/move-a-domain-to-vercel" arrow>
+    Point a domain at its Vercel project without breaking its email: move the
+    email first, wait out the TTL, then switch the website.
   </Cards.Card>
   <Cards.Card title="Forms & Enquiries" href="/guides/forms-and-enquiries" arrow>
     One zod schema for form and server, spam defences, and the single delivery
@@ -48,8 +52,10 @@ solves it the second time.
   [Your First PR](/onboarding/first-pr#when-a-check-goes-red).
 - **Adding a locale**, end to end — routing, the message tree, `hreflang`, the
   parity gate, the sitemap.
-- **Creating and configuring a Vercel project** — root directory, environment
-  variables, domain. Two of its failure modes are already in
+- **Creating and configuring a Vercel project** — root directory and
+  environment variables. The domain half is
+  [Moving a Domain to Vercel](/guides/move-a-domain-to-vercel), and two of the
+  project's failure modes are already in
   [Troubleshooting](/help/troubleshooting).
 - **The asset bake pipeline.** `assets:bake`, `og:bake`, `pattern:bake` and
   friends are named on six pages and taught on none.

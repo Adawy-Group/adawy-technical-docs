@@ -43,6 +43,17 @@ so there is one table to update rather than two that drift.
 | A `--prebuilt` deploy is created and then dies with `ENOENT: lstat '/vercel/path0/.next/package.json'`, and production silently stays on the old build | A `.vercelignore` excluded `.next/` or `node_modules/`. Each function's `.vc-config.json` has a `filePathMap` pointing back into the project, and the build machine expands the bundle from those files | Allow both directories through. The CLI's default ignore list already covers them for a source deploy — [deployment](/how-we-work/deployment#deploy-safety-rails) |
 | Merging to `main` deployed nothing, and the Actions tab shows no run | The repo has no CI at all — `baron-menu`, `aladawy-shop` and `aladawy-links` deploy by hand — or its deploy job is skipped for want of a `VERCEL_TOKEN` secret, as in `adawy-group-links` | Run the repo's gates locally, then deploy by hand — [deployment](/how-we-work/deployment#client-projects-deploy-the-same-way) |
 
+## Domains and email
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Email to a domain stopped arriving after a DNS change, with no bounce | The MX (or `mail.`) still pointed at the root domain, and the root now points at Vercel, which accepts no mail. Senders queue and retry quietly | Point MX at `mail.<domain>` and make `mail` an A record to the Verpex server — [the trap](/architecture/domains-and-email#the-trap-email-rode-on-the-websites-address) |
+| A mail app cannot connect after a domain moved to Vercel | The app uses the bare domain as its server name | Use `mail.<domain>` for IMAP (993) and SMTP (465); webmail is `webmail.<domain>` |
+| A DNS change shows on one nameserver and not another | The Verpex nameservers are anycast and pick up edits unevenly, taking from a minute to half an hour | Check all four (`dig @ns1`…`@ns4.mysecurecloudhost.com`), several times each. If it is still stuck, a no-op edit to the zone republishes it |
+| Search Console verification fails right after the TXT record was added | Google reached a nameserver that did not have the record yet | Retry after a few minutes; nothing needs changing |
+| Vercel asks for a `_vercel` TXT record when you attach a domain | Another Vercel account attached the name first | Add the record it shows and verify — the domain then moves to our project |
+| cPanel AutoSSL reports failures for a domain's root and `www` | They point at Vercel now, so cPanel cannot validate them | Expected after a move; `mail.`, `webmail.` and the rest still renew |
+
 ## Bilingual and RTL
 
 | Symptom | Cause | Fix |

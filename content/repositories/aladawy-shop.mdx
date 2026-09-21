@@ -326,6 +326,11 @@ file.
 
 ## SEO and going live
 
+The client's domain, `aladawyshop.com`, still serves the old site, and its DNS
+and email live on the group's Verpex host. When it moves
+([the procedure](/guides/move-a-domain-to-vercel)), `PRODUCTION_HOST` changes
+from the Vercel alias to the real domain, in both files.
+
 **`PRODUCTION_HOST` is set** — to `aladawy-shop.vercel.app` in both
 `lib/site.ts` and `next.config.ts` (restated there because Next loads the
 config outside the app bundle, where `@/` does not resolve). The two must

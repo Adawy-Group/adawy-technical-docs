@@ -60,7 +60,7 @@ abstraction layer — migrating is one or two sprints, not a rewrite.
 
 | Site | Old stack | Verdict from the technical audit |
 | ---- | --------- | -------------------------------- |
-| adawygroup.com | WordPress 6.9 + Semplice page builder | Lighthouse mobile ~32; 4K background videos; stock photography; CMS-default page titles; no meta/OG tags; no structured data; English only. 20 documented findings. |
+| adawygroup.com | WordPress 6.9 + Semplice page builder, on the Verpex reseller host | Lighthouse mobile ~32; 4K background videos; stock photography; CMS-default page titles; no meta/OG tags; no structured data; English only. 20 documented findings. **Retired 21 September 2026**, when the domain moved to `apps/group` on Vercel; its old URLs redirect to their new pages. |
 
 The audit's conclusion — accepted by leadership — was that this is a problem
 of **platform fit, not execution**: no amount of WordPress optimization makes
@@ -68,6 +68,13 @@ a page-builder deliver the cinematic, bilingual, brand-driven experience the
 group's positioning requires. Hence the rebuild ([ADR-002](/architecture/adrs)).
 
 The same verdict drove the client rebuilds of `aladawypack.com` and
-`aladawyshop.com` — both were WordPress, both are now Next.js. They are client
-deliverables rather than Group systems, so they are documented under
+`aladawyshop.com`. Both were WordPress, and both are rebuilt in Next.js and
+running on `*.vercel.app`, but the domains themselves still serve the old sites
+from the Verpex host until each is moved
+([the procedure](/guides/move-a-domain-to-vercel)). They are client deliverables
+rather than Group systems, so they are documented under
 [Repositories](/repositories) rather than here.
+
+The Verpex host outlives the sites it served. It still runs every group
+domain's DNS and most of the group's email, and that is deliberate
+([Domains, DNS & Email](/architecture/domains-and-email)).
