@@ -21,11 +21,11 @@ build it, and how we work.** If it is not written here, it is not the process.
     build rather than the review.
   </Cards.Card>
   <Cards.Card title="Where does this work live?" href="/repositories" arrow>
-    Nine repositories in two worlds, and which one to clone for the task in
+    Twelve repositories in two worlds, and which one to clone for the task in
     front of you.
   </Cards.Card>
   <Cards.Card title="Why is it built this way?" href="/architecture/adrs" arrow>
-    Thirteen decision records — the fastest way to absorb how this team thinks.
+    Fifteen decision records — the fastest way to absorb how this team thinks.
   </Cards.Card>
   <Cards.Card title="How do we ship?" href="/how-we-work" arrow>
     The board, the branch, the review, and what happens between merge and live.
@@ -46,10 +46,10 @@ build it, and how we work.** If it is not written here, it is not the process.
 ## The department, in numbers
 
 <Stats>
-  <Stat value="9" label="repositories" hint="1 Group monorepo · 6 client · 2 other" />
+  <Stat value="12" label="repositories" hint="1 Group monorepo · 7 client · 4 other" />
   <Stat value="38" label="companies today" hint="planned to grow past 100" />
   <Stat value="3" label="locales" hint="en · ar · fr, RTL by design" />
-  <Stat value="12" label="decision records" hint="every rule states its why" />
+  <Stat value="15" label="decision records" hint="every rule states its why" />
 </Stats>
 
 ## The two worlds
@@ -62,12 +62,15 @@ to one of them rather than both:
 | For | Adawy Group's own brands | Other businesses |
 | Lives in | One monorepo, `adawy-platform` | One standalone repo per client |
 | Shares | The `@adawy/*` packages | Standards only — never code |
-| Today | `apps/group` and six brand apps (`studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev`) | `aladawy-pack`, `aladawy-shop`, `jumeira`, `zad-alhkoul`, `baron-menu` |
+| Today | `apps/group` and six brand apps (`studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev`) | `aladawy-pack`, `aladawy-links`, `aladawy-shop`, `aladawy-shop-wp` (WordPress), `jumeira`, `zad-alhkoul`, `baron-menu` |
 
 [ADR-010](/architecture/adrs) records why, and
 [Client Projects](/how-we-work/client-projects) covers how client work runs.
 One repository sits in neither —
-[the open case](/repositories#the-third-case-and-the-open-question).
+[the open case](/repositories#the-third-case-and-the-open-question). Three more
+are the department's own tooling rather than anyone's website: this handbook,
+the [content dashboard](/repositories/adawy-dashboard) that lets the team edit
+site text and images without a developer, and its practice repository.
 
 <Callout type="warning">
   **Adawy** Pack (a Group brand) and **Alad**awy Pack (a client) are different

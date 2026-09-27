@@ -17,6 +17,22 @@ poorly, and ship slow by default (Lighthouse ~32). The brand wants to be
 institutional infrastructure; that cannot live inside a page builder. Full
 reasoning: [ADR-002](/architecture/adrs).
 
+**But two client sites are still WordPress — isn't that a contradiction?** No:
+ADR-002 is about the Group's own sites. Aladawy Shop is a client whose staff
+run its products and orders in `wp-admin`, so the shop stays on WordPress with
+the department's own theme and plugin replacing the page builder; Aladawy Pack
+followed ([ADR-015](/architecture/adrs), which also says what is not yet
+written down).
+
+## Can I change a website's text without a developer?
+
+Yes, for the Next.js sites, through the
+[content dashboard](/repositories/adawy-dashboard) at `admin.adawygroup.com` —
+once it is live. Today it runs in practice mode, so publishes reach a practice
+repository and no real site ([ADR-014](/architecture/adrs)). The two Aladawy
+sites are edited in their own `wp-admin`. There are short
+[training videos](/guides/training-videos) for both.
+
 ## Why one codebase for 38 (eventually 110) brands?
 
 At six weeks per separate site, 110 sites ≈ 660 engineer-weeks — thirteen
@@ -38,8 +54,10 @@ Five today: [Aladawy Pack](/repositories/aladawy-pack),
 [Aladawy Shop](/repositories/aladawy-shop),
 [Jumeira Catering](/repositories/jumeira),
 [Zad Al-Hkoul](/repositories/zad-alhkoul) and
-[Baron](/repositories/baron-menu) — one standalone repository each
-([ADR-010](/architecture/adrs)). That is more repositories than the Group side
+[Baron](/repositories/baron-menu) — standalone repositories, never the
+monorepo ([ADR-010](/architecture/adrs)). Aladawy Shop has two, the Next.js
+build and the WordPress rebuild ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp))
+that is live. That is more repositories than the Group side
 has, which surprises people who assume client work is the sideline.
 
 ## Why is there a Group site outside the monorepo?

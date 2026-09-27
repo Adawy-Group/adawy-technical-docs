@@ -1,6 +1,6 @@
 ---
 title: Our Systems
-description: Every system the group runs or is replacing — the platform, the planned backend, Odoo as the system of record, and the WordPress estate being retired.
+description: Every system the group runs or is replacing — the platform, the content dashboard, the planned backend, Odoo as the system of record, the retired WordPress site, and the client sites that stay on WordPress.
 tags: ['Explanation', 'Reference']
 ---
 
@@ -24,15 +24,38 @@ for clients is a separate track with separate rules — see
 | **AI solutions** | Member-facing assistants and lead scoring; internal assistant, search, content engine, manufacturing intelligence | <Badge tone="planned">Phases 2–3</Badge> |
 
 Everything below Phase 1 is **direction, not built code**. Nothing in the org
-today runs NestJS, Better Auth, Prisma, Meilisearch or pgvector — those are
-choices recorded in advance on [Tech Stack & Why](/architecture/tech-stack),
-not dependencies you will find in a repository.
+today runs NestJS, Prisma, Meilisearch or pgvector — those are choices
+recorded in advance on [Tech Stack & Why](/architecture/tech-stack), not
+dependencies you will find in a repository. **Better Auth is the one
+exception**: the content dashboard below runs it for its own logins, which
+makes it the first piece of the Phase-2 auth choice to exist in code.
+
+## Department tooling
+
+| System | What it is | Status |
+| ------ | ---------- | ------ |
+| **Content dashboard** ([`adawy-dashboard`](/repositories/adawy-dashboard)) | `admin.adawygroup.com`. Anyone with a login — an **admin** or a **content creator** — picks a site, edits its Arabic and English text or swaps an image, and presses Publish. A publish is **one git commit** to that site's own repository, made by a GitHub App, and the site's normal deploy takes it live ([ADR-014](/architecture/adrs)). Next.js 16, Better Auth (invite-only), Neon Postgres for logins only, Resend for invite and reset emails | <Badge tone="building">Practice mode</Badge> online since 27 September 2026 |
+| **Practice content repo** ([`adawy-content-sandbox`](/repositories/adawy-content-sandbox)) | Where the online dashboard publishes while it is in practice mode — a folder per site, never deployed | <Badge tone="live">Running</Badge> until go-live |
+
+The dashboard has three content stores, chosen by one environment variable,
+`CONTENT_STORE`:
+
+| Mode | Publishes to | Used |
+| ---- | ------------ | ---- |
+| `local` (the default) | A git repo per site in the clone's own `.sandbox/` folder | On a developer's machine — a fresh clone cannot publish anywhere real |
+| `github-sandbox` | `adawy-content-sandbox` on GitHub | Online today, so the team can practise on the real screens |
+| `github` | Each site's own repository | After go-live ([the roadmap](/architecture/roadmap#what-is-next-in-the-short-term)) |
+
+The WordPress sites are not edited through it: their cards open each site's
+own `wp-admin`, because a second way to edit the same content would be a second
+source of truth.
 
 ## What runs where
 
 | On Vercel (frontend) | On the backend host (Railway → DigitalOcean) |
 | -------------------- | -------------------------------------------- |
 | All brand websites — one Vercel project per app | Authentication and sessions |
+| The content dashboard (`admin.adawygroup.com`) | |
 | SSR and static generation | Business logic and Odoo integration |
 | Client portal UI | Background jobs and scheduled tasks |
 | Image optimization | Real-time connections (Pusher) for the portal |
@@ -41,7 +64,13 @@ not dependencies you will find in a repository.
 The split exists because Vercel functions can't hold persistent connections
 and time out on long-running jobs — fine for serving pages, wrong for Odoo
 webhooks and queues. PostgreSQL runs managed (Supabase or Neon); Redis on
-Upstash.
+Upstash. The backend column is still a plan; the one managed database that
+exists today is the dashboard's login store, a Neon Postgres database added
+through the Vercel Marketplace.
+
+Two client sites run on neither column: **aladawyshop.com** and
+**aladawypack.com** are WordPress + WooCommerce on the Verpex host's cPanel
+([below](#the-client-sites-that-stay-on-wordpress)).
 
 ## Odoo — the system of record
 
@@ -67,13 +96,28 @@ of **platform fit, not execution**: no amount of WordPress optimization makes
 a page-builder deliver the cinematic, bilingual, brand-driven experience the
 group's positioning requires. Hence the rebuild ([ADR-002](/architecture/adrs)).
 
-The same verdict drove the client rebuilds of `aladawypack.com` and
-`aladawyshop.com`. Both were WordPress, and both are rebuilt in Next.js and
-running on `*.vercel.app`, but the domains themselves still serve the old sites
-from the Verpex host until each is moved
-([the procedure](/guides/move-a-domain-to-vercel)). They are client deliverables
-rather than Group systems, so they are documented under
-[Repositories](/repositories) rather than here.
+## The client sites that stay on WordPress
+
+The same verdict first drove Next.js rebuilds of the two Aladawy client sites
+([`aladawy-pack`](/repositories/aladawy-pack),
+[`aladawy-shop`](/repositories/aladawy-shop)), which still run on
+`*.vercel.app`. For these two the decision then went the other way: the
+domains **stay on WordPress**, with the department's own code replacing the old
+theme ([ADR-015](/architecture/adrs)). The shop's rebuild design states the
+reason — the business keeps managing its products and orders in `wp-admin`,
+the tool its staff already use — which is the difference from adawygroup.com,
+where the department itself edits the site. Aladawy Pack followed on
+27 September 2026; its reasoning is not yet written down anywhere.
+
+| Site | What runs | State |
+| ---- | --------- | ----- |
+| aladawyshop.com | WordPress + WooCommerce with the department's `aladawy` theme and `aladawy-core` plugin ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)): bilingual Arabic/English, quote request, cash on delivery where a delivery fee is set, customer accounts. Built and tested on `staging.aladawyshop.com`, a password-protected copy, and pushed to live with Softaculous | <Badge tone="live">Live</Badge> since 24 September 2026 |
+| aladawypack.com | WordPress with an `aladawy-pack` theme ported from the Next.js build, since about 27 September 2026 — site text under Appearance → Site content, products, and an Enquiries screen for the site's forms | <Badge tone="live">Live</Badge> theme source not yet in a repository |
+
+Both are **client deliverables, not Group systems**, so the detail lives under
+[Repositories](/repositories). They also sit outside most of this handbook's
+pipeline: no Vercel, no pull-request previews — see
+[Deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging).
 
 The Verpex host outlives the sites it served. It still runs every group
 domain's DNS and most of the group's email, and that is deliberate

@@ -23,12 +23,14 @@ these states, and nothing on this page is in a fourth one.
 | <Badge tone="building">Deferred</Badge> | Deliberately postponed, with a stated revisit trigger | The ADR that deferred it |
 
 <Callout type="info">
-  **Frontend is built; everything behind it is decided but not built.**
-  Everything in the Frontend table is running today. The Backend and
-  Platform-services tables are choices recorded in advance for Phases 2 and 3 —
-  **nothing in the org currently runs NestJS, Prisma, Better Auth, Meilisearch,
-  Redis, pgvector, Sentry or Better Stack.** Recording them early is deliberate;
-  going looking for them in a clone is not.
+  **Frontend is built; everything behind it is decided but not built — with
+  one small exception.** Everything in the Frontend table is running today. The
+  Backend and Platform-services tables are choices recorded in advance for
+  Phases 2 and 3 — **nothing in the org currently runs NestJS, Prisma,
+  Meilisearch, Redis, pgvector, Sentry or Better Stack.** Recording them early
+  is deliberate; going looking for them in a clone is not. The exception is
+  [the content dashboard](#the-content-dashboard), which runs **Better Auth**
+  and a managed Postgres for its own logins.
 </Callout>
 
 ## Frontend
@@ -67,11 +69,43 @@ publishing switch that keeps the site out of the index before launch.
 | State | `aladawy-shop` alone uses **Redux Toolkit**, justified by a quote that persists across routes and reloads. That is genuinely cross-cutting client state, and it is a project-specific choice, not a house pattern |
 | Tests | Vitest in every Next.js repo; only [`baron-menu`](/repositories/baron-menu), which has no build step, runs none |
 
+**Below the floor, by client decision:** the two Aladawy domains run
+**WordPress** ([below](#the-wordpress-client-sites)). The floor governs the
+department's Next.js client repos; a WordPress site cannot run it, and
+[ADR-015](/architecture/adrs) records why those two stay there anyway.
+
 *Why state a floor instead of a stack:* a stack list goes stale the first time
 a project makes a defensible different choice, and then the handbook is either
 wrong or the project is "non-compliant" for no reason. A floor is a rule that
 survives contact with the next brief — and every variation above it has to be
 defensible, which is the actual standard.
+
+## The content dashboard
+
+<Badge tone="building">Practice mode</Badge> online at `admin.adawygroup.com`
+since 27 September 2026 ([`adawy-dashboard`](/repositories/adawy-dashboard)).
+
+| Layer | Choice | Why |
+| ----- | ------ | --- |
+| Framework | **Next.js 16 + shadcn/ui + Tailwind v4 + next-intl**, standalone repo | The same stack as the sites it edits, so anyone who can work on a site can work on the dashboard. Arabic-first with full RTL, like the team that uses it |
+| Content store | **Git** — each publish is one commit to the site's own repository, through a **GitHub App** with contents access to the listed repos only | No content database to run or back up; every change is versioned, attributed and revertable like any other commit ([ADR-014](/architecture/adrs)) |
+| Modes | `CONTENT_STORE` = `local` · `github-sandbox` · `github` | Local by default so a fresh clone cannot publish anywhere real; the sandbox repo lets the team practise online; `github` is go-live |
+| Auth | **Better Auth**, inside the app, invite-only, roles Admin and Content creator | It replaced Clerk on 27 September 2026 for full control of the Arabic sign-in screens and no third-party branding — and it is the auth already chosen for Phase 2 below |
+| Database | **Neon Postgres**, added through the **Vercel Marketplace** (SQLite on a laptop) | Holds logins only. Managed and in the same region as the app (`fra1`) |
+| Email | **Resend**, from the `send.adawygroup.com` subdomain | Invite and password-reset links; the same provider and sending domain as the site forms |
+
+## The WordPress client sites
+
+aladawyshop.com and aladawypack.com are **WordPress on the Verpex host's
+cPanel**, not Next.js on Vercel ([ADR-015](/architecture/adrs)).
+
+| | Aladawy Shop ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)) | Aladawy Pack |
+| --- | --- | --- |
+| Platform | WordPress + **WooCommerce** | WordPress |
+| Code | Classic PHP theme `aladawy` (presentation) + plugin `aladawy-core` (data, rules, bilingual routing, checkout, SEO), no page builder | Theme `aladawy-pack`, ported from the Next.js build — not yet in a repository |
+| Languages | Arabic at the root, English under `/en/`, built into the theme and plugin rather than a translation plugin | Arabic and English |
+| Local development | WordPress Playground (WordPress + WooCommerce in Node, no Docker); PHPUnit, PHPCS and Playwright | — |
+| Deploy | `staging.aladawyshop.com` first, then plugin and theme zips uploaded to live ([deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging)) | Not yet documented |
 
 ## Backend <Badge tone="planned">Decided, not built</Badge>
 
@@ -86,9 +120,9 @@ defensible, which is the actual standard.
 
 | Service | Choice | Why |
 | ------- | ------ | --- |
-| Content | **In the repo** (MDX/config, reviewed via PR) | Site content is managed by the team in git for now; a CMS is a future decision, made when the content volume demands it |
+| Content | **In the repo** (MDX/config and locale files), edited by PR — or, for text and images, through the [content dashboard](#the-content-dashboard), which commits to the same repo | Content stays in git either way; a CMS is still a future decision ([ADR-004](/architecture/adrs), [ADR-014](/architecture/adrs)) |
 | Search | **Meilisearch** (self-hosted) | Strong Arabic morphology support; no subscription |
-| Authentication | **Better Auth** | Open source, multi-tenant, no per-user fees; user data stays in our database |
+| Authentication | **Better Auth** | Open source, multi-tenant, no per-user fees; user data stays in our database. Already running in the content dashboard |
 | AI | **Vercel AI SDK**, provider-agnostic | Gemini leads on Egyptian Arabic; the English business-prose model is picked per task behind the SDK |
 | Vector storage | **pgvector** | Same PostgreSQL database; no extra service at this scale |
 
@@ -96,12 +130,14 @@ defensible, which is the actual standard.
 
 | Tool | Status | Purpose |
 | ---- | ------ | ------- |
-| **Vercel** | <Badge tone="live">Running</Badge> | Frontend hosting, one project per app. On the **Hobby** plan today, which is why deploys are CLI-driven from GitHub Actions rather than Vercel's dashboard Git integration — connecting a private org-owned repo needs Pro ([deployment](/how-we-work/deployment)) |
-| **GitHub** | <Badge tone="live">Running</Badge> | Code hosting and CI, in the `Adawy-Group` org |
-| **Verpex** (reseller hosting) | <Badge tone="live">Running</Badge> | DNS for every group domain, through its nameservers, plus cPanel email and the old sites of domains not yet moved. Kept on purpose ([ADR-013](/architecture/adrs), [Domains, DNS & Email](/architecture/domains-and-email)) |
+| **Vercel** | <Badge tone="live">Running</Badge> | Frontend hosting, one project per app, plus the content dashboard. On the **Hobby** plan today, which cannot Git-deploy from the org's private repos, so deploys are CLI-driven — and since GitHub Actions stopped on 23 September 2026, run by hand ([deployment](/how-we-work/deployment)) |
+| **Neon** (via Vercel Marketplace) | <Badge tone="live">Running</Badge> | Postgres for the content dashboard's logins |
+| **GitHub** | <Badge tone="live">Running</Badge> | Code hosting in the `Adawy-Group` org. Actions (CI) is **blocked by a billing failure** since 23 September 2026 ([deployment](/how-we-work/deployment#github-actions-is-stopped)) |
+| **Verpex** (reseller hosting) | <Badge tone="live">Running</Badge> | DNS for most group domains, through its nameservers, plus cPanel email, the two Aladawy WordPress sites (with Softaculous for the staging copy), and the old sites of domains not yet moved. Kept on purpose ([ADR-013](/architecture/adrs), [Domains, DNS & Email](/architecture/domains-and-email)) |
+| **Cloudflare** | <Badge tone="live">Running</Badge> | DNS for adawybusinessdevelopment.com only |
 | **Name.com** | <Badge tone="live">Running</Badge> | Domain registrar. Renewals happen here, not at the host |
 | **Google Workspace** | <Badge tone="live">Running</Badge> | Email for adawygroup.com; every other domain's email is cPanel on the Verpex host |
-| **Google Search Console** | <Badge tone="live">Running</Badge> | Indexing and search performance for the six live domains, each a Domain property verified by DNS |
+| **Google Search Console** | <Badge tone="live">Running</Badge> | Indexing and search performance for the seven domains on Vercel, each a Domain property verified by DNS |
 | **Trello** | <Badge tone="live">Running</Badge> | The department Kanban board ([how we work](/how-we-work)) |
 | **Figma** | <Badge tone="live">Running</Badge> | Design and design-to-code handoff |
 | **Notion** | <Badge tone="live">Running</Badge> | Company-wide documentation. **Not** the engineering source of truth — that is this handbook ([ADR-007](/architecture/adrs)) |
@@ -123,8 +159,11 @@ defensible, which is the actual standard.
 
 - **No hosted CMS (Contentful etc.)** — content lives in the group's own
   repositories and database; if a CMS is adopted later, it will be self-hosted.
+  The content dashboard is not one: it edits the files in the repositories and
+  stores nothing itself ([ADR-014](/architecture/adrs)).
 - **No hosted auth (Clerk, Auth0)** — user data stays in our database, no
-  per-user fees across 110 brands.
+  per-user fees across 110 brands. The dashboard was first built on Clerk and
+  moved to Better Auth before it went online.
 - **No Shopify / per-store commerce** — dozens of stores would compound into a
   significant subscription and operational burden; custom commerce on our
   stack has no vendor dependency and no revenue-tied fees

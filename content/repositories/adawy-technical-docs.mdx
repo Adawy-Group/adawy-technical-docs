@@ -114,6 +114,13 @@ reported even when a page fails to prerender.
 Vercel posts a preview URL; merging to `main` deploys. A documentation fix
 needs no Trello card ([why](/onboarding/first-pr)).
 
+**Then check that the merge actually deployed.** Open the project's
+deployments in Vercel, or the live page, and look for your change. On
+2026-09-21 a merge to `main` produced no production deployment at all, and
+one had to be triggered through the Vercel API. Nothing fails when that
+happens: the PR shows merged, CI is green, and the site keeps serving the old
+page.
+
 </Steps>
 
 Every page has an **"Edit this page on GitHub"** link in its footer. If
@@ -260,6 +267,14 @@ reader; a blockquote is someone else speaking.
    a branch that changed nothing. Weekly, a failure means "a link now points at
    nothing" rather than "your branch is broken". `localhost` URLs are skipped —
    they are instructions to the reader, not destinations.
+
+<Callout type="warning">
+  **GitHub Actions in the org has been blocked by a billing failure since
+  2026-09-23**, so neither workflow runs today. Run
+  `node scripts/check-links.mjs` and `npm run build` yourself before merging.
+  Deploys are unaffected, because Vercel's Git integration builds this repo,
+  not Actions.
+</Callout>
 
 ## Who reviews a change
 

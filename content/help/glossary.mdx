@@ -26,8 +26,9 @@ site is `adawygroup.com`, built from `apps/group`.
 [platform monorepo](/repositories/adawy-platform). Currently a holding page.
 
 **Aladawy Pack** — a **client**: Aladawy Pack for Printing & Packaging, a
-flexible-packaging manufacturer founded in 1971. Lives in its own repository,
-[`aladawy-pack`](/repositories/aladawy-pack).
+flexible-packaging manufacturer founded in 1971. Its live website,
+aladawypack.com, has been **WordPress** since 27 September 2026; the Next.js
+build it was ported from is [`aladawy-pack`](/repositories/aladawy-pack).
 
 <Callout type="warning">
   These are two different companies, one letter apart. When someone says "the
@@ -36,7 +37,11 @@ flexible-packaging manufacturer founded in 1971. Lives in its own repository,
 </Callout>
 
 **Aladawy Shop** — a **client**: a packaging and kitchen-supply house. Its
-storefront is [`aladawy-shop`](/repositories/aladawy-shop).
+live store, aladawyshop.com, is **WordPress + WooCommerce** with the
+department's own theme and plugin,
+[`aladawy-shop-wp`](/repositories/aladawy-shop-wp).
+[`aladawy-shop`](/repositories/aladawy-shop) is the earlier Next.js
+storefront the rebuild was designed from ([ADR-015](/architecture/adrs)).
 
 **Jumeira Catering** — a **client**: a contract catering and premium buffet
 company in Benghazi, Libya. Its site is [`jumeira`](/repositories/jumeira). No
@@ -57,8 +62,8 @@ other businesses, one standalone repo each
 
 **Holding page** — a single branded screen standing in for an unbuilt site.
 Every platform app except `apps/group` is a holding page today (`studio`,
-`pack`, `print`, `supplies`, `marketing`, `bizdev`), and all but `bizdev`
-already serve their own domains. So is the current state of `jumeira`. They
+`pack`, `print`, `supplies`, `marketing`, `bizdev`), and all of them serve
+their own domains. So is the current state of `jumeira`. They
 are real apps with real deploys,
 which is why a shared-package change verifies seven apps.
 
@@ -105,6 +110,42 @@ one ([forms & enquiries](/guides/forms-and-enquiries)).
 the page's rhythm. Hand-written numeric padding on a `<section>` is a lint
 error because the ramp is supposed to answer that question.
 
+## The content dashboard
+
+**Content dashboard** — [`adawy-dashboard`](/repositories/adawy-dashboard), at
+`admin.adawygroup.com`: where people who are not developers edit a site's
+text and swap its images. Not a CMS — a publish is a git commit to the site's
+own repository ([ADR-014](/architecture/adrs)). "The dashboard" on its own
+means this, not the Vercel dashboard or `wp-admin`.
+
+**Admin / Content creator** — the dashboard's two roles. Both edit and publish
+every site; only an **admin** can invite, change or remove users. There is no
+sign-up page, on purpose: every account starts as an admin's invitation.
+
+**Practice mode** — the dashboard publishing somewhere that is not a website:
+a folder of practice git repos on a developer's machine (`local`), or the
+[`adawy-content-sandbox`](/repositories/adawy-content-sandbox) repo when
+online (`github-sandbox`). An amber banner says so on every screen. The online
+dashboard is in practice mode until [go-live](/architecture/roadmap#what-is-next-in-the-short-term).
+
+**Publish / Undo** — a publish is one commit carrying every pending change to
+one site. Undo is a new commit restoring the files that publish changed —
+never a force-push, so the history keeps both.
+
+## WordPress terms
+
+**`wp-admin`** — WordPress's own back office, where Aladawy Shop and Aladawy
+Pack staff edit products, orders and site text. The dashboard's cards for
+those two sites open it rather than editing them itself.
+
+**WooCommerce** — the WordPress shop plugin under aladawyshop.com: products,
+cart, orders, emails. The department's `aladawy-core` plugin adds the quote
+request, delivery fees and the bilingual routing on top.
+
+**Softaculous** — the installer in the Verpex host's control panel. For the
+shop it creates the staging copy and **pushes staging to live**, which is how
+code reaches aladawyshop.com ([deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging)).
+
 ## Stack terms with local meaning
 
 **`proxy.ts`** — Next.js 16's middleware file. `middleware.ts` does not exist
@@ -132,10 +173,13 @@ physical equivalents are lint errors.
 of view say "the lead"; pages written from the org chart's say "CTO". Both mean
 Seif ([team map](/about/team)).
 
-**Staging** — **not a separate environment.** There are two: a per-PR
-**preview**, and **production**. "Staging" in this handbook means the
+**Staging** — **for anything on Vercel, not a separate environment.** There
+are two: a per-PR **preview**, and **production**. "Staging" there means the
 production deployment before its custom domain is attached — the Vercel project
 URL leadership reviews ([deployment](/how-we-work/deployment#environments)).
+**The exception is the WordPress shop**, whose `staging.aladawyshop.com` is a
+real, password-protected copy of the live site where every change is built and
+checked before it is pushed to live.
 
 **The floor** — the set of things every client project must run regardless of
 its own choices: strict TypeScript, bilingual with real RTL, Tailwind v4, WCAG

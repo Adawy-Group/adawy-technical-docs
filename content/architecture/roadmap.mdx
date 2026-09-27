@@ -50,8 +50,9 @@ delivery, priority first:
    Development, Adawy Media Production, Adawy Production, and the rest** —
    each a thin new app composed from the mature packages. *Print, Supplies
    and Marketing Solutions already have holding pages live on their own
-   domains (`apps/print`, `apps/supplies`, `apps/marketing`). Business
-   Development's (`apps/bizdev`) is on its Vercel address until it has one.*
+   domains (`apps/print`, `apps/supplies`, `apps/marketing`), and Business
+   Development's (`apps/bizdev`) on adawybusinessdevelopment.com since
+   23 September 2026.*
    ([the workflow](/guides/launch-new-brand)). Six weeks per site becomes
    one week per site as the packages mature.
 
@@ -61,6 +62,46 @@ structured data, analytics, and the "part of Adawy Group" cross-link.
 
 **Deliberately not in Phase 1:** the portals, AI features, Odoo integration,
 e-commerce. Ship excellent websites, prove the platform, then add scope.
+
+## What is next in the short term
+
+The phases are the direction; this is the queue in front of them, as of
+27 September 2026. Most items wait on an owner decision rather than on
+engineering, which is why each one names what unblocks it.
+
+| # | Item | Unblocked by | Why it matters |
+| - | ---- | ------------ | -------------- |
+| 1 | **Fix GitHub Actions billing** | The owner settling the GitHub account's payment | Until then no repo runs `verify`, and every production deploy is [by hand](/how-we-work/deployment#github-actions-is-stopped) — no accessibility gate, no previews per PR |
+| 2 | **Content dashboard go-live** | The owner's go, then the steps below in order | The dashboard exists so a changed headline needs no developer ([ADR-014](/architecture/adrs)); in practice mode it saves nobody any work yet |
+| 3 | **Aladawy Shop after launch** | Engineering, plus the owner's Google account for Search Console | The shop has been live since 24 September. The old Next.js build on `aladawy-shop.vercel.app` is still up and indexable, and the rebuild's design calls for it to redirect to aladawyshop.com after go-live, so it does not compete with the real site in search |
+| 4 | **Aladawy Pack's theme into a repository** | Engineering | The WordPress theme serving aladawypack.com since 27 September exists only on the server; nothing reviews or can restore it ([ADR-015](/architecture/adrs)) |
+| 5 | **The remaining domains** | An app for each | adawy.com, adawyit.com and adawyfinance.com are still on the Verpex host, and adawyproduction.com on Name.com's nameservers. Each moves by [the procedure](/guides/move-a-domain-to-vercel) once it has something to serve |
+| 6 | **The training-video recorder into a repository** | Engineering | Without the scripts, every screen change makes a [training video](/guides/training-videos) stale with no cheap way to re-record it |
+
+Dashboard go-live, in order — each step depends on the one before:
+
+```mermaid
+flowchart LR
+    A["Vercel team<br/>Hobby → Pro"] --> B["Connect each site's<br/>Vercel project to its repo"]
+    B --> C["Give the GitHub App<br/>access to the site repos"]
+    C --> D["CONTENT_STORE=github<br/>and redeploy"]
+    D --> E["Pilot on Jumeira,<br/>then the other sites"]
+```
+
+1. **Vercel Pro**, because Hobby cannot Git-deploy from the org's private
+   repos, and "publish goes live by itself" means a commit has to trigger a
+   deploy. With Git deploys the sites would also stop depending on
+   GitHub Actions to reach production at all.
+2. **Connect each site's Vercel project to its GitHub repo.** Platform projects
+   keep their root directory `apps/<name>` and use `npx turbo-ignore` as the
+   Ignored Build Step, so a publish to one brand rebuilds only that brand.
+3. **Give the dashboard's GitHub App access to the site repos.** Today it can
+   reach only the practice repo — the reason practice mode cannot touch a real
+   site even by mistake.
+4. **Switch `CONTENT_STORE` to `github`** and redeploy. The database, email,
+   domain and secrets are already in place.
+5. **Pilot on Jumeira** end to end — a real publish, checked live, then undone —
+   before the other sites are opened.
 
 ## Phase 2 — The Client Portal
 

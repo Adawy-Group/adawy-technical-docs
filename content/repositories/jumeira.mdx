@@ -17,7 +17,7 @@ handbook carry over; packages do not.
 
 <Stats>
   <Stat value="AR" label="default locale" hint="`/ar` first, `/en` second" />
-  <Stat value="2" label="page routes" hint="the scroll, plus a noindex privacy holding page" />
+  <Stat value="2" label="page routes" hint="the scroll, plus a noindex privacy page" />
   <Stat value="3" label="films" hint="all three are folders of frames" />
   <Stat value="0" label="video elements" hint="every film draws to a canvas" />
 </Stats>
@@ -244,13 +244,25 @@ if broken:
   against. In strict order the last frame was also the last byte, and an
   ordinary first visit reached the About beat with the plate still in the
   kitchen.
-- **The queue follows the playhead, not frame 0.** It asks for the first frame
-  not in hand at or ahead of the reader at high priority, and backfills behind
-  (nearest first, low priority) only once nothing ahead is missing — and not at
-  all while the playhead is parked on the last frame. The old in-order queue
-  plus a single-flight "jump lane" spent every byte on frames the reader had
-  already passed once they outran the link, and the picture moved in leaps; the
-  jump lane is gone because *the queue is the jump lane now*.
+- **The queue follows the playhead, not frame 0.** It asks for frames at or
+  ahead of the reader at high priority, and backfills behind (nearest first,
+  low priority) only once nothing ahead is missing — and not at all while the
+  playhead is parked on the last frame. The old in-order queue plus a
+  single-flight "jump lane" spent every byte on frames the reader had already
+  passed once they outran the link, and the picture moved in leaps; the jump
+  lane is gone because *the queue is the jump lane now*.
+- **Ahead of the playhead it asks coarse to fine, not frame by frame** (#87,
+  2026-09-24). Frame-by-frame was still wrong on a phone link: a flick wants
+  about 60 frames a second, 4 Mbps carries about 20, and a request lands in
+  about 300 ms, so the frames asked for at the playhead had been scrolled past
+  by the time they arrived. Measured against the deployed site, the opening
+  film trailed the finger by a median 26 frames, held, then leapt 30–40. The
+  queue now takes every few frames far ahead first and fills in nearer, so a
+  slow link gives a lower frame rate instead of a picture parked under a
+  moving finger; the playhead's own frame jumps the line only when nothing
+  just below it is in hand, which is the reader who jumped. The median lag on
+  4 Mbps fell to about 2 frames. The strides are named in `AGENTS.md` and the
+  measurements are in `FILMS.md` → "Coarse to fine ahead of the playhead".
 - **Every frame is fetched once, decoded once, in a Worker, and blitted as an
   `ImageBitmap` — there is no image path.** The films used to fetch through an
   `HTMLImageElement` and `decode()` it, then the bitmap window decoded the same
@@ -481,10 +493,10 @@ swap` means the fallback paints immediately either way
 
 ## Tests
 
-**Vitest 5, 46 test files in two projects split by filename**, so neither
+**Vitest 5, 47 test files in two projects split by filename**, so neither
 project has to know about the other:
 
-- **`node`** (32 files, `*.test.ts`) — the default place to write, and it runs
+- **`node`** (33 files, `*.test.ts`) — the default place to write, and it runs
   in about 200 ms because nothing in it needs a DOM. It holds the cross-file
   agreements nothing else would catch: `PRODUCTION_HOST` across `lib/site.ts`
   and `next.config.ts`, the two message trees (`messages/parity.test.ts`), the
@@ -555,6 +567,16 @@ flowchart LR
   PR can still be merged — it just will not deploy. Run the gates before
   pushing.
 
+<Callout type="warning">
+  **GitHub Actions has been blocked by a billing failure since 2026-09-23.**
+  Every run, including #87's merge and the open Dependabot PRs (#85, #86),
+  fails within seconds without running a step. So today a merge to `main`
+  neither checks nor deploys: run the five gates locally, then deploy the
+  pre-launch alias by hand with the Vercel CLI (`vercel deploy --prod`), and
+  confirm the deployment rather than trusting the merge. A red run on a PR
+  says nothing about its code until billing is fixed.
+</Callout>
+
 Dependabot opens weekly grouped npm and Actions PRs with a three-day cooldown,
 held level with `minimumReleaseAge: 4320` in `pnpm-workspace.yaml`. *Why the two
 must match:* Dependabot resolves each update a second time with that release-age
@@ -584,13 +606,18 @@ Four things this repo does that the generic checklist does not cover:
   a handful of entry points are mapped today; the rest has to come off the old
   sitemap before `jumeira-catering.com` moves
   ([why](/how-we-work/client-projects#launch-checklist)).
-- **The privacy page needs three changes made together**: the real text under
-  `Privacy` in both message files, `noindex: false` in
+- **The privacy page needs its last two changes made together**, now that
+  the real text is under `Privacy` in both message files: `noindex: false` in
   `app/[locale]/privacy/page.tsx`, and a `/privacy` entry in
-  `INDEXABLE_ROUTES`. Any one alone leaves a placeholder in the index or a
-  finished policy no search engine is told about, and nothing catches either.
+  `INDEXABLE_ROUTES`, along with the effective date. Either one alone leaves
+  the page indexed but missing from the sitemap, or listed but refused, and
+  nothing catches either.
 
-Still open before launch, per `AGENTS.md` and the README: the street address and
-`SITE.geo` coordinates (omitted rather than published as an approximate pin),
-the placeholder `SITE.founded`, and the eight testimonials, which are
-placeholders today.
+Still open before launch: the placeholder `SITE.founded`, the eight
+testimonials (placeholders today), and the privacy policy. Its text is the
+client's own now (#83), but the page stays `noindex` and out of
+`INDEXABLE_ROUTES` until counsel approves the wording and an effective date is
+on the page, because a policy in a search result is a promise the company has
+not yet made. The street address and `SITE.geo` pin are done: the client
+confirmed the coordinates, and `AGENTS.md`'s "Open items before launch" list
+still names them, so trust `lib/site.ts` over that list.

@@ -1,6 +1,6 @@
 ---
 title: Platform Architecture
-description: How apps/group is actually built — three enforced layers, one WebGL canvas, the driver-channel-stage split, and the performance tier.
+description: How apps/group is actually built — three enforced layers, one WebGL canvas, the driver-channel-stage split, the performance tier, and what the content dashboard is allowed to change.
 tags: ['Explanation', 'Platform', 'Deep']
 ---
 
@@ -162,6 +162,40 @@ Four invariants any new effect owes the governor:
 - **Reduced motion is a separate axis.** `prefers-reduced-motion` is
   accessibility and removes the animation; the tier is quality and keeps it.
   Neither substitutes for the other.
+
+## 4. Commits that do not come from a developer
+
+Once the [content dashboard](/repositories/adawy-dashboard) goes live, some
+commits on `main` will come from it rather than from a person at a keyboard.
+It edits two things in each platform app and nothing else: the locale files in
+`apps/<app>/messages/`, and images in a short allow-list of folders
+(`apps/group/public/about` and `public/partners`, for example). A server-side
+path guard refuses everything outside those paths.
+
+```mermaid
+flowchart LR
+    U["Content creator<br/>admin.adawygroup.com"] -->|"Publish"| D["Dashboard<br/>validates the change"]
+    D -->|"one commit via the GitHub App<br/>content(site): sections"| G["adawy-platform main<br/>apps/*/messages · allowed image folders"]
+    G -->|"the app's normal deploy"| V["That brand's Vercel project"]
+    D -.->|"History → Undo<br/>a new commit, never a force-push"| G
+```
+
+What that asks of anyone working in the platform:
+
+- **The message key tree is yours; the string values are shared.** The
+  dashboard never adds, removes or renames a key, and it refuses to publish a
+  value whose placeholders (`{name}`) or rich tags (`<accent>`) differ from the
+  original. Renaming a key is still a code change — and it is the one that can
+  collide with a pending dashboard edit, so land it on its own.
+- **An image in an allow-listed folder can be replaced under you.** The
+  dashboard keeps the path, the pixel size and the format, so the code never
+  needs to change — but a component must not assume what the picture shows.
+- **Pull before you edit a message file.** A content creator may have changed
+  it since your branch started, and a text merge of two edits to one JSON value
+  is a conflict you then resolve by hand.
+
+Until go-live the dashboard publishes to a practice repository and none of this
+reaches `adawy-platform` ([ADR-014](/architecture/adrs)).
 
 ## Where each fact lives
 

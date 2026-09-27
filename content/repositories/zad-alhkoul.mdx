@@ -1,6 +1,6 @@
 ---
 title: zad-alhkoul
-description: Client site for Zad Al-Hkoul for Agricultural Crops — an English-default bilingual one-page scroll story in ten feature folders, on a three-layer design system, gated by one reusable verify workflow with a Vitest suite and a smoke test.
+description: Client site for Zad Al-Hkoul for Agricultural Crops — an English-default bilingual one-page scroll story in eleven feature folders, on a three-layer design system, gated by one reusable verify workflow with a Vitest suite and a smoke test.
 tags: ['Client work', 'Next.js 16', 'English-default', 'Vitest', 'Pre-launch']
 ---
 
@@ -16,8 +16,8 @@ Private · standalone Next.js 16 app · not part of the monorepo ·
 
 <Stats>
   <Stat value="EN" label="default locale" hint="unprefixed — `/` and `/ar`" />
-  <Stat value="10" label="feature folders" hint="one per part of the page" />
-  <Stat value="126" label="test files" hint="Vitest, node + jsdom projects" />
+  <Stat value="11" label="feature folders" hint="one per part of the page, plus legal" />
+  <Stat value="129" label="test files" hint="Vitest, node + jsdom projects" />
   <Stat value="1,039" label="baked hero frames" hint="524 landscape, 515 portrait" />
 </Stats>
 
@@ -199,6 +199,13 @@ Things worth knowing before you touch any of it:
   keyframes, and a scrub asks for every frame between two of them — that is the
   stutter on scroll-video sites. Portrait screens get a **separate edit**
   (`public/hero/port`), not a crop.
+- **The film does not download until it is wanted** (`film-gates.ts`, since
+  2026-09-20). After first paint it fetches a 48-frame lead-in at low
+  priority; the rest comes on the first wheel, touch, key or pointer move, or
+  when a reload lands part-way down the page. *Why:* fetching every frame at
+  hydration cost 11 MB on a phone and 29 MB on a desktop before anyone
+  scrolled, charged visitors who never scrolled for the whole film, and held
+  mobile Lighthouse at 45–56.
 - **Big zooms are painted on a canvas, never scaled as a layer** (why-us's
   clover, the footer's camera). *Why:* Chrome re-rasterises a scaled layer a
   tile at a time and tears when the zoom runs backwards — measured, and written
@@ -264,8 +271,8 @@ in `vitest.config.mts`:
 
 | Project | Environment | Picks up | Count |
 | --- | --- | --- | --- |
-| `unit` | node | `src/**/*.test.ts`, `scripts/**/*.test.mjs` | 46 + 4 |
-| `dom` | jsdom | `src/**/*.test.tsx` | 76 |
+| `unit` | node | `src/**/*.test.ts`, `scripts/**/*.test.mjs` | 47 + 4 |
+| `dom` | jsdom | `src/**/*.test.tsx` | 78 |
 
 It covers every module that runs without a browser: the data tables and their
 invariants, timeline builders, geometry (film window, clip paths, camera,
@@ -338,10 +345,19 @@ and `VERCEL_PROJECT_ID`, and skip themselves (not fail) if the token is
 missing. The Vercel CLI is **pinned to 59.10.0** (59.11.0 shipped depending on
 an unpublished package and broke every deploy), and all actions are pinned to
 commit SHAs; Dependabot bumps the `github-actions` ecosystem monthly, grouped
-into one PR. Production runs `vercel pull --environment=production` then
+into one PR. The installed CLI itself is cached, so a cache hit skips the
+install. Production runs `vercel pull --environment=production` then
 `vercel build --prod` then `vercel deploy --prebuilt --prod` — *the verify
 build is a staging artifact by construction, because `NEXT_PUBLIC_*` values are
 baked at build time.*
+
+<Callout type="warning">
+  **GitHub Actions in the org has been blocked by a billing failure since
+  2026-09-23**, so none of these workflows run today. The last deploy
+  (2026-09-21) predates the block. Until billing is fixed, run `pnpm verify`
+  locally and deploy by hand with the Vercel CLI (`vercel deploy --prod`), then
+  confirm the deployment, because a merge alone ships nothing.
+</Callout>
 
 ## Generated files
 
@@ -375,10 +391,16 @@ glyph, so ordinary CSS fallback never fires. `mona-sans-numerals.woff2` is a
   otherwise emits a metrics-adjusted *"&lt;name&gt; Fallback"* family with **no
   `unicode-range`** — sitting ahead of Bogart, it would claim every character
   and render the entire site in a system sans.
-- **Bogart is declared `preload: false`** because `preload: true` emits a
-  `<link rel="preload">` for *every* declared face — eighteen of them, roughly
-  1.8 MB before first paint — for the two or three weights a page renders.
-  Mona Sans *is* preloaded: one 44 KB variable file that sets all body copy.
+- **No face is preloaded.** For Bogart the reason is size: `preload: true`
+  emits a `<link rel="preload">` for *every* declared face — eighteen of them,
+  roughly 1.8 MB — for the two or three weights a page renders. For the body
+  faces it is first paint: Chrome holds rendering for a preloaded font, and
+  with four preloads (121 KB) the first frame of a lab run came up to two
+  seconds late. Nothing is lost, because the preloader covers the page for its
+  first four seconds and waits for `document.fonts.ready`. For the same reason
+  the stylesheet is inlined (`experimental.inlineCss` in `next.config.ts`),
+  which removes a round trip before first paint; `test:smoke` strips `<style>`
+  as well as `<script>` before it searches the markup.
 
 </details>
 
@@ -453,10 +475,13 @@ At launch, in the Vercel **production** environment and on the real domain:
 1. License Bogart; convert with `pnpm gen:fonts` (`scripts/fonts-to-woff2.py`),
    update filenames in `src/lib/fonts.ts`, and remove the numerals subset if
    the licensed files have real digits.
-2. Replace every placeholder in `src/lib/contact.ts`, and the stand-in product
-   titles in `src/messages/{en,ar}.json`. Social profiles go into
-   `siteConfig.social` only once they are really the company's — *that list is
-   the JSON-LD `sameAs`.*
+2. Replace every placeholder in `src/lib/contact.ts`, and the rows the
+   writer's content pack still marks HOLD in `src/messages/{en,ar}.json`: the
+   27 product names, the English legal name and the founder. The rest of the
+   pack's copy landed on 2026-09-21. Check `siteConfig.foundingDate` (2026,
+   from the company brief, published as the JSON-LD `foundingDate`) against the
+   registration. Social profiles go into `siteConfig.social` only once they are
+   really the company's — *that list is the JSON-LD `sameAs`.*
 3. Set `NEXT_PUBLIC_SITE_URL` to the real domain (it otherwise falls back to
    the Vercel production URL, then `https://zad-alhkoul.vercel.app`).
 4. Set `NEXT_PUBLIC_ALLOW_INDEXING=true`.
@@ -469,6 +494,6 @@ README says it plainly: *that is the intended state.* Do not "fix" it early.
 `AGENTS.md` holds **only the block `next dev` generates** (read the Next 16
 docs in `node_modules/next/dist/docs/` before writing code). The real contract
 — layout rules, the design system, every section's measurements and traps —
-lives in the **README**, which is tracked and current. There is no `CLAUDE.md`
-or `PRODUCT.md`. Line endings are pinned to LF by `.gitattributes`, *because a
+lives in the **README**, which is tracked and current. There is no `PRODUCT.md`.
+Line endings are pinned to LF by `.gitattributes`, *because a
 Windows checkout with CRLF fails `format:check` on every file.*

@@ -3,5 +3,6 @@ export default {
   'launch-new-brand': 'Launching a New Brand Site',
   'move-a-domain-to-vercel': 'Moving a Domain to Vercel',
   'forms-and-enquiries': 'Forms & Enquiries',
-  'performance-checklist': 'Performance Checklist'
+  'performance-checklist': 'Performance Checklist',
+  'training-videos': 'Training Videos'
 }

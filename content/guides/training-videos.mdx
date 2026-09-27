@@ -1,0 +1,144 @@
+---
+title: Training Videos
+description: The short captioned tutorial videos for the content dashboard, the Aladawy Shop site and the Aladawy Pack site — who each set is for, what it covers, where it was recorded, when a video goes stale, and how to get or re-record one.
+tags: ['Reference', 'Practice mode', 'WordPress']
+---
+
+# Training Videos
+
+Three sets of short screen-recorded tutorials teach non-developers to use the
+tools the department has handed them: the content dashboard, and the two
+Aladawy WordPress sites. **Every video is captioned in Arabic, burned into the
+picture**, because the people who watch them work in Arabic and a caption
+that is part of the frame cannot be switched off, lost, or left behind when the
+file is forwarded on WhatsApp.
+
+| Set | For | Videos | Total | Recorded on |
+| --- | --- | ------ | ----- | ----------- |
+| [Content dashboard](#content-dashboard) | Everyone with a dashboard login; one video for admins | 5 | ~7 min | The online dashboard in practice mode |
+| [Aladawy Shop](#aladawy-shop) | The shop's customers (part 1) and its staff (part 2) | 6 | ~14 min | `staging.aladawyshop.com` |
+| [Aladawy Pack](#aladawy-pack) | Aladawy Pack's staff who run the website | 6 | ~18 min | A test copy of the WordPress site |
+
+<Callout type="info">
+  **The videos are not in any repository**, and this page deliberately does not
+  link to them. They are large binary files that change whenever a screen
+  changes, which is the wrong shape for git, and some are for a client's staff
+  rather than for us. The web department holds them. To get a copy, or to send
+  one to a client, [ask](/help/who-to-ask).
+</Callout>
+
+## Content dashboard
+
+Five Arabic videos for the [content dashboard](/repositories/adawy-dashboard)
+at `admin.adawygroup.com`. Each is silent, 720p, and captioned step by step.
+The first four are for **everyone**, including content creators; the fifth is
+for **admins**.
+
+| # | Video | Length | Covers |
+| - | ----- | ------ | ------ |
+| 1 | Signing in and passwords | 1:11 | The sign-in page, switching the interface between Arabic and English, showing and hiding the password, "forgot password", the Sites page, the practice-mode banner, signing out |
+| 2 | Editing text and publishing | 1:52 | Opening a site, its sections, editing a field in Arabic and English, the "edited" marker, the placeholders and tags that must stay intact (and how the dashboard blocks a publish when one is deleted), undoing one field, searching all text, Review, then Publish |
+| 3 | Replacing images | 1:12 | The Images tab, Replace, cropping the new photo to the old one's shape, the "new" marker, undoing before publishing, reviewing old and new side by side, publishing |
+| 4 | History and undo | 0:52 | The History tab — who published what and when — and undoing a whole publish, which reverts only what that publish changed |
+| 5 | Users and roles *(admins)* | 1:53 | The Users page, Admin vs Content creator, inviting someone, the set-password link, the password rules and strength meter, changing a role, re-sending a link, removing a user — and the invitee's side of it. Also the two WordPress cards that open each Aladawy site's `wp-admin` |
+
+**Recorded in practice mode** (27 September 2026). Every publish in the videos
+went to the practice repository, not to a website — which is why the amber
+practice banner is on screen. When the dashboard goes live the screens stay the
+same and a publish reaches the real site within a minute or two, so going live
+does **not** by itself make these videos stale. The banner will be missing, and
+nothing else changes.
+
+## Aladawy Shop
+
+Six Arabic videos for the rebuilt Aladawy Shop — WordPress + WooCommerce with
+the department's own theme and plugin
+([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)). Silent, 720p, captioned.
+Part 1 is for **customers**, and it is what the shop sends a customer who asks
+how to order; part 2 is for the **shop's staff** in `wp-admin`.
+
+| # | Video | Length | Covers |
+| - | ----- | ------ | ------ |
+| 1 | Browsing products | 2:11 | Home page, switching Arabic/English, the catalogue and its filters (category, wholesale, sort), quick search (Ctrl + K), a product page — retail and wholesale price, options such as size and colour, quantity and total — and saving to favourites |
+| 2 | Quote request and cash on delivery | 2:07 | Adding to the quote, changing quantities in the drawer, clearing it and undoing that, the order form. A governorate without a delivery fee offers **quote request only**; one with a fee also offers **cash on delivery**. Placing a COD order and the thank-you page |
+| 3 | Customer account | 2:06 | Registering, requesting a quote while signed in (details fill themselves in), My Account — orders, addresses, account details — and the lock-out after five wrong passwords |
+| 4 | Dashboard and orders *(staff)* | 2:46 | WooCommerce → Orders and its statuses (quote requested, processing, completed, cancelled). A COD order: customer, governorate, delivery line, order notes, marking it completed. A quote: changing a line's price, adding an item, recalculating, sending the quote to the customer, and moving it to processing once they accept |
+| 5 | Products and prices *(staff)* | 2:16 | Finding and editing a product: Arabic name and description, the English box, retail and wholesale price, unit, minimum and step, options, image, category, publish vs draft; a category's English name; adding a product. Nothing is saved on camera |
+| 6 | Customers, settings and email *(staff)* | 2:17 | Customer accounts, Settings → Aladawy (phone, WhatsApp, email, address and hours, **delivery fee per governorate**), WooCommerce emails, the two payment methods, where to read the shop's mail, and the one-time migration tool that must never be run again |
+
+**Recorded on staging** (24–27 September 2026) — the basic-auth-protected
+copy at `staging.aladawyshop.com`, which runs the same code as the live site.
+Every order and account in the videos is a test one.
+
+## Aladawy Pack
+
+Six videos for Aladawy Pack's website, which moved to WordPress on
+27 September 2026. The files have English names, but **the captions are
+Arabic**, like the other two sets; unlike them, these six carry an audio track
+and are recorded at 1440 × 810. Video 1 and 2 show the public site; 3 to 6
+are for the **staff** in `wp-admin`.
+
+| # | File | Length | Covers |
+| - | ---- | ------ | ------ |
+| 1 | `website-tour` | 2:37 | The home page, the menu, Arabic and English, and the site on a phone |
+| 2 | `products-and-quote` | 3:05 | How a customer browses the catalogue and asks for a quote: the catalogue, the design-your-product steps, the contact form, and what happens after sending |
+| 3 | `dashboard-basics` | 2:56 | Signing in to `wp-admin`, the few menu sections staff actually use, and what to leave alone |
+| 4 | `editing-site-text` | 2:46 | Appearance → Site content: changing any text on the site in Arabic and English, and undoing a change |
+| 5 | `managing-products` | 3:55 | Editing a product's text and images, reordering, adding a product, hiding one |
+| 6 | `handling-enquiries` | 2:38 | The Enquiries screen: reading enquiries sent from the site, replying, and deleting spam |
+
+**Recorded on a test copy of the site**, not the live one (27 September 2026).
+That copy sends no email, so every enquiry in video 6 shows **Not sent** in
+red. On the live site the same column shows the email going out. Say so when
+you send the video to someone, or they will think the live site is broken.
+
+## When a video goes stale
+
+A tutorial is wrong the day the screen it shows changes, and nothing warns
+anyone — the same failure that keeps screenshots out of this handbook, except a
+video cannot be fixed with a one-line edit. So **when a pull request changes
+something a video shows, note "re-record video N" on its card** — the person
+changing the screen is the only one who knows, at that moment, that a video
+just went wrong.
+
+What makes each set stale:
+
+| Set | Stale when… | Not stale when… |
+| --- | ----------- | --------------- |
+| Content dashboard | A label, button, tab or step changes on sign-in, Sites, the editor, Images, History or Users; the password rules change; a site card is added or removed in a way a video shows | The dashboard goes live (only the practice banner disappears); a new site is added to the registry |
+| Aladawy Shop | The theme's catalogue, product, quote or checkout flow changes; delivery-fee or cash-on-delivery rules change; the order statuses or the Settings → Aladawy screen change; a major WordPress or WooCommerce update reshapes `wp-admin` | Prices, products or delivery fees change — the videos teach the screens, not the numbers |
+| Aladawy Pack | The Site content screen, the product fields or the Enquiries screen change; the public site's menu or quote flow changes; a major WordPress update reshapes `wp-admin` | Wording or products change |
+
+## How they were made, and how to re-record one
+
+All three sets were recorded by **a scripted browser recorder built on
+Playwright**: a script drives a real browser through the steps, the screen is
+captured to video, and the Arabic captions are burned into the frame
+afterwards. Scripting it is the point — a re-record is a re-run, the pacing and
+pointer are the same every time, and nothing personal (a real inbox, a saved
+password) ends up on camera.
+
+<Callout type="warning">
+  **The recorder scripts are not in any repository yet.** Today, re-recording a
+  video means rebuilding the script for it. Until the scripts are committed —
+  most naturally beside the code each set teaches, in
+  [`adawy-dashboard`](/repositories/adawy-dashboard) and
+  [`aladawy-shop-wp`](/repositories/aladawy-shop-wp) — treat every UI change
+  as expensive to document. Closing this gap is worth a card of its own.
+</Callout>
+
+When the scripts exist, a re-record follows the same rules the originals did:
+
+1. **Record against practice or staging, never production.** A tutorial clicks
+   Publish, places orders and sends emails; on the live system each of those is
+   real. The dashboard's practice mode and the shop's staging site exist so
+   that nothing a video does reaches a customer.
+2. **Use a test account, never a person's.** Accounts, orders and customers on
+   camera must be test data, because the video will be forwarded outside the
+   department.
+3. **Keep the caption language and the style** — Arabic, one short sentence
+   per step, burned in — so a re-recorded video sits beside the rest without
+   looking like a different product.
+4. **Replace the file in the set, keep its number and name**, and tell whoever
+   distributed the old one. A stale copy in a client's WhatsApp is still being
+   watched.
