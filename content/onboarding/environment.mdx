@@ -1,6 +1,6 @@
 ---
 title: Dev Environment Setup
-description: Everything needed to get any of the nine repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
+description: Everything needed to get any of the twelve repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
 tags: ['Tutorial', 'Day 1', '~45 min']
 ---
 
@@ -20,6 +20,7 @@ anything harder depends on it.
   <Task>**The Vercel CLI** (`npm i -g vercel`), then `vercel login`. Needed for `vercel env pull` and for the one repo that deploys by hand.</Task>
   <Task>**An editor** with TypeScript, ESLint and Prettier integration.</Task>
   <Task>**Python 3** — only if you will touch `jumeira` or `zad-alhkoul`, whose asset scripts need it (and `baron-menu`, only as the simplest local server). `zad-alhkoul`'s hero-film bake also needs ffmpeg.</Task>
+  <Task>**PHP and Composer** — only for [`aladawy-shop-wp`](/repositories/aladawy-shop-wp)'s PHPUnit and PHPCS checks. Running the WordPress site itself needs neither: it boots in WordPress Playground, which runs PHP inside Node.</Task>
   <Task>**ffmpeg, ImageMagick and a bash shell** — only for [`jumeira`](/repositories/jumeira)'s film-frame and brand bakes (its audio bake needs macOS `afconvert`). Neither is needed to build or run it: every bake's output is committed, so a fresh clone needs none of this.</Task>
 </Checklist>
 
@@ -62,10 +63,14 @@ If those two pass, your toolchain is correct.
 | [`jumeira`](/repositories/jumeira) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
 | [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
 | [`baron-menu`](/repositories/baron-menu) | **none** to run (npm for its image script) | serve the folder | one page | none |
+| [`adawy-dashboard`](/repositories/adawy-dashboard) | pnpm 11.26 | `pnpm install` → `pnpm seed:sandbox` → `pnpm dev --port 3100` | sign-in page | `.env.local`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` — then `pnpm auth:setup` for the first admin |
+| [`aladawy-shop-wp`](/repositories/aladawy-shop-wp) | pnpm | `pnpm install` → `pnpm dev` — a throwaway WordPress + WooCommerce in Arabic, on port 9400 | `/` | none to boot |
+| [`adawy-content-sandbox`](/repositories/adawy-content-sandbox) | — | nothing to run: it is the dashboard's practice data | — | — |
 | `adawy-technical-docs` | **npm** | `npm install` → `npm run dev` | `/` | none |
 
-All of them run on **port 3000** by default, so run one at a time or pass
-`--port`. Clone any of them with
+The Next.js repos run on **port 3000** by default, so run one at a time or
+pass `--port` — the dashboard's README uses 3100, and the WordPress shop
+uses 9400. Clone any of them with
 `git clone git@github.com:Adawy-Group/<repo>.git`.
 
 <Callout type="warning">

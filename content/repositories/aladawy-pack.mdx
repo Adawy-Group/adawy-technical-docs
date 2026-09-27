@@ -1,7 +1,7 @@
 ---
 title: aladawy-pack
-description: Client website for Aladawy Pack for Printing & Packaging — a standalone Next.js 16 build, its content model, its colour system, CI-driven deploy, and its go-live switch.
-tags: ['Client work', 'Next.js 16', 'Pre-launch']
+description: The Next.js build of the Aladawy Pack for Printing & Packaging website — now ported to a WordPress theme on aladawypack.com — its content model, its colour system, CI-driven deploy to staging, and what is and is not known about its future.
+tags: ['Client work', 'Next.js 16', 'Staging only']
 ---
 
 # `aladawy-pack`
@@ -13,7 +13,32 @@ a flexible-packaging manufacturer in Egypt founded in 1971. A rebuild of
 `aladawypack.com`.
 
 Private · standalone Next.js 16 app · not part of the monorepo · staging at
-`aladawy-pack.vercel.app`
+`aladawy-pack.vercel.app` · **not what `aladawypack.com` serves**
+
+<Callout type="important">
+  **`aladawypack.com` now runs a WordPress port of this build** (around 27
+  September 2026). What was checked on 27 September 2026, from outside:
+
+  - The domain answers from WordPress on the Verpex host (LiteSpeed, a
+    `wp-json` API), not from Vercel.
+  - The active theme is named **Aladawy Pack**, version 1.0.0, and its own
+    header describes it as a "bilingual (EN/AR) site, ported from the Next.js
+    build". It serves the same six pages as this repo, with English at the root
+    and Arabic under `/ar/` (hreflang for both).
+  - `/wp-admin/` redirects signed-out visitors to a 404, so the login address
+    is not the default one. The group's content dashboard now links to the
+    WordPress admin for this site instead of editing this repo's messages.
+  - `aladawy-pack.vercel.app` still deploys from this repo and still sends
+    `noindex, nofollow`, so it does not compete with the live site in search.
+
+  **Not known:** where the WordPress theme's source is kept. No repository
+  under the Adawy-Group organisation holds it, and this repo has had no
+  commits since 19 September 2026. No decision is recorded on whether this repo is
+  kept as the design reference, as with
+  [`aladawy-shop`](/repositories/aladawy-shop) and its WordPress rebuild, or
+  archived. **Until that is settled, change the live site in WordPress, not
+  here.** A change merged here only reaches the staging deployment.
+</Callout>
 
 Its link-in-bio page is a separate repo:
 [`aladawy-links`](/repositories/aladawy-links).
@@ -253,13 +278,18 @@ re-shooting.
 
 The site is **not indexable** while it lives on `*.vercel.app`, which is
 deliberate: staging must never outrank the client's real site.
-`aladawypack.com` itself still serves the client's old WordPress site, and its
-DNS and email live on the group's Verpex host. Moving it is
-[Moving a Domain to Vercel](/guides/move-a-domain-to-vercel), with the email
-moved first, since the client's staff use those mailboxes.
-`PRODUCTION_HOST` is `null` today in both files that state it.
 
-To publish, set `PRODUCTION_HOST` in **both** `lib/site.ts` and
+**This build is not on a path to `aladawypack.com` today.** The domain, its
+DNS and its email are on the group's Verpex host, and the domain serves the
+WordPress port described at the top of this page. A
+[domain move to Vercel](/guides/move-a-domain-to-vercel) is not planned while
+WordPress serves the site. `PRODUCTION_HOST` is
+`null` in both files that state it, and should stay `null` unless the site
+comes back to Next.js.
+
+If it ever does, the switch below is how it goes live:
+
+Set `PRODUCTION_HOST` in **both** `lib/site.ts` and
 `next.config.ts` (restated there because Next loads the config outside the app
 bundle, where `@/` does not resolve). That one switch flips `robots.txt`, the
 `noindex` meta, the `X-Robots-Tag: noindex, nofollow` header and the sitemap

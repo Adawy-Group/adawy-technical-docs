@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: How code reaches production - the CLI-driven pipeline, what CI actually gates on, the safety rails, and what "live" means before a custom domain is attached.
+description: How code reaches production - the CLI-driven pipeline, the manual deploys while GitHub Actions is stopped, what CI gates on, the safety rails, the WordPress sites' staging route, and what "live" means before a custom domain is attached.
 tags: ['Reference', 'Pipeline']
 ---
 
@@ -11,6 +11,15 @@ The pipeline is Git-based end to end and runs on **GitHub Actions**
 platform repo is private and org-owned, which Vercel only connects on the Pro
 plan, so the workflow deploys via the Vercel CLI + a token instead. No manual
 FTP uploads, no editing on production, no exceptions.
+
+<Callout type="error">
+  **GitHub Actions has been stopped org-wide since 23 September 2026** by a
+  failed payment on the organisation's GitHub account. Every workflow run ends
+  in seconds with *"The job was not started because recent account payments
+  have failed or your spending limit needs to be increased."* Nothing described
+  below as "CI runs" or "merge deploys" is happening: **production deploys are
+  manual** until billing is fixed — [the procedure](#github-actions-is-stopped).
+</Callout>
 
 ## Environments
 
@@ -26,10 +35,13 @@ FTP uploads, no editing on production, no exceptions.
   own workflow before assuming a merge deployed anything.
 </Callout>
 
-**There is no third environment.** Where this handbook says "staging", it means
-the production deployment *before its custom domain is attached* — the Vercel
-project URL that leadership reviews. Same build, same pipeline, different
-address.
+**There is no third environment** for anything on Vercel. Where this handbook
+says "staging" about a Vercel site, it means the production deployment *before
+its custom domain is attached* — the Vercel project URL that leadership
+reviews. Same build, same pipeline, different address. The one real staging
+environment belongs to the WordPress shop, `staging.aladawyshop.com`
+([below](#wordpress-sites-deploy-through-staging)), because a WordPress site
+has no preview per pull request to review on instead.
 
 Once a domain is attached, the production deployment *is* the domain. The
 project's `*.vercel.app` address then redirects to it, so the site is not
@@ -41,12 +53,70 @@ that got them there, because their DNS and email live on another host.
 looking for a staging server, and there is not one. The pipeline is
 deliberately two-stage — a per-PR preview and a production deploy on merge —
 because a third environment needs its own data, its own variables and its own
-drift, and a two-person team maintaining nine repositories cannot pay for that
-nine times over.
+drift, and a two-person team maintaining twelve repositories cannot pay for
+that twelve times over.
 
 From week one there is a **live link** that fills with real pages — anyone in
 leadership can open it at any time. Progress is something you can click, not a
 status claim in a report.
+
+## GitHub Actions is stopped
+
+Since **23 September 2026** no workflow in the `Adawy-Group` organisation
+starts: the account's last payment failed, and GitHub refuses to run jobs
+until billing is fixed. Check the current state with:
+
+```bash
+gh run list -R Adawy-Group/adawy-platform -L 5   # "failure" in ~3s, no steps run
+```
+
+That removes both halves of the pipeline at once — `verify` and the deploy job
+— and the Vercel **Hobby** plan cannot stand in for it, because Hobby will not
+Git-deploy from a private repository owned by an organisation. The only repo
+Vercel deploys from Git is this handbook, which is public. So until billing is
+fixed, **every production deploy of a private repo is a person running the
+Vercel CLI**:
+
+<Steps>
+
+### Run the repo's gates yourself
+
+Whatever its workflow would have run. In the platform that is
+`pnpm turbo lint typecheck test build`, `pnpm format:check`, and the
+accessibility check for any app you touched
+([troubleshooting](/help/troubleshooting#build-and-ci)). A merge that skipped
+them is a merge nobody verified.
+
+### Deploy from the repository root, naming the project
+
+```bash
+VERCEL_ORG_ID=<team id> VERCEL_PROJECT_ID=<project id> vercel deploy --prod
+```
+
+Run it from the **root** of the repository, not from `apps/<app>`: the Vercel
+project's root directory is already `apps/<app>`, and the monorepo's workspace
+has to be uploaded whole for the build to resolve `@adawy/*`. Setting the two
+ids in the environment picks the project explicitly instead of trusting
+whatever `.vercel/` folder happens to be on your machine. Both ids are in the
+project's settings on Vercel. For a preview, drop `--prod`.
+
+### Check it live
+
+The deploy job used to verify the resolved project and post the URL; now
+nobody does unless you do. Open the production domain and confirm the change
+is there ([Definition of Done](/how-we-work/definition-of-done)).
+
+</Steps>
+
+The handbook is the exception in the other direction: Vercel still deploys it
+on every merge to `main`, but its `verify` check does not run, so run
+`node scripts/check-links.mjs` and `npm run build` before merging
+([the repo page](/repositories/adawy-technical-docs)).
+
+Two fixes are on the [roadmap](/architecture/roadmap#what-is-next-in-the-short-term):
+settle the GitHub billing so Actions runs again, and move Vercel to **Pro**,
+which lets each project deploy from Git directly — the content dashboard's
+go-live needs that anyway.
 
 ## What `verify` actually runs
 
@@ -119,7 +189,9 @@ everything costs roughly what verifying the changed app alone would.
    running preview, not screenshots.
 2. PR merged to `main` → `verify` runs again, then an automatic **production**
    deploy (`vercel deploy --prod`). The merge is the release — there is no
-   separate manual promotion step today.
+   separate manual promotion step. *While Actions is stopped, neither run
+   happens: the merge releases nothing until someone
+   [deploys by hand](#github-actions-is-stopped).*
 3. Verify the change on the live URL: real phones, tablets, and browsers;
    checks green; no regressions
    ([Definition of Done](/how-we-work/definition-of-done)).
@@ -145,6 +217,14 @@ everything costs roughly what verifying the changed app alone would.
   performance. Once it exists, a spike after a deploy is a blocked release.
 - **Better Stack** <Badge tone="planned">Chosen</Badge> — uptime monitoring and
   alerting on every production domain.
+
+## The content dashboard deploys by hand
+
+[`adawy-dashboard`](/repositories/adawy-dashboard) has no workflow at all. It
+is deployed with `vercel deploy --prod` from its own folder after its checks
+(`pnpm test && pnpm typecheck && pnpm lint && pnpm build`) pass. Its
+production is `admin.adawygroup.com`, which the team uses for practice today —
+a broken deploy there stops people rehearsing, not a website.
 
 ## Client projects deploy the same way
 
@@ -174,6 +254,42 @@ Four repos deploy differently, and all four are worth knowing before you push:
   can still be dispatched by hand (`checks only`, `preview` or `production`).
   After a production deploy a mobile Lighthouse run checks the live site
   against budgets ([the repo page](/repositories/jumeira)).
+
+## WordPress sites deploy through staging
+
+aladawyshop.com and aladawypack.com are WordPress on the Verpex host
+([ADR-015](/architecture/adrs)), so none of the Vercel pipeline above applies
+to them. For the shop ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)) the
+route is:
+
+```mermaid
+flowchart LR
+    R["aladawy-shop-wp<br/>theme + plugin, tests pass"] --> ST["staging.aladawyshop.com<br/>password-protected copy, noindex"]
+    ST -->|"checked in Arabic and English,<br/>owner approves"| L["Backups, then plugin + theme zips<br/>uploaded in wp-admin"]
+    L --> LIVE["aladawyshop.com"]
+```
+
+- **Everything is built and checked on staging first.** It is a full copy of
+  the live site behind a password, sending `noindex`, so a mistake there
+  reaches no customer and no search engine.
+- **Code reaches live as uploaded zips, not as a copy of staging.** The plugin
+  and theme are built from one commit with `git archive` and uploaded through
+  `wp-admin`, after a full backup taken through the control panel. That is how
+  the shop went live on 24 September 2026. The host gives the department no
+  shell, so there is no rsync or WP-CLI route; Softaculous (the control panel's
+  installer) can push staging over live, but it was not used for the go-live
+  and copying staging wholesale is exactly what the next rule forbids. The full
+  runbook is on the [repository page](/repositories/aladawy-shop-wp).
+- **Staging-only safeguards must be removed before a push.** Anything added to
+  staging to stop it emailing real customers or being indexed would otherwise
+  be copied to live along with the code.
+- **The live database is never overwritten from staging.** Orders and
+  customers keep arriving on the live site while staging is being worked on,
+  and a database copy from staging would erase them — so what a push carries
+  is chosen deliberately, never "everything". Catalogue changes reach live through the repo's
+  migration script or through `wp-admin`, not through a database copy.
+
+How Aladawy Pack's WordPress site is deployed is not yet documented.
 
 ## Launch weeks
 

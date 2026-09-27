@@ -1,7 +1,7 @@
 ---
 title: aladawy-shop
-description: Client storefront for Aladawy Shop — retail and wholesale prices and the one function that decides how they show, the quote builder, the two content trees, and the traps already hit.
-tags: ['Client work', 'Next.js 16', 'Arabic-default']
+description: The Next.js storefront for Aladawy Shop, now superseded on aladawyshop.com by the WordPress rebuild — retail and wholesale prices and the one function that decides how they show, the quote builder, the two content trees, and the traps already hit.
+tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Superseded']
 ---
 
 # `aladawy-shop`
@@ -12,8 +12,28 @@ tags: ['Client work', 'Next.js 16', 'Arabic-default']
 disposables and kitchen-supply house serving restaurants, bakeries, groceries
 and households in Egypt.
 
-Private · standalone Next.js 16 app · not part of the monorepo · live at
-`aladawy-shop.vercel.app`
+Private · standalone Next.js 16 app · not part of the monorepo · still
+deployed at `aladawy-shop.vercel.app`, but **not the production storefront**
+
+<Callout type="warning">
+  **Superseded on 24 September 2026.** `aladawyshop.com` now runs the
+  WordPress + WooCommerce rebuild, [`aladawy-shop-wp`](/repositories/aladawy-shop-wp),
+  which ported this repo's catalogue, pricing rule, quote builder and design
+  onto the shop's own WordPress site. This repo is now the **reference
+  implementation**: the rebuild's `tools/export-catalog.ts` reads
+  `lib/content/catalog.ts` and both message files from here, so a catalogue
+  fix made here reaches the live shop only through that export and the
+  rebuild's migration. For day-to-day catalogue changes, edit products in the
+  shop's wp-admin instead.
+
+  **Still open (checked 27 September 2026):** the Vercel deployment still
+  answers with `X-Robots-Tag: index, follow` and does not redirect. The rebuild
+  design says it gets `noindex` first, then a redirect of every path to the
+  matching `aladawyshop.com` URL. *Why it matters:* two indexable copies of the
+  same catalogue compete with each other in search, and the one on
+  `vercel.app` has no orders, accounts or real contact details. The repo has
+  had no commits since 19 September 2026.
+</Callout>
 
 Bilingual Arabic/English with real RTL, **Arabic-default** (`/` redirects to
 `/ar`, not `/en`). 53 catalogue lines across 6 categories. No database, no
@@ -318,7 +338,8 @@ Vitest 5, `**/*.test.ts`, `@/` aliased in `vitest.config.ts`. Two files:
 tests, lint or typecheck on a push — the gates are yours to run by hand before
 you merge. That is a gap, not a design
 ([the matrix](/repositories#what-the-repos-actually-share)). The repo also
-records no deploy mechanism; production is `aladawy-shop.vercel.app`.
+records no deploy mechanism; its Vercel production host is
+`aladawy-shop.vercel.app`, which is no longer the shop's real storefront.
 
 `.gitattributes` pins checkouts to LF. *Why:* Prettier enforces LF, so a
 Windows checkout with `core.autocrlf=true` would fail `format:check` on every
@@ -326,10 +347,13 @@ file.
 
 ## SEO and going live
 
-The client's domain, `aladawyshop.com`, still serves the old site, and its DNS
-and email live on the group's Verpex host. When it moves
-([the procedure](/guides/move-a-domain-to-vercel)), `PRODUCTION_HOST` changes
-from the Vercel alias to the real domain, in both files.
+**This app will not go live on the client's domain.** `aladawyshop.com`
+stays on the group's Verpex host, where it now serves the WordPress rebuild
+([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)), with its DNS and email on
+the same host. The domain is not moving to Vercel, so `PRODUCTION_HOST` stays
+on the Vercel alias. What is left for this deployment is to retire it:
+`noindex` everywhere, then a redirect of every path to the matching
+`aladawyshop.com` URL (see the warning at the top of this page).
 
 **`PRODUCTION_HOST` is set** — to `aladawy-shop.vercel.app` in both
 `lib/site.ts` and `next.config.ts` (restated there because Next loads the
@@ -337,8 +361,10 @@ config outside the app bundle, where `@/` does not resolve). The two must
 match. *Why it was set on the Vercel alias:* with it `null`, every absolute URL
 (og:image, canonical, JSON-LD) pointed at the per-deployment hostname, which
 sits behind Vercel deployment protection, so scrapers got an SSO redirect
-instead of the share card. When the shop gets its own domain, change both
-files together ([Client Projects](/how-we-work/client-projects)).
+instead of the share card. If the two ever change, change them together
+([Client Projects](/how-we-work/client-projects)). The positive
+`index, follow` below is why retiring this deployment needs an explicit
+`noindex`: the production host is the Vercel alias, so it is indexable today.
 
 On the production host, `X-Robots-Tag` is stated positively:
 `index, follow, max-image-preview:large, max-snippet:-1` for pages, `noindex,

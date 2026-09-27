@@ -265,10 +265,12 @@ see [Deployment](/how-we-work/deployment).
 
 <Callout type="warning">
   **The deploy job is not live yet.** The repo has `VERCEL_ORG_ID` and
-  `VERCEL_PROJECT_ID` but no `VERCEL_TOKEN` secret (checked 2026-09-19), so
+  `VERCEL_PROJECT_ID` but no `VERCEL_TOKEN` secret (checked 2026-09-27), so
   every run shows `verify` green and `deploy` skipped. Until the token is
   added, production ships by hand with `vercel deploy --prod` — run the four
-  CI checks first, because nothing else runs them on that path.
+  CI checks first, because nothing else runs them on that path. Since
+  2026-09-23 that is doubly true: GitHub Actions in the org is blocked by a
+  billing failure, so even `verify` does not run on a push.
 </Callout>
 
 `lib/site.ts` resolves the public origin as `NEXT_PUBLIC_SITE_URL` →

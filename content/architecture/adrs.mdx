@@ -20,8 +20,8 @@ through for the 10% of occasions where the reasoning matters.
 | [001](#adr-001--one-monorepo-a-thin-app-per-brand-on-shared-packages) | Group brand sites are thin apps in one monorepo, on shared `@adawy/*` packages | <Badge tone="live">Built</Badge> | Group work |
 | [002](#adr-002--rebuild-on-a-code-first-stack-instead-of-patching-wordpress) | Rebuild on Next.js rather than optimise WordPress | <Badge tone="live">In progress</Badge> | Everything |
 | [003](#adr-003--keep-odoo-as-the-system-of-record) | Keep Odoo permanently; build the differentiating layer on its APIs | <Badge tone="planned">Phase 2</Badge> | Backend |
-| [004](#adr-004--defer-the-cms-content-is-managed-in-the-repo-for-now) | Defer the CMS; content lives in the repo and ships by PR | <Badge tone="building">Deferred</Badge> | Group work |
-| [005](#adr-005--aladawy-shop-ships-as-a-quote-request-not-a-checkout) | Aladawy Shop's checkout is a quote request — no cart, no payment | <Badge tone="live">Built</Badge> | One client |
+| [004](#adr-004--defer-the-cms-content-is-managed-in-the-repo-for-now) | Defer the CMS; content lives in the repo and ships by PR — text and images can now also be edited through the dashboard ([014](#adr-014--a-content-dashboard-that-commits-to-the-site-repos-not-a-cms)) | <Badge tone="building">Deferred</Badge> | Group work |
+| [005](#adr-005--aladawy-shop-ships-as-a-quote-request-not-a-checkout) | Aladawy Shop's checkout is a quote request — no cart, no payment. Amended: the live shop is WordPress ([015](#adr-015--the-aladawy-client-sites-stay-on-wordpress)) and adds cash on delivery and accounts | <Badge tone="live">Built</Badge> amended | One client |
 | [006](#adr-006--every-brand-keeps-its-own-domain-cross-linked-to-the-group) | Every brand keeps its own domain, cross-linked both ways | <Badge tone="live">Built</Badge> | Group work |
 | [007](#adr-007--documentation-lives-in-this-repo-public-docs-as-code) | This handbook is public, English-only, and changes by PR | <Badge tone="live">Built</Badge> | The department |
 | [008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app) | Flagships get their own app; the long tail shares `apps/sites` | <Badge tone="planned">Not built</Badge> | Group work |
@@ -30,6 +30,8 @@ through for the 10% of occasions where the reasoning matters.
 | [011](#adr-011--feature-first-app-layout-features--platform) | Routes in `app/`, things you can see in `features/`, machinery in `platform/` | <Badge tone="live">Built</Badge> | `apps/group` |
 | [012](#adr-012--machine-enforce-a-rule-wherever-the-mistake-would-not-look-like-one) | Machine-enforce a rule wherever the mistake would not look like one | <Badge tone="live">Built</Badge> | Everything |
 | [013](#adr-013--websites-on-vercel-dns-and-email-stay-on-the-old-host) | Websites moved to Vercel; DNS and email stayed on the Verpex host | <Badge tone="live">Built</Badge> | Every domain |
+| [014](#adr-014--a-content-dashboard-that-commits-to-the-site-repos-not-a-cms) | Non-developers edit site text and images in a dashboard that publishes by committing to each site's repo — no CMS, no content database | <Badge tone="building">Practice mode</Badge> | Every Next.js site |
+| [015](#adr-015--the-aladawy-client-sites-stay-on-wordpress) | aladawyshop.com and aladawypack.com stay on WordPress, rebuilt with the department's own theme and plugin | <Badge tone="live">Built</Badge> | Two clients |
 
 ## How to add one
 
@@ -107,6 +109,12 @@ was wrong is the most useful thing in the file.
 - **Consequences:** Zero CMS infrastructure to run today; every content change
   is versioned and reviewed. Trade-off: content edits require a developer in
   the loop until a CMS decision is made.
+- **Amended (27 September 2026):** the trade-off is being removed without
+  reversing the decision.
+  [ADR-014](#adr-014--a-content-dashboard-that-commits-to-the-site-repos-not-a-cms)
+  gives non-developers a dashboard for text and images that writes to the same
+  files in the same repositories, so content still lives in git. A CMS — for
+  content with structure, such as adding items or pages — is still deferred.
 
 ## ADR-005 — Aladawy Shop ships as a quote request, not a checkout
 
@@ -128,6 +136,17 @@ was wrong is the most useful thing in the file.
   wholesale one, and the running total is exact. What stays true is the
   decision itself: no payment, no account, and stock settled by a human — the
   checkout is still a quote request ([the repo page](/repositories/aladawy-shop)).
+- **Amended (platform and payment, September 2026):** aladawyshop.com did not
+  get the Next.js storefront. It stays on WordPress + WooCommerce with the
+  department's own theme and plugin
+  ([ADR-015](#adr-015--the-aladawy-client-sites-stay-on-wordpress)), live since
+  24 September 2026. The quote request survives as a WooCommerce payment
+  method that takes no payment, and the owner approved two additions on
+  23 September: **cash on delivery** at the listed prices, offered only in a
+  governorate that has a delivery fee, and **customer accounts** to follow
+  orders. So "no account, no payment, no database" no longer describes the
+  live shop; "the checkout can always be a quote request, settled by a human"
+  still does. The Next.js repo remains as the design reference.
 - **Consequences:** The site matches how the business actually sells, and there
   is no payment surface to secure or subscription to pay. The code is shaped so
   commerce can arrive without a rewrite: the quote slice already carries
@@ -356,9 +375,102 @@ was wrong is the most useful thing in the file.
   - DNS is edited in WHM, not beside the projects in Vercel, and Vercel's
     DNS features (automatic records, wildcard certificates) are unavailable.
   - The reseller hosting cannot be cancelled, because it still carries the
-    mail and the not-yet-moved domains.
+    mail and the not-yet-moved domains — and, since
+    [ADR-015](#adr-015--the-aladawy-client-sites-stay-on-wordpress), the two
+    Aladawy WordPress sites.
   - The host's anycast nameservers pick up edits unevenly, sometimes taking
     half an hour, so every DNS step has to be checked on all four.
   - **Revisit when email leaves cPanel**, for example for Google Workspace, as
     adawygroup.com already has. At that point the nameservers can follow the
     websites and the hosting can be dropped at renewal.
+
+## ADR-014 — A content dashboard that commits to the site repos, not a CMS
+
+- **Context:** [ADR-004](#adr-004--defer-the-cms-content-is-managed-in-the-repo-for-now)
+  kept site content in the repositories and accepted the cost: every changed
+  headline needs a developer. By September 2026 that cost covered eleven
+  sites — the seven platform apps, two client sites and two link pages — whose
+  wording all lives in `messages/<locale>.json` files. The owner's goal was
+  that anyone on the team with a login can change a site's text or swap an
+  image, press Publish, and see it live with no developer involved, with a way
+  to undo it.
+- **Decision:** Build a small dashboard, [`adawy-dashboard`](/repositories/adawy-dashboard)
+  at `admin.adawygroup.com`, that edits the files the sites already use.
+  **GitHub is the store and the history**: a publish is one commit to the
+  site's own repository, made through a GitHub App with contents access to the
+  listed repos only, and the site's normal deploy takes it live. A path guard
+  on the server refuses any write outside each site's locale folder and an
+  allow-list of image folders, so the dashboard cannot touch code. It edits
+  string values and replaces images at the same path, size and format — it
+  never adds, removes or reorders anything. Undo is a new commit, never a
+  force-push. Logins are invite-only, with two roles (Admin and Content
+  creator), on Better Auth in the app with a small Postgres database that holds
+  users and nothing else.
+- **Consequences:** The sites did not change at all: no runtime dependency, no
+  content database, and every edit is versioned, attributed to its editor in
+  the commit and revertable like any other commit. Client repos receive only
+  locale files and images, so their hand-over promise
+  ([ADR-010](#adr-010--group-brands-share-a-monorepo-client-projects-get-their-own-repo))
+  holds. The costs:
+  - **Only what is already a string or an image is editable.** Adding an FAQ
+    entry, a menu item or a section is version 2, or still a developer.
+  - **A publish is only as fast as a deploy**, and "publish goes live by
+    itself" needs each site's Vercel project to deploy from Git — which needs
+    the Vercel **Pro** plan for the org's private repos. Until then the
+    dashboard runs in **practice mode**, publishing to
+    [`adawy-content-sandbox`](/repositories/adawy-content-sandbox)
+    ([what is left](/architecture/roadmap#what-is-next-in-the-short-term)).
+  - **Developers now share `main` with non-developers** for message files —
+    see [platform architecture](/architecture/platform-architecture#4-commits-that-do-not-come-from-a-developer).
+  - The WordPress sites are out of scope: their dashboard cards open
+    `wp-admin`, because a second way to edit the same content would be a
+    second source of truth.
+- **Status:** built, and online for the team since 27 September 2026 in
+  practice mode. The design document in the repo is still marked a draft for
+  the owner's review, and switching it to the real repositories waits for the
+  owner's go.
+
+## ADR-015 — The Aladawy client sites stay on WordPress
+
+- **Context:** Both Aladawy client domains ran WordPress, and
+  [ADR-002](#adr-002--rebuild-on-a-code-first-stack-instead-of-patching-wordpress)'s
+  verdict first led to Next.js rebuilds of both
+  ([`aladawy-shop`](/repositories/aladawy-shop),
+  [`aladawy-pack`](/repositories/aladawy-pack)). But ADR-002's argument was
+  about the Group — *WordPress is right for a small business with simple needs
+  and wrong for a 38-company group*. Aladawy Shop is a single business whose
+  staff manage products and orders themselves, and its live store was
+  WooCommerce with real customers and orders in it. Its survey (21 September
+  2026) found the problems were the front end — a page-builder demo theme,
+  demo content, a catalogue with no prices — and security and SEO gaps, not
+  WordPress itself.
+- **Decision:** For **Aladawy Shop** (approved design, 21 September 2026):
+  keep aladawyshop.com on WordPress + WooCommerce so the business keeps
+  managing products and orders in `wp-admin`, and replace the page-builder
+  front end with the storefront already designed in the Next.js project —
+  a classic PHP theme (`aladawy`) and a plugin (`aladawy-core`) in
+  [`aladawy-shop-wp`](/repositories/aladawy-shop-wp), Arabic and English built
+  in, no page builder and no translation plugin. The checkout is built on
+  WooCommerce's cart, so cash on delivery and online payment become gateways
+  to switch on rather than a redesign. Building happens on a password-protected
+  staging copy; product data moves by a script, never by copying the staging
+  database over live, so orders placed meanwhile are never overwritten.
+  **Aladawy Pack** followed on about 27 September 2026 with its own WordPress
+  theme ported from the Next.js build. Its reasoning has not been written down
+  yet, and the next person to learn it should add it here.
+- **Consequences:** The client keeps the tool its staff know, and the
+  department still owns the code that matters, in git. The costs:
+  - **Two sites outside the department's pipeline:** no Vercel, no preview per
+    pull request, and deploys go staging → backups → plugin and theme zips uploaded to live
+    ([deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging)).
+    The [floor](/architecture/tech-stack#what-a-client-project-is-required-to-run)
+    cannot apply to them.
+  - **A second language in the department** — PHP, PHPUnit and PHPCS beside
+    TypeScript.
+  - **Plugin and core updates are now our problem**, on shared hosting the
+    department does not control.
+  - **The Aladawy Pack theme is not in a repository yet**, so for now nothing
+    guards it but the live site.
+  - The two Next.js builds remain deployed on `*.vercel.app` and have to be
+    retired or redirected deliberately, or they compete with the real domains
+    in search.

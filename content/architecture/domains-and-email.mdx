@@ -13,13 +13,14 @@ between a five-minute DNS edit and a week of silently bounced email.
 | Layer | Who | What lives there |
 | ----- | --- | ---------------- |
 | **Registrar** | Name.com | Ownership and renewal of every domain. The domain expires here, not at the host, so keep auto-renew on |
-| **DNS** | The Verpex reseller host, nameservers `ns1`–`ns4.mysecurecloudhost.com` | Every record of every zone, edited in WHM's Zone Editor or its API |
-| **Websites** | Vercel | The six moved domains, one Vercel project each ([ADR-001](/architecture/adrs)) |
-| **Email** | cPanel on the same Verpex host | Mailboxes for every domain except adawygroup.com, which is on **Google Workspace** |
+| **DNS** | The Verpex reseller host, nameservers `ns1`–`ns4.mysecurecloudhost.com` | Every record of almost every zone, edited in WHM's Zone Editor or its API. The exceptions are adawybusinessdevelopment.com, on **Cloudflare**, and adawyproduction.com, still on Name.com's own nameservers |
+| **Websites** | Vercel, or the Verpex host | Seven group domains and `admin.adawygroup.com` on Vercel, one project each ([ADR-001](/architecture/adrs)); the two Aladawy client sites on WordPress on the Verpex host |
+| **Email** | cPanel on the same Verpex host | Mailboxes for every domain except adawygroup.com, which is on **Google Workspace**, and adawybusinessdevelopment.com, which has none |
 
 Form mail is separate from all of this: the group site sends enquiries through
 Resend from the `send.adawygroup.com` subdomain
-([Forms & Enquiries](/guides/forms-and-enquiries)).
+([Forms & Enquiries](/guides/forms-and-enquiries)), and the content dashboard
+sends its invite and password-reset emails from the same subdomain.
 
 ```mermaid
 flowchart LR
@@ -31,26 +32,60 @@ flowchart LR
 
 ## The domains
 
-| Domain | Website | Email | State |
-| ------ | ------- | ----- | ----- |
-| adawygroup.com | `adawy-group` on Vercel | Google Workspace | <Badge tone="live">Live on Vercel</Badge> |
-| adawystudio.com | `adawy-studio` on Vercel | cPanel | <Badge tone="live">Live on Vercel</Badge> |
-| adawypack.com | `adawy-pack` on Vercel | cPanel | <Badge tone="live">Live on Vercel</Badge> |
-| adawyprint.com | `adawy-print` on Vercel | cPanel | <Badge tone="live">Live on Vercel</Badge> |
-| adawysupplies.com | `adawy-supplies` on Vercel | cPanel | <Badge tone="live">Live on Vercel</Badge> |
-| adawymarketingsolutions.com | `adawy-marketing` on Vercel | cPanel | <Badge tone="live">Live on Vercel</Badge> |
-| aladawypack.com | The client's old WordPress site, on the Verpex host | cPanel | <Badge tone="holding">Not moved</Badge> |
-| aladawyshop.com | The client's old site, on the Verpex host | cPanel | <Badge tone="holding">Not moved</Badge> |
-| adawy.com | A "coming soon" page on the Verpex host | cPanel | <Badge tone="holding">Not moved</Badge> |
+| Domain | Website | DNS | Email | State |
+| ------ | ------- | --- | ----- | ----- |
+| adawygroup.com | `adawy-group` on Vercel | Verpex | Google Workspace | <Badge tone="live">Live on Vercel</Badge> |
+| `admin.adawygroup.com` | `adawy-dashboard` on Vercel — the [content dashboard](/repositories/adawy-dashboard) | Verpex | — | <Badge tone="live">Live on Vercel</Badge> since 27 Sep |
+| adawystudio.com | `adawy-studio` on Vercel | Verpex | cPanel | <Badge tone="live">Live on Vercel</Badge> |
+| adawypack.com | `adawy-pack` on Vercel | Verpex | cPanel | <Badge tone="live">Live on Vercel</Badge> |
+| adawyprint.com | `adawy-print` on Vercel | Verpex | cPanel | <Badge tone="live">Live on Vercel</Badge> |
+| adawysupplies.com | `adawy-supplies` on Vercel | Verpex | cPanel | <Badge tone="live">Live on Vercel</Badge> |
+| adawymarketingsolutions.com | `adawy-marketing` on Vercel | Verpex | cPanel | <Badge tone="live">Live on Vercel</Badge> |
+| adawybusinessdevelopment.com | `adawy-business-development` on Vercel | **Cloudflare** | None | <Badge tone="live">Live on Vercel</Badge> since 23 Sep |
+| aladawyshop.com | The client's **WordPress + WooCommerce** rebuild, on the Verpex host | Verpex | cPanel | <Badge tone="client">Stays on WordPress</Badge> |
+| aladawypack.com | The client's **WordPress** site, on the Verpex host | Verpex | cPanel | <Badge tone="client">Stays on WordPress</Badge> |
+| adawy.com | A "coming soon" page on the Verpex host | Verpex | cPanel | <Badge tone="holding">Not moved</Badge> |
+| adawyit.com, adawyfinance.com | The Verpex host | Verpex | cPanel | <Badge tone="holding">Not moved</Badge> |
+| adawyproduction.com | Nothing of ours — Name.com's nameservers | Name.com | — | <Badge tone="holding">Not moved</Badge> |
 
-The six moved on **21 September 2026**. The two Aladawy domains are client
-work ([aladawy-pack](/repositories/aladawy-pack),
-[aladawy-shop](/repositories/aladawy-shop)): their Next.js rebuilds are
-running on `*.vercel.app` and move with
-[the same procedure](/guides/move-a-domain-to-vercel) when the client is ready.
-Adawy Business Development has an app but no domain yet, so it stays on its
-Vercel address. The host also carries a few group domains that have no app
-yet. None of them has been touched.
+Six moved on **21 September 2026**; adawybusinessdevelopment.com followed on
+**23 September**, and the dashboard's `admin` subdomain on **27 September**.
+The last four rows have no app yet and have not been touched.
+
+**The two Aladawy domains are not waiting to move.** Both are client work
+that stays on WordPress ([ADR-015](/architecture/adrs)): aladawyshop.com has
+served the rebuilt shop ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp))
+since 24 September, and aladawypack.com moved to WordPress around
+27 September. The earlier Next.js builds
+([aladawy-pack](/repositories/aladawy-pack),
+[aladawy-shop](/repositories/aladawy-shop)) are still deployed on
+`*.vercel.app`, but neither domain points at them.
+
+### `admin.adawygroup.com` — a subdomain, not a zone
+
+The dashboard needed no email work, because a subdomain carries none. Two
+records were added to the adawygroup.com zone on the Verpex host on
+27 September 2026, and nothing else in the zone changed:
+
+| Record | Points at | Why |
+| ------ | --------- | --- |
+| `admin` CNAME | The project's own `….vercel-dns-017.com` host | Sends the subdomain to the dashboard's Vercel project |
+| `_vercel` TXT | A `vc-domain-verify=admin.adawygroup.com,…` value | Proves to Vercel that we own the name. adawygroup.com already needed this, because another Vercel account had claimed it first, and each name under it gets its own value |
+
+### adawybusinessdevelopment.com — the one zone on Cloudflare
+
+This domain never lived on the Verpex host. It is registered at Name.com, its
+nameservers are **Cloudflare's**, and it has **no MX and no mailboxes**, so the
+email trap below does not apply to it. Its Vercel records (the root A records
+and the `www` CNAME) are edited in the Cloudflare dashboard, and Google Search
+Console verifies it through a `google-site-verification` TXT on Cloudflare —
+the same must-not-delete rule as everywhere else.
+
+At the time of writing its responses arrive through Cloudflare's proxy
+(`server: cloudflare` in front of Vercel's own headers). Vercel's guidance is
+to leave its records **DNS-only** (the grey cloud), because a proxy in front
+of Vercel adds a second cache and can interfere with certificate renewal. If
+the site behaves oddly, check that setting first.
 
 ## Why DNS and email did not move with the websites
 
@@ -99,8 +134,9 @@ Rolling a website back is now safe: point `@` back at the Verpex server and
 </Callout>
 
 Three other kinds of record are safe to leave alone. `_vercel` TXT records
-prove to Vercel that we own a domain; adawygroup.com and adawypack.com needed
-them because another Vercel account had claimed the names first.
+prove to Vercel that we own a domain; adawygroup.com (for the root, `www` and
+`admin`) and adawypack.com needed them because another Vercel account had
+claimed the names first.
 `_acme-challenge` TXT records are left over from issuing certificates and do
 nothing now. `_cpanel-dcv-test-record` is cPanel's own.
 
@@ -129,7 +165,7 @@ production deployment serving that host. Previews stay `noindex`
 
 ## Search engines
 
-- **Google Search Console** has each of the six as a **Domain property**
+- **Google Search Console** has each of the seven domains on Vercel as a **Domain property**
   (`sc-domain:`), verified by the TXT record above, with its sitemap
   submitted. A Domain property covers `www`, `http` and `https` in one. The
   owners are the department's Google account and a service account in the

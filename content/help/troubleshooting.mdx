@@ -41,6 +41,7 @@ so there is one table to update rather than two that drift.
 | A Vercel deploy fails with `Project not found`, both ids masked | The project was created while the CLI was logged into a different Vercel account, so the id is valid but in another team | The preflight step prints the resolved project name — check which team owns it |
 | A deploy is green but built the wrong app | The Vercel project's root directory is unset or points elsewhere | Set it to `apps/<app>` in Vercel → Settings → Build & Deployment |
 | A `--prebuilt` deploy is created and then dies with `ENOENT: lstat '/vercel/path0/.next/package.json'`, and production silently stays on the old build | A `.vercelignore` excluded `.next/` or `node_modules/`. Each function's `.vc-config.json` has a `filePathMap` pointing back into the project, and the build machine expands the bundle from those files | Allow both directories through. The CLI's default ignore list already covers them for a source deploy — [deployment](/how-we-work/deployment#deploy-safety-rails) |
+| Every workflow run fails in about three seconds with no steps, in every repo | GitHub Actions is stopped org-wide by a billing failure (since 23 September 2026): *"The job was not started because recent account payments have failed…"* | Nothing in the repo is wrong. Run its gates locally and deploy by hand — [deployment](/how-we-work/deployment#github-actions-is-stopped) |
 | Merging to `main` deployed nothing, and the Actions tab shows no run | The repo has no CI at all — `baron-menu`, `aladawy-shop` and `aladawy-links` deploy by hand — or its deploy job is skipped for want of a `VERCEL_TOKEN` secret, as in `adawy-group-links` | Run the repo's gates locally, then deploy by hand — [deployment](/how-we-work/deployment#client-projects-deploy-the-same-way) |
 
 ## Domains and email
@@ -53,6 +54,24 @@ so there is one table to update rather than two that drift.
 | Search Console verification fails right after the TXT record was added | Google reached a nameserver that did not have the record yet | Retry after a few minutes; nothing needs changing |
 | Vercel asks for a `_vercel` TXT record when you attach a domain | Another Vercel account attached the name first | Add the record it shows and verify — the domain then moves to our project |
 | cPanel AutoSSL reports failures for a domain's root and `www` | They point at Vercel now, so cPanel cannot validate them | Expected after a move; `mail.`, `webmail.` and the rest still renew |
+
+| adawybusinessdevelopment.com answers with `server: cloudflare` in front of Vercel's headers | Its DNS is on Cloudflare, and the records are proxied (orange cloud) rather than DNS-only | If the site misbehaves — stale pages, certificate errors — set the Vercel records to DNS-only in Cloudflare first — [the domain's notes](/architecture/domains-and-email#adawybusinessdevelopmentcom--the-one-zone-on-cloudflare) |
+
+## Content dashboard
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Published in the dashboard, but the website did not change | The dashboard is in **practice mode** (the amber banner): publishes go to a practice repository, not to the site | Expected until [go-live](/architecture/roadmap#what-is-next-in-the-short-term). The History tab shows the publish |
+| Publish is refused with an error next to a field | A placeholder (`{page}`) or tag (`<accent>`) in that text was changed or deleted, or a language was left empty. The site's code fills those in, so a missing one would break the page | Put the placeholder back exactly as it was, in every language — or undo that field |
+| Edits are still there after closing the tab, but nobody else can see them | Unpublished changes are kept in *your* browser only | Publish them, or undo them. Another browser or computer will not have them |
+| A new user never received the invitation email | Email not delivered, or sent to the wrong address | An admin sends a new set-password link from the Users page |
+
+## WordPress sites
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| `staging.aladawyshop.com` asks for a username and password before WordPress loads | Staging is behind the host's password protection on purpose, so customers and search engines never reach it | Ask for the credentials ([who to ask](/help/who-to-ask)) |
+| On the Aladawy Pack test copy, every enquiry shows **Not sent** in red | The test copy sends no email, by design | Expected. On the live site the column shows the email going out |
 
 ## Bilingual and RTL
 
