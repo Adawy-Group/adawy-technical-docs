@@ -5,11 +5,11 @@ name: Verify
 # a link to a page that does not exist, and a page missing from its _meta.ts
 # (invisible in the sidebar). This job catches both before review.
 
+# Manual only: GitHub Actions minutes are used up, so nothing runs on push,
+# PR or schedule. Deploy with the Vercel CLI, or run this from the Actions tab.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+
 
 permissions:
   contents: read
