@@ -8,6 +8,7 @@ export const siteName = 'Adawy Group — Software Department Handbook'
 export const siteDescription =
   'Technical documentation and onboarding handbook for the Adawy Group software department: what we build, why we build it, and how we work.'
 export const publisher = 'Adawy Group'
+export const metaPublisher = 'Adawy Software'
 export const siteKeywords = [
   'Adawy Group',
   'software department',
@@ -58,7 +59,7 @@ export function buildPageMetadata({ title, description, path }: PageMetadataInpu
     title,
     description: pageDescription,
     alternates: { canonical },
-    publisher,
+    publisher: metaPublisher,
     robots: robotsMetadata,
     openGraph: {
       type: 'website',
@@ -96,7 +97,7 @@ export const rootMetadata: Metadata = {
   keywords: [...siteKeywords],
   authors: [{ name: 'Adawy Group Software Department' }],
   creator: publisher,
-  publisher,
+  publisher: metaPublisher,
   alternates: { canonical: SITE_URL },
   robots: robotsMetadata,
   openGraph: {
