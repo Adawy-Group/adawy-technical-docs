@@ -88,9 +88,9 @@ export function Checklist({ id, children }: { id: string; children: ReactNode })
   return (
     <div className="adawy-checklist" data-complete={completed === total && total > 0}>
       <div className="adawy-checklist-head">
-        <div className="adawy-checklist-count">
+        <p className="adawy-checklist-count">
           <strong>{completed}</strong> of {total} done
-        </div>
+        </p>
         {hydrated && completed > 0 ? (
           <button type="button" className="adawy-checklist-reset" onClick={reset}>
             Reset

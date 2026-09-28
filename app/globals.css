@@ -91,6 +91,30 @@ main div:has(> svg[aria-roledescription])::-webkit-scrollbar-thumb {
   border-radius: 9999px;
 }
 
+/* ── Navbar brand ──────────────────────────────────────────────────────────
+ * The logo, wordmark and subtitle inside the theme's home link.
+ */
+
+.adawy-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+}
+
+.adawy-brand-subtitle {
+  font-weight: 400;
+}
+
+/* The brand mark is white on transparent: invert it to black in light mode. */
+.adawy-brand-logo {
+  filter: invert(1);
+}
+
+html.dark .adawy-brand-logo {
+  filter: none;
+}
+
 /* ── The page header strip ─────────────────────────────────────────────────
  * Sits between the breadcrumb and the h1: reading time, last change, tags.
  * Deliberately quiet — it is orientation, not content, and must never compete
@@ -102,7 +126,9 @@ main div:has(> svg[aria-roledescription])::-webkit-scrollbar-thumb {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 1rem;
-  margin-top: 0.75rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
   font-size: 0.8125rem;
   line-height: 1.4;
   color: var(--adawy-muted);
@@ -127,13 +153,17 @@ main div:has(> svg[aria-roledescription])::-webkit-scrollbar-thumb {
   opacity: 0.8;
 }
 
+/* A nested list, so it sits in its own (unstyled) item of the strip. */
 .adawy-page-meta-tags {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.adawy-page-tag {
+.adawy-page-meta-tag {
   padding: 0.0625rem 0.5rem;
   border: 1px solid var(--adawy-hairline);
   border-radius: 9999px;
@@ -235,10 +265,14 @@ html.dark .adawy-badge-holding {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  margin: 1.5rem 0 0;
 }
 
+/* Column flex only so the value (a <dd>, after its <dt> in the source) can be
+ * drawn above the label. */
 .adawy-stat {
+  display: flex;
+  flex-direction: column;
   padding: 0.875rem 1rem;
   border: 1px solid var(--adawy-hairline-soft);
   border-radius: 0.625rem;
@@ -246,6 +280,8 @@ html.dark .adawy-badge-holding {
 }
 
 .adawy-stat-value {
+  order: -1;
+  margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.1;
@@ -260,7 +296,7 @@ html.dark .adawy-badge-holding {
 }
 
 .adawy-stat-hint {
-  margin-top: 0.125rem;
+  margin: 0.125rem 0 0;
   font-size: 0.75rem;
   color: var(--adawy-muted);
 }
@@ -282,6 +318,10 @@ html.dark .adawy-badge-holding {
   gap: 1rem;
   font-size: 0.8125rem;
   color: var(--adawy-muted);
+}
+
+.adawy-checklist-count {
+  margin: 0;
 }
 
 .adawy-checklist-count strong {

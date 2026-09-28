@@ -1,3 +1,4 @@
+import type { ComponentProps, ComponentType } from 'react'
 import { useMDXComponents as getDocsMDXComponents } from 'nextra-theme-docs'
 import { Bleed, Callout, Cards, FileTree, Steps, Tabs } from 'nextra/components'
 import { Badge } from './components/badge'
@@ -13,7 +14,7 @@ import { Stat, Stats } from './components/stat'
  * The same applies to this repo's own components in `components/` — anything
  * added there must be added here too, or it silently renders as nothing.
  */
-const docsComponents = getDocsMDXComponents({
+const themeComponents = getDocsMDXComponents({
   Badge,
   Bleed,
   Callout,
@@ -26,6 +27,19 @@ const docsComponents = getDocsMDXComponents({
   Tabs,
   Task
 })
+
+/*
+ * A markdown table can only put `<th>` in its header row, so every one of them
+ * heads a column. Saying so with `scope` spares a screen reader the guess on
+ * wide tables. The theme's own cell still renders, so its styling is unchanged.
+ */
+const ThemeTh = themeComponents.th as ComponentType<ComponentProps<'th'>>
+
+function Th(props: ComponentProps<'th'>) {
+  return <ThemeTh scope="col" {...props} />
+}
+
+const docsComponents = { ...themeComponents, th: Th }
 
 export const useMDXComponents = (components?: Record<string, unknown>) => ({
   ...docsComponents,

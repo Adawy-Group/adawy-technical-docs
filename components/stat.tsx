@@ -8,9 +8,13 @@ import type { ReactNode } from 'react'
  * refresh job, so a volatile number (commits, deploy counts, "last week's
  * Lighthouse score") would be wrong within days and the page would be lying
  * with more confidence than prose ever could.
+ *
+ * Marked up as a description list — each tile is a label/value pair. The label
+ * comes first in the source, as `<dt>` must, so assistive tech reads
+ * "repositories: 12"; CSS lifts the value above it visually.
  */
 export function Stats({ children }: { children: ReactNode }) {
-  return <div className="adawy-stats">{children}</div>
+  return <dl className="adawy-stats">{children}</dl>
 }
 
 export function Stat({
@@ -24,9 +28,9 @@ export function Stat({
 }) {
   return (
     <div className="adawy-stat">
-      <div className="adawy-stat-value">{value}</div>
-      <div className="adawy-stat-label">{label}</div>
-      {hint ? <div className="adawy-stat-hint">{hint}</div> : null}
+      <dt className="adawy-stat-label">{label}</dt>
+      <dd className="adawy-stat-value">{value}</dd>
+      {hint ? <dd className="adawy-stat-hint">{hint}</dd> : null}
     </div>
   )
 }

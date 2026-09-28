@@ -38,16 +38,16 @@ export function PageMeta({
   if (!minutes && !timestamp && !tags?.length) return null
 
   return (
-    <div className="adawy-page-meta" aria-label="Page information">
+    <ul className="adawy-page-meta" aria-label="Page information">
       {minutes ? (
-        <span className="adawy-page-meta-item">
+        <li className="adawy-page-meta-item">
           <ClockIcon />
           {minutes} min read
-        </span>
+        </li>
       ) : null}
 
       {timestamp ? (
-        <span className="adawy-page-meta-item">
+        <li className="adawy-page-meta-item">
           <HistoryIcon />
           Updated{' '}
           <time dateTime={new Date(timestamp).toISOString()}>
@@ -55,19 +55,21 @@ export function PageMeta({
                 depend on the build machine's locale. */}
             {new Date(timestamp).toLocaleDateString('en-GB', DATE_FORMAT)}
           </time>
-        </span>
+        </li>
       ) : null}
 
       {tags?.length ? (
-        <span className="adawy-page-meta-tags">
-          {tags.map((tag) => (
-            <span key={tag} className="adawy-page-tag">
-              {tag}
-            </span>
-          ))}
-        </span>
+        <li>
+          <ul className="adawy-page-meta-tags" aria-label="Tags">
+            {tags.map((tag) => (
+              <li key={tag} className="adawy-page-meta-tag">
+                {tag}
+              </li>
+            ))}
+          </ul>
+        </li>
       ) : null}
-    </div>
+    </ul>
   )
 }
 

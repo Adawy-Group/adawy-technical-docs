@@ -12,10 +12,10 @@ export const metadata = rootMetadata
 const navbar = (
   <Navbar
     logo={
-      <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 700 }}>
+      <span className="adawy-brand">
         {/* White-on-transparent brand mark: inverted to black in light mode via CSS */}
-        <img src="/logo.png" alt="Adawy Group" width={28} height={28} className="adawy-logo" />
-        Adawy <span style={{ fontWeight: 400 }}>Software Handbook</span>
+        <img src="/logo.png" alt="Adawy Group" width={28} height={28} className="adawy-brand-logo" />
+        Adawy <span className="adawy-brand-subtitle">Software Handbook</span>
       </span>
     }
     projectLink="https://github.com/adawy-group/adawy-technical-docs"
@@ -31,7 +31,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head>
         <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
-        <style>{`.adawy-logo{filter:invert(1)}html.dark .adawy-logo{filter:none}`}</style>
       </Head>
       <body>
         <Layout
