@@ -6,6 +6,7 @@ export default {
   'adawy-group-links': 'adawy-group-links',
   'aladawy-links': 'aladawy-links',
   'aladawy-pack': 'aladawy-pack',
+  'aladawy-pack-wp': 'aladawy-pack-wp',
   'aladawy-shop': 'aladawy-shop',
   'aladawy-shop-wp': 'aladawy-shop-wp',
   jumeira: 'jumeira',

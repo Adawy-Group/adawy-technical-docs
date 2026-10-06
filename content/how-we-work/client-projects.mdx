@@ -98,6 +98,14 @@ export const PRODUCTION_HOST = "" // empty until launch
 Setting it flips, together: `robots.txt`, the `noindex` meta tag, the
 `X-Robots-Tag` header, and the sitemap host.
 
+The header does not disappear at launch; it changes value, from
+`noindex, nofollow` to an explicit
+`index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1`.
+*Why state the indexable value instead of dropping the header:* a meta tag
+never reaches an image, and only the header lets a search engine show the OG
+card and the photography full size. `zad-alhkoul` was the first client site
+launched through the switch, on 29 September 2026.
+
 <Callout type="warning">
   **Set the same value in `next.config.ts` as well.** It is restated there on
   purpose: Next loads that config file outside the app bundle, where the `@/`

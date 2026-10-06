@@ -1,7 +1,7 @@
 ---
 title: zad-alhkoul
-description: Client site for Zad Al-Hkoul for Agricultural Crops — an English-default bilingual one-page scroll story in eleven feature folders, on a three-layer design system, gated by one reusable verify workflow with a Vitest suite and a smoke test.
-tags: ['Client work', 'Next.js 16', 'English-default', 'Vitest', 'Pre-launch']
+description: Client site for Zad Al-Hkoul for Agricultural Crops, live at zadalhkoul.com — an English-default bilingual one-page scroll story in eleven feature folders, on a three-layer design system, gated by one reusable verify workflow with a Vitest suite and a smoke test.
+tags: ['Client work', 'Next.js 16', 'English-default', 'Vitest', 'Live']
 ---
 
 # `zad-alhkoul`
@@ -17,7 +17,7 @@ Private · standalone Next.js 16 app · not part of the monorepo ·
 <Stats>
   <Stat value="EN" label="default locale" hint="unprefixed — `/` and `/ar`" />
   <Stat value="11" label="feature folders" hint="one per part of the page, plus legal" />
-  <Stat value="129" label="test files" hint="Vitest, node + jsdom projects" />
+  <Stat value="132" label="test files" hint="Vitest, node + jsdom projects" />
   <Stat value="1,039" label="baked hero frames" hint="524 landscape, 515 portrait" />
 </Stats>
 
@@ -30,10 +30,13 @@ long (≈1,000 lines) because it records *why* each number is what it is;
 it.**
 
 <Callout type="warning">
-  **Pre-launch.** The site is deliberately `noindex`, the Bogart display font is
-  a **trial** licence, and every contact value (WhatsApp, email, phone,
-  address, social profiles in `src/lib/contact.ts`) is a **placeholder** until
-  the client confirms its channels. See [Going live](#going-live).
+  **Live, and indexable, since 2026-09-29** at `zadalhkoul.com`; the old
+  `zad-alhkoul.vercel.app` host answers with a permanent redirect to it. The
+  trial Bogart display face was replaced with Fraunces to make that possible.
+  **Every contact value is still a placeholder** (WhatsApp, email, phone,
+  address and social profiles in `src/lib/contact.ts`) until the client
+  confirms its channels, so the CTA's WhatsApp button reaches a dummy number.
+  See [Live](#live).
 </Callout>
 
 ## The things that are different here
@@ -49,7 +52,11 @@ so the site is `/` for English and `/ar` for Arabic — where
 The reason is stated in `src/i18n/routing.ts`: *"the marketing site lives at
 `/` for the export audience and `/ar` for the Saudi/Egyptian audience."* The
 default locale is a per-project fact, never a house default ([i18n &
-RTL](/standards/i18n-rtl)). `/en` redirects to `/`.
+RTL](/standards/i18n-rtl)). `/en/*` redirects to the unprefixed URL with a
+**308**, not next-intl's 307 (`src/proxy.ts`): that URL is never valid, so a
+permanent redirect lets search engines pass its signals to the real page
+instead of keeping both. Redirects that depend on the visitor's cookie or
+`Accept-Language` stay temporary.
 
 **Everything lives under `src/`.** `src/app`, `src/features`, `src/lib`,
 `src/messages`, `src/i18n`, `src/fonts`, `src/styles`, `src/assets`. The other
@@ -74,7 +81,8 @@ lint errors, not conventions.
 | Tests | **Vitest 5** + Testing Library + jsdom 30; plus a dependency-free smoke script |
 | Commits | Conventional Commits via commitlint + husky; lint-staged on `pre-commit` |
 | Package manager | **pnpm 11.26.0** (`packageManager`), Node `>=20.9.0` (CI uses 22) |
-| Hosting | Vercel, deployed from GitHub Actions |
+| Fonts | Fraunces (Latin display), Mona Sans (Latin text), Rubik (Arabic) — all SIL OFL, self-hosted through `next/font`, none preloaded |
+| Hosting | Vercel, deployed with the Vercel CLI — from a dispatched workflow or a terminal ([CI and deploy](#ci-and-deploy)) |
 
 *Why `fixupConfigRules`:* `eslint-config-next`'s react, jsx-a11y and import
 plugins still call context APIs ESLint 10 removed. The wrapper comes out once
@@ -110,7 +118,7 @@ the documentation of the gate if there is only one of them. The CI steps in
 | `pnpm lint` / `lint:fix` | ESLint, `--max-warnings=0`, content-keyed cache |
 | `pnpm format` / `format:check` | Prettier (also sorts Tailwind classes) |
 | `pnpm check:i18n` | Fails if `en.json` and `ar.json` diverge in keys **or** inline `<mark>` tags |
-| `pnpm check:fonts` | Fails once indexing is on and any `-trial` font is still in `src/fonts/` |
+| `pnpm check:fonts` | Fails once indexing is on and any `-trial` or `-demo` font file is in `src/fonts/` |
 | `pnpm test` / `test:watch` | The Vitest unit suite |
 | `pnpm test:smoke` | Boots the build with `next start` and checks what types can't |
 | `pnpm gen:*` | Regenerate a generated file — see [Generated files](#generated-files) |
@@ -132,8 +140,9 @@ src/
 │   │   ├── [...rest]/       # unmatched paths → the localised 404
 │   │   ├── privacy/, terms/ # legal stubs the footer links to
 │   │   ├── error.tsx, not-found.tsx
-│   ├── __tests__/           # route tests (robots, sitemap, error, global-error)
+│   ├── __tests__/           # route tests (robots, sitemap, llms, error, global-error)
 │   ├── og/route.tsx         # OG image, 1200×630, text-free
+│   ├── llms.txt/route.ts    # Markdown summary for AI assistants, built at build time
 │   ├── apple-icon.tsx, robots.ts, sitemap.ts, global-error.tsx
 │   └── globals.css          # imports every layer + every feature's CSS, in order
 ├── features/                # one folder per part of the page
@@ -142,7 +151,7 @@ src/
 ├── components/              # ui/ (Button, Spinner), brand/, providers/,
 │                            # and what >1 feature renders (StatusScreen, RevealLine)
 ├── hooks/                   # useMediaQuery, useProgressiveSection
-├── lib/                     # gsap, fonts, seo, site, env, routes, contact, utils…
+├── lib/                     # gsap, fonts, seo, json-ld, site, env, routes, contact, utils…
 ├── i18n/                    # routing, navigation, request config
 ├── messages/                # en.json, ar.json
 ├── styles/                  # tokens/ → semantic.css → typography/, base, utilities
@@ -271,13 +280,15 @@ in `vitest.config.mts`:
 
 | Project | Environment | Picks up | Count |
 | --- | --- | --- | --- |
-| `unit` | node | `src/**/*.test.ts`, `scripts/**/*.test.mjs` | 47 + 4 |
+| `unit` | node | `src/**/*.test.ts`, `scripts/**/*.test.mjs` | 50 + 4 |
 | `dom` | jsdom | `src/**/*.test.tsx` | 78 |
 
 It covers every module that runs without a browser: the data tables and their
 invariants, timeline builders, geometry (film window, clip paths, camera,
 road), hooks, every `<feature>-section` component, the routing, proxy, SEO,
-sitemap and robots, and the `scripts/` checks themselves. `src/test/` is the
+the JSON-LD graph, sitemap, robots and `llms.txt`, and the `scripts/` checks
+themselves (the font gate's tests run against a fixture, not the repo's own
+fonts, so they keep testing the gate now that no trial file is left). `src/test/` is the
 harness — `renderSection` awaits a server component and renders it under the
 **real** catalogue for a locale, and `next-intl/server` is mocked over the same
 catalogues, *so a missing key fails a test rather than rendering a key path.*
@@ -287,12 +298,13 @@ A small Vite plugin in the config loads `.webp`/`.png` imports as
 
 What unit tests can't see, **`scripts/smoke.mjs`** checks against a real
 `next start` of the build: `/` and `/ar` answer 200 with the right
-`lang`/`dir`; `/en` redirects to `/` (the one check that notices the proxy
-stopped running); the hero frame counts match the bake; the section markup is
+`lang`/`dir`; `/en` redirects permanently (308) to `/` (the one check that
+notices the proxy stopped running); the hero frame counts match the bake; the section markup is
 in the served HTML; the legal pages; `/nope`, `/ar/nope` and `/deep/er/path`
 return **404** with the branded Arabic 404 reachable; `/og` and `/apple-icon`
-are PNGs; the sitemap's routes, hreflang and `x-default`; and the noindex
-layers agree. It asserts against the markup **with `<script>` tags stripped**,
+are PNGs; the sitemap's routes, hreflang and `x-default`; and the three
+indexing layers agree with `NEXT_PUBLIC_ALLOW_INDEXING`, whichever way it is
+set. It asserts against the markup **with `<script>` tags stripped**,
 *because Next serialises the React tree into the RSC payload, so a string can
 be in the body while the rendered HTML is empty* — which is exactly how a
 broken 404 once looked like it worked.
@@ -306,14 +318,19 @@ the script, which runs as its own CI step.
 
 ## CI and deploy
 
-Three workflows, **one event each**:
+Three workflows, **one event each** — and today that event is
+`workflow_dispatch` for both callers. The org's free Actions minutes ran out on
+2026-09-23, and on 2026-09-27 `ci.yml`'s `pull_request` trigger and
+`deploy.yml`'s `push` trigger were replaced with `workflow_dispatch` rather
+than left to queue runs that could not start. The quota reset on 1 October;
+the triggers have not been restored.
 
 ```mermaid
 flowchart LR
-  PR[pull_request → main] --> CI[ci.yml]
+  DC[workflow_dispatch] --> CI[ci.yml]
   CI --> V1[verify — verify.yml]
   CI --> PV[Preview deployment<br/>not gated on verify]
-  PUSH[push → main] --> D[deploy.yml]
+  DD[workflow_dispatch] --> D[deploy.yml]
   D --> V2[verify — verify.yml]
   V2 -->|needs| PROD[Production deployment<br/>cancel-in-progress: false]
 ```
@@ -325,10 +342,11 @@ flowchart LR
   configured with; a required check that is never reported blocks every merge
   forever.* It restores ESLint/tsc incremental state and the Turbopack cache
   (`.next/cache/turbopack` only — not the time-keyed `fetch-cache`).
-- **`ci.yml`** runs `verify` and a **preview deploy** on every PR. Previews are
-  deliberately not gated: a preview URL is how you review a change, and it is
-  most useful while the checks are still red.
-- **`deploy.yml`** runs `verify` then **production**, which `needs: verify`.
+- **`ci.yml`** runs `verify` and a **preview deploy** (on every PR, while it
+  had its trigger). Previews are deliberately not gated: a preview URL is how
+  you review a change, and it is most useful while the checks are still red.
+- **`deploy.yml`** runs `verify` then **production**, which `needs: verify`
+  (on every push to `main`, while it had its trigger).
   *Why production waits:* `vercel build` catches a broken build but not a lint,
   type, i18n or smoke regression — those used to ship when deploy ran beside CI.
   Production runs with `cancel-in-progress: false` so two quick merges cannot
@@ -337,7 +355,9 @@ flowchart LR
 *Why one event per workflow:* an `if:`-gated job still creates its check run,
 so the old two-trigger files ran the gate twice per merge and left two
 permanently "skipping" rows on every PR. **Do not add a second trigger to
-either file.**
+either file** — restoring automatic runs means swapping `workflow_dispatch`
+back to `pull_request` in `ci.yml` and to `push` in `deploy.yml`, not adding
+them beside it.
 
 *Why deploy from Actions at all:* Vercel's Git integration does not support
 private org repos on the Hobby plan. Jobs need `VERCEL_TOKEN`, `VERCEL_ORG_ID`
@@ -352,11 +372,12 @@ build is a staging artifact by construction, because `NEXT_PUBLIC_*` values are
 baked at build time.*
 
 <Callout type="warning">
-  **GitHub Actions in the org has been blocked by a billing failure since
-  2026-09-23**, so none of these workflows run today. The last deploy
-  (2026-09-21) predates the block. Until billing is fixed, run `pnpm verify`
-  locally and deploy by hand with the Vercel CLI (`vercel deploy --prod`), then
-  confirm the deployment, because a merge alone ships nothing.
+  **A merge to `main` ships nothing, and a PR shows no checks.** Run
+  `pnpm verify` locally, then either dispatch `deploy.yml` from the Actions tab
+  or deploy with the Vercel CLI (`vercel build --prod` then
+  `vercel deploy --prebuilt --prod`), and confirm the deployment on
+  `zadalhkoul.com`. No workflow has run since 2026-09-27; the launch itself
+  was deployed from a terminal with the CLI.
 </Callout>
 
 ## Generated files
@@ -369,7 +390,6 @@ Regenerated, never hand-edited:
 | `src/lib/og-assets.ts` | `pnpm gen:og` | Node |
 | `public/hero/{land,port}/` | `pnpm gen:hero <wide.mp4> <portrait.mp4>` | ffmpeg |
 | `src/fonts/mona-sans/` | `pnpm gen:mona` | Python, `fonttools[woff]` |
-| licensed Bogart → WOFF2 | `pnpm gen:fonts` | Python, `fonttools[woff]` |
 | `src/assets/<section>/*.webp` | `pnpm gen:eco`, `gen:pillars`, `gen:products`, `gen:audience`, `gen:why-us`, `gen:cta`, `gen:footer`, `gen:header` | Python + Pillow (NumPy for pillars/products; ImageMagick with librsvg for products) |
 
 The source exports for the section bakes are **kept out of the repo**; several
@@ -380,21 +400,22 @@ is needed to build or run the site: every output is committed.
 ## Traps
 
 <details>
-<summary>Fonts: the digits-only subset must sit ahead of Bogart — and must not be metric-adjusted</summary>
+<summary>Fonts: the display face is a stand-in for the brand sheet's, and nothing is preloaded</summary>
 
-The trial Bogart maps every digit to the same struck-through placeholder
-glyph, so ordinary CSS fallback never fires. `mona-sans-numerals.woff2` is a
-9.6 KB digits-only subset declared with `unicode-range: U+0030-0039` and placed
-**ahead** of Bogart in the *display* stack only.
+The brand sheet names **Bogart**, but only its trial build was ever in the
+repo, and that licence (CC BY-NC) does not cover a commercial site. It was
+replaced with **Fraunces** (SIL OFL), the closest open-licensed match, on
+2026-09-29 so the site could launch. Fraunces has real digits, so the
+digits-only Mona Sans subset that used to sit ahead of the trial Bogart is
+gone too. To go back to Bogart once it is licensed: add the licensed files
+under `src/fonts/`, load them with `localFont` in `src/lib/fonts.ts`, and put
+their variable first in the display stacks in `styles/semantic.css` — the
+stacks are the only place a face's role is decided.
 
-- **`adjustFontFallback: false` on the subset is critical.** `next/font`
-  otherwise emits a metrics-adjusted *"&lt;name&gt; Fallback"* family with **no
-  `unicode-range`** — sitting ahead of Bogart, it would claim every character
-  and render the entire site in a system sans.
-- **No face is preloaded.** For Bogart the reason is size: `preload: true`
-  emits a `<link rel="preload">` for *every* declared face — eighteen of them,
-  roughly 1.8 MB — for the two or three weights a page renders. For the body
-  faces it is first paint: Chrome holds rendering for a preloaded font, and
+- **The font-licence gate stays armed.** Any `-trial` or `-demo` file under
+  `src/fonts/` now fails the production build, because indexing is on
+  ([Live](#live)).
+- **No face is preloaded.** Chrome holds rendering for a preloaded font, and
   with four preloads (121 KB) the first frame of a lab run came up to two
   seconds late. Nothing is lost, because the preloader covers the page for its
   first four seconds and waits for `document.fonts.ready`. For the same reason
@@ -443,16 +464,18 @@ only `error` and `notFound`; a client component that starts calling
 
 </details>
 
-## Going live
+## Live
 
 <Callout type="important">
   **This repo does not use `PRODUCTION_HOST`.** Its publishing switch is the
   environment variable **`NEXT_PUBLIC_ALLOW_INDEXING`**, read once as
-  `ALLOW_INDEXING` in `src/lib/env.ts` (strictly `=== "true"`). While it is not
-  `"true"` the site is `noindex` through three independent layers:
-  `robots.ts` returns `Disallow: /`, every page emits a `noindex, nofollow`
-  meta tag, and `next.config.ts` adds an `X-Robots-Tag` header. All three drop
-  together when it flips.
+  `ALLOW_INDEXING` in `src/lib/env.ts` (strictly `=== "true"`). It is `"true"`
+  in the Vercel **production** environment only, so production is indexable
+  and every preview stays `noindex`. While it is not `"true"` the site is
+  `noindex` through three independent layers: `robots.ts` returns
+  `Disallow: /`, every page emits a `noindex, nofollow` meta tag, and
+  `next.config.ts` sends `X-Robots-Tag: noindex, nofollow`. All three flip
+  together.
 
   Following the generic [launch
   checklist](/how-we-work/client-projects#launch-checklist) literally here
@@ -461,33 +484,51 @@ only `error` and `notFound`; a client component that starts calling
   the OG image, the icons and the sitemap.
 </Callout>
 
+**The header is sent either way.** With indexing on it reads `index, follow,
+max-image-preview:large, max-snippet:-1, max-video-preview:-1` rather than
+being dropped, *because only a header can tell a search engine that the OG
+card and the baked art may be shown full size* — a meta tag never reaches an
+image response.
+
 The same switch **arms the font-licence gate.** `next.config.ts` calls
 `assertFontsLicensedForLaunch()`, which throws when indexing is on and any
-`-trial` file remains in `src/fonts/`. *Why in the config and not only in
+`-trial` or `-demo` file is in `src/fonts/`. *Why in the config and not only in
 `pnpm check:fonts`:* the flag is set in the Vercel project, so CI never sees it
 as true, and the production build is `vercel build`, which runs no CI checks —
-the config is the one thing evaluated on every build. The two launch
-obligations (index the site, license the font) are tied to one switch on
-purpose.
+the config is the one thing evaluated on every build. The two obligations of a
+public site (index it, license its fonts) are tied to one switch on purpose,
+and the gate was cleared for launch by
+[replacing the trial face](#traps), not by licensing it.
 
-At launch, in the Vercel **production** environment and on the real domain:
+What search and answer engines get, all derived from the single `SITE_URL` in
+`src/lib/site.ts` (`NEXT_PUBLIC_SITE_URL`, set to `https://zadalhkoul.com` in
+production):
 
-1. License Bogart; convert with `pnpm gen:fonts` (`scripts/fonts-to-woff2.py`),
-   update filenames in `src/lib/fonts.ts`, and remove the numerals subset if
-   the licensed files have real digits.
-2. Replace every placeholder in `src/lib/contact.ts`, and the rows the
-   writer's content pack still marks HOLD in `src/messages/{en,ar}.json`: the
-   27 product names, the English legal name and the founder. The rest of the
-   pack's copy landed on 2026-09-21. Check `siteConfig.foundingDate` (2026,
-   from the company brief, published as the JSON-LD `foundingDate`) against the
-   registration. Social profiles go into `siteConfig.social` only once they are
-   really the company's — *that list is the JSON-LD `sameAs`.*
-3. Set `NEXT_PUBLIC_SITE_URL` to the real domain (it otherwise falls back to
-   the Vercel production URL, then `https://zad-alhkoul.vercel.app`).
-4. Set `NEXT_PUBLIC_ALLOW_INDEXING=true`.
+- **One linked JSON-LD graph** per locale (`src/lib/json-ld.ts`): an
+  `Organization` with a raster logo (the 180px `apple-icon`, because Google
+  wants a raster logo of at least 112px) and the product range as
+  `hasOfferCatalog`, and a `WebSite` whose `publisher` points at it by `@id`.
+- **`/llms.txt`**, a Markdown summary for AI assistants built from the
+  English catalogue and the product catalogue, *so it says only what the page
+  says*. It leaves the contact details out while they are placeholders.
+- **The `publisher` meta tag reads *Adawy Software***, and the footer's rights
+  line carries a *Designed & developed by Adawy Software* credit linking to
+  the group site in the reader's locale. The JSON-LD still names the company
+  as its own publisher: the graph is about who the site is *for*, the meta tag
+  only credits who built it.
+- **An IndexNow key file** in `public/`, so Bing and the other IndexNow
+  engines can be pinged to recrawl after a content deploy (the README has the
+  call).
 
-An SEO audit **will** report this site as "Not Indexable" before then. The
-README says it plainly: *that is the intended state.* Do not "fix" it early.
+Still open after launch: every value in `src/lib/contact.ts` (the WhatsApp
+number is a dummy), the privacy and terms bodies (both pages still say they
+are being prepared), the rows the writer's content pack still marks HOLD in
+`src/messages/{en,ar}.json` — the product names, the English legal name and
+the founder — and `siteConfig.foundingDate` (2026, from the company brief,
+published as the JSON-LD `foundingDate`) against the registration. The
+writer's v2 response (#54, 2026-09-27) landed the SEO title, keywords and
+trimmed copy before launch. Social profiles go into `siteConfig.social` only
+once they are really the company's — *that list is the JSON-LD `sameAs`.*
 
 ## Contract files
 

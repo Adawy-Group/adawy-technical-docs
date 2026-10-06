@@ -45,7 +45,7 @@ npm run build                  # the real gate on content
 | Language | TypeScript — two compilers side by side (below) |
 | Search | Pagefind, built by `postbuild` |
 | Diagrams | Mermaid, rendered from fenced code blocks |
-| CI | GitHub Actions on Node 22 — `verify` on every PR, `external-links` weekly |
+| CI | GitHub Actions on Node 22 — `verify` and `external-links`, both started by hand since 27 September 2026 |
 | Hosting | Vercel, through its Git integration — merging to `main` deploys |
 
 **`tsc` is TypeScript 7; the `typescript` package is still 6.** Two
@@ -251,7 +251,7 @@ reader; a blockquote is someone else speaking.
 
 ## What CI runs
 
-`.github/workflows/verify.yml`, in this order:
+`.github/workflows/verify.yml`, in this order, when started from the Actions tab:
 
 1. **`node scripts/check-links.mjs`** — every internal link, every `#anchor`
    (including same-page ones), every `href` on a card, and every page's
@@ -259,7 +259,7 @@ reader; a blockquote is someone else speaking.
 2. **`npm run build`** — the real gate on content: a page can render in
    `npm run dev` and still fail to prerender.
 
-`.github/workflows/external-links.yml` runs weekly and on demand:
+`.github/workflows/external-links.yml` was built to run weekly, and now runs on demand only:
 
 3. **`node scripts/check-links.mjs --external`** - requests every off-site URL
    on the site and fails if one is gone. It is deliberately *not* in the PR
@@ -269,11 +269,12 @@ reader; a blockquote is someone else speaking.
    they are instructions to the reader, not destinations.
 
 <Callout type="warning">
-  **GitHub Actions in the org has been blocked by a billing failure since
-  2026-09-23**, so neither workflow runs today. Run
-  `node scripts/check-links.mjs` and `npm run build` yourself before merging.
-  Deploys are unaffected, because Vercel's Git integration builds this repo,
-  not Actions.
+  **Neither workflow runs by itself.** The org's free Actions minutes ran out
+  on 2026-09-23, and on 2026-09-27 both workflows were switched to
+  `workflow_dispatch` only; the minutes reset on 1 October, but the triggers
+  have not been restored. Run `node scripts/check-links.mjs` and
+  `npm run build` yourself before merging. Deploys are unaffected, because
+  Vercel's Git integration builds this repo, not Actions.
 </Callout>
 
 ## Who reviews a change

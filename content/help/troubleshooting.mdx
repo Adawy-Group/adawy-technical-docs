@@ -41,8 +41,8 @@ so there is one table to update rather than two that drift.
 | A Vercel deploy fails with `Project not found`, both ids masked | The project was created while the CLI was logged into a different Vercel account, so the id is valid but in another team | The preflight step prints the resolved project name — check which team owns it |
 | A deploy is green but built the wrong app | The Vercel project's root directory is unset or points elsewhere | Set it to `apps/<app>` in Vercel → Settings → Build & Deployment |
 | A `--prebuilt` deploy is created and then dies with `ENOENT: lstat '/vercel/path0/.next/package.json'`, and production silently stays on the old build | A `.vercelignore` excluded `.next/` or `node_modules/`. Each function's `.vc-config.json` has a `filePathMap` pointing back into the project, and the build machine expands the bundle from those files | Allow both directories through. The CLI's default ignore list already covers them for a source deploy — [deployment](/how-we-work/deployment#deploy-safety-rails) |
-| Every workflow run fails in about three seconds with no steps, in every repo | GitHub Actions is stopped org-wide by a billing failure (since 23 September 2026): *"The job was not started because recent account payments have failed…"* | Nothing in the repo is wrong. Run its gates locally and deploy by hand — [deployment](/how-we-work/deployment#github-actions-is-stopped) |
-| Merging to `main` deployed nothing, and the Actions tab shows no run | The repo has no CI at all — `baron-menu`, `aladawy-shop` and `aladawy-links` deploy by hand — or its deploy job is skipped for want of a `VERCEL_TOKEN` secret, as in `adawy-group-links` | Run the repo's gates locally, then deploy by hand — [deployment](/how-we-work/deployment#client-projects-deploy-the-same-way) |
+| Every workflow run fails in about three seconds with no steps, in every repo | The organisation's free Actions minutes are used up (it happened 23 September – 1 October 2026; they reset monthly), which GitHub words as *"The job was not started because recent account payments have failed…"* | Nothing in the repo is wrong. Run its gates locally and deploy by hand — [deployment](/how-we-work/deployment#most-workflows-run-only-by-hand) |
+| Merging to `main` deployed nothing, and the Actions tab shows no run | Every repo but `adawy-platform` runs its workflow only when started by hand (since 27 September 2026); some have no CI at all — `baron-menu`, `aladawy-shop`, `aladawy-links`, `adawy-dashboard` and `aladawy-pack-wp` deploy by hand — or its deploy job is skipped for want of a `VERCEL_TOKEN` secret, as in `adawy-group-links` | Run the repo's gates locally, then deploy by hand — [deployment](/how-we-work/deployment#client-projects-deploy-the-same-way) |
 
 ## Domains and email
 
@@ -71,6 +71,8 @@ so there is one table to update rather than two that drift.
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
 | `staging.aladawyshop.com` asks for a username and password before WordPress loads | Staging is behind the host's password protection on purpose, so customers and search engines never reach it | Ask for the credentials ([who to ask](/help/who-to-ask)) |
+| Deploying Aladawy Pack fails with paths like `C:/Program Files/Git/home/…` | Git Bash rewrites the server path | Keep `MSYS_NO_PATHCONV=1` and the relative cookie jar in `deploy.sh` ([traps](/repositories/aladawy-pack-wp#known-traps)) |
+| `pnpm dev` or `pnpm test:e2e` in `aladawy-shop-wp` fails on Windows | `bash` resolves to WSL, and `--mount=` rejects drive letters | Start Playground from PowerShell with `--mount-dir` ([how](/repositories/aladawy-shop-wp#on-windows)) |
 | On the Aladawy Pack test copy, every enquiry shows **Not sent** in red | The test copy sends no email, by design | Expected. On the live site the column shows the email going out |
 
 ## Bilingual and RTL

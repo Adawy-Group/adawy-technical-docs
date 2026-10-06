@@ -455,13 +455,13 @@ was wrong is the most useful thing in the file.
   to switch on rather than a redesign. Building happens on a password-protected
   staging copy; product data moves by a script, never by copying the staging
   database over live, so orders placed meanwhile are never overwritten.
-  **Aladawy Pack** followed on about 27 September 2026 with its own WordPress
-  theme ported from the Next.js build. Its reasoning has not been written down
+  **Aladawy Pack** followed on 26 September 2026 with its own WordPress
+  theme ported from the Next.js build ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp)) — one theme, no plugin. Its reasoning has not been written down
   yet, and the next person to learn it should add it here.
 - **Consequences:** The client keeps the tool its staff know, and the
   department still owns the code that matters, in git. The costs:
   - **Two sites outside the department's pipeline:** no Vercel, no preview per
-    pull request, and deploys go staging → backups → plugin and theme zips uploaded to live
+    pull request, the shop deploys staging → backups → plugin and theme zips uploaded to live, and the Pack theme is zipped and extracted over the live theme through the cPanel API by `deploy.sh`, with no staging copy
     ([deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging)).
     The [floor](/architecture/tech-stack#what-a-client-project-is-required-to-run)
     cannot apply to them.
@@ -469,8 +469,10 @@ was wrong is the most useful thing in the file.
     TypeScript.
   - **Plugin and core updates are now our problem**, on shared hosting the
     department does not control.
-  - **The Aladawy Pack theme is not in a repository yet**, so for now nothing
-    guards it but the live site.
+  - **The Aladawy Pack theme reached git a week after it went live**
+    ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp), 2 October 2026). It still has no tests, no CI and no
+    staging copy, so review and the check on the live site are its only guards.
   - The two Next.js builds remain deployed on `*.vercel.app` and have to be
     retired or redirected deliberately, or they compete with the real domains
-    in search.
+    in search. Both now send `noindex` (`aladawy-shop` since 29 September);
+    neither redirects yet.

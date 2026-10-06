@@ -26,13 +26,14 @@ deployed at `aladawy-shop.vercel.app`, but **not the production storefront**
   rebuild's migration. For day-to-day catalogue changes, edit products in the
   shop's wp-admin instead.
 
-  **Still open (checked 27 September 2026):** the Vercel deployment still
-  answers with `X-Robots-Tag: index, follow` and does not redirect. The rebuild
-  design says it gets `noindex` first, then a redirect of every path to the
-  matching `aladawyshop.com` URL. *Why it matters:* two indexable copies of the
-  same catalogue compete with each other in search, and the one on
-  `vercel.app` has no orders, accounts or real contact details. The repo has
-  had no commits since 19 September 2026.
+  **Half retired.** The rebuild design says this deployment gets `noindex`
+  first, then a redirect of every path to the matching `aladawyshop.com` URL.
+  The first half is done: since 29 September 2026 `PRODUCTION_HOST` is `null`,
+  so every response sends `X-Robots-Tag: noindex, nofollow`
+  ([below](#seo-and-going-live)). The redirect is still to do. *Why both
+  matter:* two indexable copies of the same catalogue compete with each other
+  in search, and the one on `vercel.app` has no orders, accounts or real
+  contact details — a visitor who lands there should end up on the real shop.
 </Callout>
 
 Bilingual Arabic/English with real RTL, **Arabic-default** (`/` redirects to
@@ -338,8 +339,9 @@ Vitest 5, `**/*.test.ts`, `@/` aliased in `vitest.config.ts`. Two files:
 tests, lint or typecheck on a push — the gates are yours to run by hand before
 you merge. That is a gap, not a design
 ([the matrix](/repositories#what-the-repos-actually-share)). The repo also
-records no deploy mechanism; its Vercel production host is
-`aladawy-shop.vercel.app`, which is no longer the shop's real storefront.
+records no deploy mechanism; a change reaches `aladawy-shop.vercel.app`, which
+is no longer the shop's real storefront, only when someone runs
+`vercel deploy --prod` by hand ([deployment](/how-we-work/deployment)).
 
 `.gitattributes` pins checkouts to LF. *Why:* Prettier enforces LF, so a
 Windows checkout with `core.autocrlf=true` would fail `format:check` on every
@@ -350,23 +352,32 @@ file.
 **This app will not go live on the client's domain.** `aladawyshop.com`
 stays on the group's Verpex host, where it now serves the WordPress rebuild
 ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)), with its DNS and email on
-the same host. The domain is not moving to Vercel, so `PRODUCTION_HOST` stays
-on the Vercel alias. What is left for this deployment is to retire it:
-`noindex` everywhere, then a redirect of every path to the matching
-`aladawyshop.com` URL (see the warning at the top of this page).
+the same host. The domain is not moving to Vercel. What is left for this
+deployment is to retire it: `noindex` everywhere (done), then a redirect of
+every path to the matching `aladawyshop.com` URL (still to do — see the
+warning at the top of this page).
 
-**`PRODUCTION_HOST` is set** — to `aladawy-shop.vercel.app` in both
-`lib/site.ts` and `next.config.ts` (restated there because Next loads the
-config outside the app bundle, where `@/` does not resolve). The two must
-match. *Why it was set on the Vercel alias:* with it `null`, every absolute URL
-(og:image, canonical, JSON-LD) pointed at the per-deployment hostname, which
-sits behind Vercel deployment protection, so scrapers got an SSO redirect
-instead of the share card. If the two ever change, change them together
-([Client Projects](/how-we-work/client-projects)). The positive
-`index, follow` below is why retiring this deployment needs an explicit
-`noindex`: the production host is the Vercel alias, so it is indexable today.
+**`PRODUCTION_HOST` is `null`** in both `lib/site.ts` and `next.config.ts`
+(restated there because Next loads the config outside the app bundle, where
+`@/` does not resolve). The two must match; change them together
+([Client Projects](/how-we-work/client-projects)). It was set to
+`aladawy-shop.vercel.app` until 29 September 2026, and set back to `null` so
+the Vercel copy stays online but out of search now that the shop runs on
+WordPress. With it `null`, **every deployment sends `noindex, nofollow`**,
+production included.
 
-On the production host, `X-Robots-Tag` is stated positively:
+That brings back the problem setting it on the alias had fixed: with
+`PRODUCTION_HOST` `null`, `siteUrl` falls back to the per-deployment hostname, which sits behind
+Vercel deployment protection, so absolute URLs (og:image, canonical, JSON-LD)
+point at an address scrapers cannot read, and a shared link shows no card.
+For a copy that is meant to be found by nobody, that is acceptable.
+
+Every page also carries a `publisher` meta tag naming **Adawy Software**, the
+signature on every site the department builds; the JSON-LD still names
+Aladawy Shop as the owner.
+
+If `PRODUCTION_HOST` were ever set again, `X-Robots-Tag` on that host is
+stated positively:
 `index, follow, max-image-preview:large, max-snippet:-1` for pages, `noindex,
 follow` for `/<locale>/quote` and `/<locale>/wishlist` (their contents live in
 localStorage, so crawlers see an empty shell), and `noindex, nofollow` for

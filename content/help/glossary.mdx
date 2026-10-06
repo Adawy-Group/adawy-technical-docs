@@ -27,7 +27,7 @@ site is `adawygroup.com`, built from `apps/group`.
 
 **Aladawy Pack** — a **client**: Aladawy Pack for Printing & Packaging, a
 flexible-packaging manufacturer founded in 1971. Its live website,
-aladawypack.com, has been **WordPress** since 27 September 2026; the Next.js
+aladawypack.com, has been **WordPress** since 26 September 2026 ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp)); the Next.js
 build it was ported from is [`aladawy-pack`](/repositories/aladawy-pack).
 
 <Callout type="warning">
@@ -61,11 +61,12 @@ other businesses, one standalone repo each
 ([ADR-010](/architecture/adrs), [client projects](/how-we-work/client-projects)).
 
 **Holding page** — a single branded screen standing in for an unbuilt site.
-Every platform app except `apps/group` is a holding page today (`studio`,
-`pack`, `print`, `supplies`, `marketing`, `bizdev`), and all of them serve
-their own domains. So is the current state of `jumeira`. They
-are real apps with real deploys,
-which is why a shared-package change verifies seven apps.
+Every platform app except `apps/group` and `apps/studio` is a holding page
+today: five flagships (`pack`, `print`, `supplies`, `marketing`, `bizdev`) on
+their own domains, and twenty-four brands added in September 2026 with no
+domain yet. So is the current state of `jumeira`. They are real apps with real
+deploys, which is why a shared-package change verifies every app that compiles
+it.
 
 **Group microsite** — Adawy Group's own property that is not a brand site.
 There is one, [`adawy-group-links`](/repositories/adawy-group-links), and its

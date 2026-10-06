@@ -53,17 +53,17 @@ is a film rather than a page of claims.
 
 | | |
 | --- | --- |
-| Framework | Next.js **16.3.5** (App Router, Turbopack), React **19.3** — `middleware.ts` is `proxy.ts` here, as Next 16 renamed it |
+| Framework | Next.js **16.3.6** (App Router, Turbopack), React **19.3** — `middleware.ts` is `proxy.ts` here, as Next 16 renamed it |
 | Language | **TypeScript 7 and 6 side by side**: `tsc` (so `pnpm typecheck`) is TS 7 through `@typescript/native`, while `typescript` is aliased to `@typescript/typescript6` because typescript-eslint and Next still load the TS 6 API. Strict, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, target ES2022 |
 | Styling | Tailwind CSS v4 + shadcn/ui (`new-york`, `rtl: true`) on the unified `radix-ui` package; one stylesheet entry, `app/globals.css`, importing `app/styles/*.css` in order |
 | Motion | GSAP 3.15 + ScrollTrigger (`@gsap/react`), **plus Locomotive Scroll v5 as the single scroll authority** — see [below](#the-scroll-authority-is-a-reversed-decision) |
 | i18n | next-intl 4 — `ar` (default) + `en`, `localePrefix: 'always'`, `hreflang` `ar-LY` |
-| Lint / format | **ESLint 10** — `eslint-config-next`'s react, jsx-a11y and import plugins still call context APIs ESLint 10 removed, so their configs go through `@eslint/compat`'s `fixupConfigRules`; `eslint-plugin-unicorn` 75, `simple-import-sort`. Prettier 3 with the Tailwind plugin |
+| Lint / format | **ESLint 10** — `eslint-config-next`'s react, jsx-a11y and import plugins still call context APIs ESLint 10 removed, so their configs go through `@eslint/compat`'s `fixupConfigRules`; `eslint-plugin-unicorn` 76, `simple-import-sort`. Prettier 3 with the Tailwind plugin |
 | Tests | **Vitest 5**, in two projects: `node` and a jsdom `dom` project for `*.browser.test.ts` — [below](#tests) |
 | Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, through `next/font/google` at build time, none preloaded |
 | Package manager | **pnpm 11.26.0** (`packageManager`; CI's `pnpm/action-setup` reads the same field, so local and CI installs match). `minimumReleaseAge: 4320` in `pnpm-workspace.yaml` |
 | Runtime | Node **24** in CI and on Vercel |
-| Hosting | Vercel (Hobby), deployed by the Vercel CLI from GitHub Actions — [CI and deploys](#ci-and-deploys) |
+| Hosting | Vercel (Hobby), deployed by the Vercel CLI — from a dispatched Actions run or from a terminal — [CI and deploys](#ci-and-deploys) |
 
 No forms, no server actions, no API routes, no state library. The only stateful
 things on the page are a scrub position, a theme and an audio element — and the
@@ -76,6 +76,17 @@ page, in both scripts), `robots.ts`, `sitemap.ts`, `manifest.ts` and
 page canonicals, so none can describe a page differently from the page itself.
 `/llms.txt` is deliberately **not** gated on the publishing switch — it invites
 nothing to crawl — while `robots.txt` and the sitemap are.
+
+**The site credits its builder in two places, and the JSON-LD graph is not one
+of them.** The `publisher` meta tag reads *Adawy Software*, and the footer's
+rights line carries a *Designed & developed by Adawy Software* credit linking
+to the group site in the reader's own locale. The graph's `WebSite.publisher`
+still points at Jumeira's own `LocalBusiness` node, *because the graph is an
+identity claim about who the site is about*, and a second organisation in it
+is one more thing a crawler has to reconcile Jumeira against. Only the studio
+name is the link, isolated with `dir="ltr"` so the Arabic sentence cannot
+reorder it, and its `rel` is `noopener` alone so the studio can see which site
+sent the reader.
 
 ## Layout
 
@@ -522,21 +533,27 @@ because Lighthouse leaves media unbudgeted and never scrolls to the frames.
 
 ## CI and deploys
 
-`.github/workflows/ci.yml` runs **automatically again** — on every pull request
-and every push to `main` — after a stretch in 2026-08 when the account's
-Actions minutes were spent and it was dispatch-only. `workflow_dispatch` stays
-as the by-hand route, with a `deploy` input of `checks only`, `preview` or
-`production`.
+`.github/workflows/ci.yml` runs **by hand only**: its one trigger is
+`workflow_dispatch`, with a `deploy` input of `checks only`, `preview` or
+`production` (the default). The org's free Actions minutes ran out on
+2026-09-23, and on 2026-09-27 the `pull_request` and `push` triggers were
+removed rather than left to queue runs that could not start. The quota reset
+on 1 October, but the triggers have not been restored. This is the second such
+stretch: the workflow was dispatch-only through part of 2026-08 for the same
+reason.
 
 ```mermaid
 flowchart LR
-  PR[pull_request] --> K
-  PU[push to main] --> K
-  D[workflow_dispatch] --> K
-  K[Checks<br/>typecheck, lint, format, test, build] -->|PR from this repo| PV[Deploy preview<br/>URL commented on the PR]
-  K -->|main| PD[Deploy production<br/>jumeira-two.vercel.app]
+  D[workflow_dispatch<br/>deploy input] --> K
+  K[Checks<br/>typecheck, lint, format, test, build] -->|preview| PV[Deploy preview]
+  K -->|production| PD[Deploy production<br/>jumeira-two.vercel.app]
   PD --> L[Lighthouse mobile<br/>/ar and /en]
 ```
+
+The job conditions still name the `pull_request` and `push` events (a PR's
+preview comment, a push to `main`'s production deploy), so restoring the two
+trigger lines is the whole change needed to bring the automatic pipeline
+back.
 
 | Job | What it does |
 | --- | --- |
@@ -563,18 +580,17 @@ flowchart LR
   `--prebuilt` deploy's function configs point at files there, and ignoring
   either creates a deployment that fails on the first missing file while
   production stays on the previous build.
-- **Branch protection is not available on the current GitHub plan**, so a red
-  PR can still be merged — it just will not deploy. Run the gates before
-  pushing.
+- **Branch protection is not available on the current GitHub plan**, so
+  nothing stops a merge whose gates never ran. Run them before pushing.
 
 <Callout type="warning">
-  **GitHub Actions has been blocked by a billing failure since 2026-09-23.**
-  Every run, including #87's merge and the open Dependabot PRs (#85, #86),
-  fails within seconds without running a step. So today a merge to `main`
-  neither checks nor deploys: run the five gates locally, then deploy the
-  pre-launch alias by hand with the Vercel CLI (`vercel deploy --prod`), and
-  confirm the deployment rather than trusting the merge. A red run on a PR
-  says nothing about its code until billing is fixed.
+  **Today a merge to `main` neither checks nor deploys.** Run the five gates
+  locally, then either dispatch the workflow (`gh workflow run ci.yml -f
+  deploy=production`) or deploy the pre-launch alias straight from a terminal
+  with the Vercel CLI (`vercel deploy --prod`), and confirm the deployment
+  rather than trusting the merge. A PR shows no checks at all, which says
+  nothing about its code. The repo's own README and `AGENTS.md` still describe
+  the automatic triggers; the workflow file is the truth.
 </Callout>
 
 Dependabot opens weekly grouped npm and Actions PRs with a three-day cooldown,
@@ -582,7 +598,11 @@ held level with `minimumReleaseAge: 4320` in `pnpm-workspace.yaml`. *Why the two
 must match:* Dependabot resolves each update a second time with that release-age
 cutoff, and with no floor locally the first pass floated a day-old transitive
 dependency into the lockfile that the second pass then rejected — failing the
-whole npm run on 2026-08-19.
+whole npm run on 2026-08-19. Dependabot kept opening PRs through the Actions
+stoppage; with no CI to check them, two that touched the same `package.json`
+and lockfile (#86, `eslint-plugin-unicorn` 76, and the #88 minor-and-patch
+group) were combined by hand into one branch with the lockfile regenerated
+(#89, 2026-10-02), rather than merged one after the other into a conflict.
 
 ## Going live
 
@@ -592,11 +612,20 @@ the other ships a half-indexed site — the meta tags and the `X-Robots-Tag`
 header disagree — and a colocated test is the only thing that catches it. Full
 procedure: [Client Projects](/how-we-work/client-projects#the-go-live-switch).
 
+The header is sent on every response either way. Before publishing it is
+`noindex, nofollow`, belt and braces with the meta tag, because a header
+cannot be missed by a crawler that never parses the document. Once published
+it becomes an explicit `index, follow, max-image-preview:large, max-snippet:-1,
+max-video-preview:-1` rather than disappearing, *because the frames and the OG
+card are images, and only a header can tell a search engine an image may be
+shown full size*.
+
 Four things this repo does that the generic checklist does not cover:
 
-- **A merge to `main` is a production deploy.** CI deploys the pre-launch
-  alias on every push to `main`, so there is no separate release step to hold
-  a change back — keep unfinished work on a branch
+- **`main` is what production gets built from.** While the workflow is
+  dispatch-only a merge does not deploy by itself, but the next dispatch or
+  CLI deploy ships everything on `main` at once — so keep unfinished work on a
+  branch, not behind the absence of a deploy
   ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
 - **The site URL falls back to a hard-coded pre-launch host, not an env var.**
   CI runs `vercel build` on a GitHub runner where no `VERCEL_*` host variables
