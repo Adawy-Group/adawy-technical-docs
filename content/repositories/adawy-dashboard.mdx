@@ -237,8 +237,8 @@ flowchart LR
 | `github-sandbox` | [`Adawy-Group/adawy-content-sandbox`](/repositories/adawy-content-sandbox), folder `<site id>/`, set by `SANDBOX_REPO` | <Badge tone="live">Production setting today</Badge> |
 | `github` | The real repo and branch in `lib/sites.ts`, under the site's `root` | <Badge tone="planned">Not yet run</Badge> |
 
-**The `GitHubStore` class already runs against GitHub every day** — sandbox
-mode is the same class with a different target. What has never run is the
+**The `GitHubStore` class already runs against GitHub in production** —
+sandbox mode is the same class with a different target. What has never run is the
 `github` *target*: writing to the real site repos, under `apps/<name>` in the
 monorepo. Its path prefixing and its stale-branch handling are covered by
 unit tests against a mocked Octokit, not by a real publish. **The first real
@@ -310,7 +310,9 @@ Group site's forms already use.
 on every response, alongside `X-Frame-Options: DENY`, a `frame-ancestors
 'none'` CSP, HSTS and a restrictive `Permissions-Policy`. An internal tool has
 no reason to be indexed or framed, and a framed login page is how a clickjack
-starts.
+starts. The root metadata still sets `publisher: "Adawy Software"`, the same
+studio signature every site the department builds carries, even though no
+search engine will read it here.
 
 Environment variables, names only (values live in the Vercel project):
 `CONTENT_STORE`, `SANDBOX_REPO`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`,
@@ -332,7 +334,7 @@ organisation repo, and a dashboard publish is a commit that has to trigger a
 build by itself. Connect each site's Vercel project to its repo; for the
 `adawy-platform` projects keep the root at `apps/<name>` and set the Ignored
 Build Step to `npx turbo-ignore`, **so a publish to one brand rebuilds only
-that brand** instead of all seven. Put each project's id in
+that brand** instead of all thirty-one. Put each project's id in
 `vercelProjectId` in `lib/sites.ts` — none is set today, and without it the
 status stays at *Saved* instead of *Live ✓*.
 

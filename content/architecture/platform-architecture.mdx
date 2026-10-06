@@ -1,15 +1,20 @@
 ---
 title: Platform Architecture
-description: How apps/group is actually built — three enforced layers, one WebGL canvas, the driver-channel-stage split, the performance tier, and what the content dashboard is allowed to change.
+description: How apps/group is actually built — three enforced layers, one WebGL canvas on the home page, the driver-channel-stage split, thirteen brand pages on one template, the performance tier, and what the content dashboard is allowed to change.
 tags: ['Explanation', 'Platform', 'Deep']
 ---
 
 # Platform Architecture
 
 `apps/group` is the most technically dense thing the department has built: a
-single scroll narrative where most sections drive 3D. Four ideas hold it
-together, and knowing them is the difference between adding a section in an
-afternoon and breaking the whole page.
+home page that is a single scroll narrative where most sections drive 3D, and
+thirteen company pages that each play a 3D take of their own. A handful of
+ideas hold it together, and knowing them is the difference between adding a
+section in an afternoon and breaking the whole page.
+
+The other thirty apps in the monorepo are much simpler (a holding page or the
+studio's one-page site) and are covered on
+[the repository page](/repositories/adawy-platform).
 
 This page is the **orientation**. The file-level detail lives in the platform
 repo, and deliberately not here — see [where each fact lives](#where-each-fact-lives)
@@ -62,10 +67,11 @@ work:
 
 ## 1. One canvas, many passes
 
-There is exactly **one WebGL context for the entire page**, mounted once and
-positioned `fixed inset-0`. Everything 3D is a *pass* on that one renderer —
-the Why-Choose crystal is a second pass on the same context, not a second
-canvas.
+The home page has exactly **one WebGL context**, mounted once and positioned
+`fixed inset-0`. Everything 3D on it is a *pass* on that one renderer. The
+entrance field (machined tiles laid ring by ring around the Adawy mark, which
+then stands up out of the pattern) is one pass, and the Why-Choose crystal is
+another, on the same context rather than a second canvas.
 
 - `platform/gl/gl-canvas.tsx` is the only WebGL host: canvas element,
   create/dispose, theme pushes. A scene is a `create` function returning
@@ -86,9 +92,25 @@ in `scenePasses`, one entry in `STAGE_CHANNELS`. The frame type, the per-frame
 sample, and the moved-since-last-draw check all derive from that map — there is
 deliberately no fourth place to forget.
 
+A pass can own the camera for a while. The entrance field runs after the
+crane and keeps the camera until its hand-off completes. Its mark uses the
+About mark model's own finish and lighting at the same depth, so the scroll
+hand-off can be a cut made while the turning mark is edge-on, and nothing
+visibly jumps.
+
 <Callout>
   If you find yourself writing a second WebGL host, you want a pass instead.
 </Callout>
+
+**The entrance waits for the stage, not for a timer.** The preloader sends
+one-shot signals: *warm* (heavy init may run behind the splash), *entered*
+(the splash clears) and *revealed* (the header, scroll cue and sound dock
+arrive). The home page holds *revealed* for its own entrance: a year counter
+runs from 1971 while the stage boots, waits until the stage reports itself
+compiled, and only then builds the field, so a slow GPU stretches the count
+instead of dropping frames in the first shot. Every other page keeps the
+drawn-mark splash. Heavy init belongs on *warm*, never on a visitor's first
+gesture, because on a phone the first gesture is a scroll.
 
 ## 2. Driver → channel → stage
 
@@ -146,7 +168,10 @@ quality flip-flopping mid-visit is more visible than either steady state.
 
 **Lite sheds pixels, never choreography.** Models, materials, lighting and beat
 timing are identical in both tiers; what goes is per-tick blur, glass
-backdrop-filters, an ambient-occlusion pass, and some device pixel ratio.
+backdrop-filters, the drifting backdrop, and some device pixel ratio. There
+is no ambient-occlusion pass left to shed: #313 removed it from the
+Ecosystem pit and the brand scenes outright, because it cost 15 to 20 ms of
+GPU per frame on a fast laptop for crease shading almost nobody could see.
 
 Four invariants any new effect owes the governor:
 
@@ -197,6 +222,72 @@ What that asks of anyone working in the platform:
 Until go-live the dashboard publishes to a practice repository and none of this
 reaches `adawy-platform` ([ADR-014](/architecture/adrs)).
 
+## 5. Thirteen brand pages, one template
+
+Every company page under `/ecosystem/<brand>` is the same route rendering one
+entry of `BRAND_PAGES`: the six flagships (Studio, Pack, Print, Supplies,
+Marketing, Business Development) and Software, Private Label, Production,
+Media Production, Events, AI and Law Firm. **Structure is data, colour is a
+`[data-brand]` block in CSS, and copy is a `BrandPages.<key>` message tree**,
+so a fourteenth page is entries, not a new route. The Ecosystem menu groups companies by sector (Brand & Media, Make & Supply,
+Digital & AI, Business & Legal), and its sector map is a full `Record` over
+the company keys, so a company added without a sector fails to build.
+
+```mermaid
+flowchart LR
+    REG["BRAND_PAGES entry<br/>slug · scene key · site · sections"] --> PAGE["/ecosystem/&lt;brand&gt;<br/>one template"]
+    CSS["[data-brand] block<br/>the brand's colours"] --> PAGE
+    MSG["BrandPages.&lt;key&gt;<br/>en · ar · fr"] --> PAGE
+    PAGE --> TAKE["its 3D take<br/>one BrandSceneKey"]
+    PAGE --> MENU["Ecosystem menu<br/>sector index"]
+```
+
+**Each page plays one take, and a take belongs to one brand.** The scene is
+chosen by a single `BrandSceneKey` (`atelier`, `products`, `print`, …,
+`agreement`) rather than a flag per scene, so a brand cannot claim two. The
+seven newer pages arrived on 2026-10-01 (#323), and the same change rebuilt
+all thirteen takes around one rule: the model *is* the brand idea (Pack's printed sheet folding into a box, Law Firm's agreement
+initialled, signed and sealed), on real models from Blender bakes and Poly
+Haven scans, and tuned for light, dark, Arabic and phones.
+
+**Every take runs on one scene host**, which owns the lifecycle so a scene
+owns only its choreography and what it draws:
+
+- **It pauses off screen and frees everything on dispose.** A leaked renderer
+  holds a WebGL context against the browser's limit and breaks the reader's
+  *next* page, not this one, so the failure lands far from its cause.
+- **It sheds pixels, not frames.** A resolution governor watches frame
+  intervals while a take is drawing and lowers the pixel ratio a step when too
+  many miss the display's deadline, under a hard cap of about 3.6 million
+  pixels. Fragment cost scales with pixel count, and a 4K canvas would
+  otherwise drop frames on hardware that runs a laptop screen smoothly. This
+  is the [performance tier](#3-the-performance-tier)'s rule (degrade via DPR,
+  never cap the frame rate) applied per scene.
+- **It draws the whole take before showing it.** `warmTake` renders the scene
+  at thirteen points along its progress while it is still hidden. Compiling
+  shaders is not enough: the GPU driver builds its pipeline state the first
+  time an object is drawn into a target, and an object first met mid-scroll
+  stalls that frame by tens of milliseconds.
+- **It knows when to draw one still.** Reduced motion always gets a single
+  frame. The heavy product takes also reduce under Save-Data, on a device
+  reporting 2 GB of memory or less, or on a software GL renderer.
+
+**Not everything that moves is WebGL.** Software's Selected Work is a reel of
+screen recordings of four live flagship sites in a plain browser window,
+wiped one over the next by scroll, with an index of the rest below (#332).
+It went through a three.js light table and a CSS 3D "exploded build" in the
+same week before landing there, because those spent their pixels on the
+process and showed sites whose craft *is* motion as a single still. Pick the
+medium by what the visitor needs to see. A recording that plays by itself
+needs a pause control (WCAG 2.2.2), loads only near the screen, and plays only
+while in view.
+
+**A brand page links out only to a real domain.** Each entry's `site` stays
+`null` until that brand's own app has a `PRODUCTION_HOST`, and a `null` site
+hides the hero's "Visit site" pill (#328). The `*.vercel.app` holding apps are
+`noindex` placeholders on a platform hostname, and the group site should not
+send a visitor to an address the brand will not keep.
+
 ## Where each fact lives
 
 The handbook and the platform repo divide the work on one rule: **one fact, one
@@ -220,7 +311,8 @@ In the platform repo:
 | `docs/stage.md` | The canvas and the driver → channel → stage split, in full |
 | `docs/perf.md` | The tier, and what a new effect owes it |
 | `docs/shipping.md` | What is tracked, what is generated, what never ships |
-| `AGENTS.md` | The shadcn contract — why you edit the component, not the call site |
+| `AGENTS.md` | The Next.js and Turborepo warnings, and the shadcn contract — why you edit the component, not the call site |
+| `packages/brand-app/README.md` | The holding-app shell, and what each glyph-brand app still owns |
 | `PRODUCT.md` | Brand personality, design principles, anti-references |
 
 You need repository access to read those. If you have been given work on

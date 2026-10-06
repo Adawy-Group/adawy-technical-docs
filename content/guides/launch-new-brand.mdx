@@ -1,14 +1,16 @@
 ---
 title: Launching a New Brand Site
-description: The configuration-not-build workflow for a new Adawy Group brand - the own-app decision, the six steps, and the three ways it goes wrong.
+description: The configuration-not-build workflow for a new Adawy Group brand - the holding app every brand gets first, the group brand page it may get later, the steps, and the ways it goes wrong.
 tags: ['How-to', 'Group work', '~1 week']
 ---
 
 # Launching a New Brand Site
 
 The test of the platform is that adding the next brand is **a config entry or
-a thin app, never a new project**. Under WordPress this took ~6 weeks; in the
-monorepo it is about a week of elapsed time, most of it content.
+a thin app, never a new project**. Under WordPress this took ~6 weeks. In the
+monorepo a branded holding page is a few hours of work, and on 2026-09-29
+twenty-four of them landed in one change. A full brand site is about a week
+of elapsed time, most of it content.
 
 <Callout type="info">
   This is for **Adawy Group brands**. A site built for a client is a standalone
@@ -16,60 +18,124 @@ monorepo it is about a week of elapsed time, most of it content.
   [Client Projects](/how-we-work/client-projects).
 </Callout>
 
+## Two things called "the brand's site"
+
+A brand can be on the platform in two places, and they are added separately:
+
+| | Its own app | Its group brand page |
+| --- | --- | --- |
+| Where | `apps/<brand>`, on the brand's own domain | `/ecosystem/<brand>` on adawygroup.com |
+| What it is today | A holding page (thirty-one apps, twenty-nine of them holding pages) | One of thirteen company pages, each with its own 3D take |
+| Built from | `@adawy/brand-app` + `@adawy/holding` | One entry in `BRAND_PAGES` in `apps/group` |
+| Adding one | [Steps 1–4](#the-workflow) | [Step 5](#the-workflow) |
+
+Every brand gets its own app first, because that is cheap, deploys
+independently and holds the domain. A group page is a larger piece of design
+work (photography or 3D models, a take, copy in three languages), so it
+follows only when the company is part of the group's story on
+adawygroup.com. Seventeen brands have an app and no group page today.
+
 ## First decision: own app or `apps/sites`?
 
 Per [ADR-008](/architecture/adrs), ask: **does this brand need unique routes,
 custom sections, or bespoke motion?**
 
-- **No (the default)** — it's a templated brand: add a config entry (tokens,
-  content, section composition) to the multi-tenant `apps/sites` and point the
-  domain at the `sites` Vercel project. Skip step 1 below.
-- **Yes (flagship treatment)** — it gets its own app under `apps/<brand>`;
-  follow the full workflow. A `sites` brand can be promoted to its own app
-  later without a rewrite — both tiers consume the same `@adawy/*` packages.
+- **No (the default)** — it's a templated brand, which belongs in the
+  multi-tenant `apps/sites` as a config entry (tokens, content, section
+  composition), served by the `sites` Vercel project.
+- **Yes (flagship treatment)** — it gets its own app under `apps/<brand>`.
+  A `sites` brand can be promoted to its own app later without a rewrite —
+  both tiers consume the same `@adawy/*` packages.
+
+<Callout type="warning">
+  **`apps/sites` is not built yet**, so today the default path does not
+  exist and every brand gets its own app. That is cheaper than it sounds: an
+  app on `@adawy/brand-app` is already close to a config entry (a palette, a
+  glyph, two message files and a name), which is how twenty-four brands could
+  land in one change. When `apps/sites` exists, a holding app with no bespoke
+  motion is the first candidate to fold into it.
+</Callout>
 
 ## The workflow
 
 | Step | Time | Who |
 | ---- | ---- | --- |
-| 1. Scaffold the app under `apps/<brand>` from the closest existing app | Few hours | Developer |
-| 2. Define the brand's tokens — colors, fonts, logos — on the `@adawy/design` structure | Few hours | Designer, with dev support |
-| 3. Create the Vercel project and move the brand's domain to it | ~2 hours, mostly waiting | CTO (or any developer) |
-| 4. Populate content (MDX/config in the app, via PR) | 2–5 days | Team, with copy from marketing |
-| 5. Custom design tweaks (only if the brand requires them) | ~1 week | Designer + developer |
-| 6. Quality review and launch | 1–2 days | CTO |
+| 1. Scaffold the app under `apps/<brand>` from the closest existing app | An hour or two | Developer |
+| 2. Set the brand's tokens and mark, and bake its icons | A few hours | Designer, with dev support |
+| 3. Wire the app into deploys and analytics, and create its Vercel project | ~1 hour | CTO (or any developer) |
+| 4. Move the brand's domain to it and turn indexing on | ~2 hours, mostly waiting | CTO (or any developer) |
+| 5. Add the group brand page (only if the brand joins the group's story) | 1–2 weeks | Designer + developer |
+| 6. Populate content and any custom design (MDX/config in the app, via PR) | 2–5 days, plus ~1 week if bespoke | Team, with copy from marketing |
+| 7. Quality review and launch | 1–2 days | CTO |
 
 ## Step notes
 
-1. **Scaffold:** copy the structurally closest app (industrial brand → start
-   from `apps/pack`; creative → `apps/studio`). The app should contain only
-   routes, content, and token values — everything else comes from `@adawy/*`
-   packages ([keep apps thin](/standards/project-structure)).
-2. **Tokens:** the brand's identity is a set of overrides on the shared token
-   structure — never edited copies of shared components. Include both logo
-   variants (light/dark) and the EN + AR font stacks.
-3. **Domain:** each app is its own Vercel project; add the domain there and
-   verify the production deployment serves the new brand before announcing
-   anything. A group domain's DNS and email live on the Verpex host, so the
-   website moves in two phases, email first:
+1. **Scaffold:** for a holding page, copy one of the glyph-brand apps
+   (`apps/hr`, `apps/farm`, …), because they are the ones built entirely on
+   `@adawy/brand-app` and carry nothing bespoke to unpick. Rename the folder,
+   the `package.json` name and the names in `lib/site/identity.ts`. For a
+   full site, copy the structurally closest app instead (creative →
+   `apps/studio`). Either way the app should contain only routes, content and
+   token values — everything else comes from `@adawy/*` packages
+   ([keep apps thin](/standards/project-structure)).
+   `packages/brand-app/README.md` lists exactly what an app still owns.
+2. **Tokens and mark:** the brand's identity is a set of overrides on the
+   shared token structure — never edited copies of shared components.
+   - The field is the brand's palette 300, in the app's `app/globals.css`.
+   - `lib/brand/<brand>-mark.ts` holds the field, the ink and the glyph's
+     paths, ordered centre-out for the shared entrance. Its test pins ink on
+     field at 4.5:1, so an ink that fails AA fails CI instead of shipping.
+   - `scripts/lockup.svg` is the full lockup for the share card. Then
+     `pnpm --filter=<brand> icons:bake` writes the icons, `favicon.ico` and
+     the Open Graph card, which are committed.
+   - Include the EN + AR names; the Arabic name follows the group's spelling.
+3. **Wiring:** three lists know every app, and missing one fails quietly:
+   - **`.github/workflows/deploy.yml`**: one line in the `apps` map, plus a
+     `VERCEL_PROJECT_ID_<BRAND>` secret. Without the secret the deploy is
+     skipped, not failed, so the app can merge before its project exists.
+   - **The Vercel project**: root directory `apps/<brand>`. The deploy's
+     preflight fails loudly on anything else, because a wrong root directory
+     would upload green and build the repo root.
+   - **`@adawy/analytics`**: the brand's key in the `Brand` union, and
+     `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` on the project for Production only.
+4. **Domain:** set `PRODUCTION_HOST` in `lib/site/production-host.ts`. Until
+   it names a host, every deployment is `noindex`, which is right for a
+   placeholder on a platform hostname. Then add the domain to the Vercel
+   project and verify the production deployment serves the new brand before
+   announcing anything. A group domain's DNS and email live on the Verpex
+   host, so the website moves in two phases, email first:
    [Moving a Domain to Vercel](/guides/move-a-domain-to-vercel).
-4. **Content:** lives in the app as MDX and configuration, in English and
+5. **Group brand page:** start from the comment at the top of
+   `apps/group/platform/brand/lib/brand-page.ts`: a `BRAND_PAGES` entry, a
+   `[data-brand]` block in `globals.css`, a brand pattern and a
+   `BrandPages.<key>` message tree in en, ar **and fr**, plus the company's
+   colour and name in `platform/brand/lib/brand-colors.ts`. The brand
+   patterns and the Ecosystem menu's sector map are full records over the
+   companies, so the build names the company if either is missing. Leave the entry's `site` as
+   `null` until step 4 is done: a `null` site hides "Visit site", so the
+   group never links visitors to a placeholder. The page's 3D take is real
+   design work; read [Platform Architecture](/architecture/platform-architecture)
+   first.
+6. **Content:** lives in the app as MDX and configuration, in English and
    Arabic, and lands via reviewed PRs like any other change. Marketing
    supplies the copy; the team commits it
    ([ADR-004](/architecture/adrs) — the CMS is deferred for now).
-5. **Custom tweaks:** configuration over customization. If a request can't be
-   met with tokens, it goes through the CTO as an explicitly scoped
+   **Custom tweaks** are configuration over customization. If a request
+   can't be met with tokens, it goes through the CTO as an explicitly scoped
    exception — and if the new section is genuinely reusable, it's built in
    `@adawy/ui`, not in the app.
-6. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass
-   (CI enforces zero axe violations already), RTL verified on a real phone,
-   metadata/OG/structured data set (`@adawy/site` plus the app's own `lib/`),
-   analytics live, footer "part of Adawy Group" cross-link present, corporate
-   directory updated. For search, check these too:
+7. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass
+   (CI enforces zero axe violations on the group site; check a brand app by
+   hand), RTL verified on a real phone, metadata/OG/structured data set
+   (`@adawy/site` plus the app's own `lib/`), analytics live, footer "part of
+   Adawy Group" cross-link present, corporate directory updated. For search,
+   check these too:
    - `PRODUCTION_HOST` names the domain.
+   - The production host's responses carry `X-Robots-Tag: index, follow, …`,
+     not `noindex`.
    - The project's `*.vercel.app` redirects to the domain.
-   - The brand's `site` is set in the group's `BRAND_PAGES`, so adawygroup.com
-     links to it.
+   - The brand's `site` is set in the group's `BRAND_PAGES` (if it has a
+     group page), so adawygroup.com links to it.
    - A Search Console Domain property is verified and the sitemap submitted.
    - IndexNow has been sent the URLs.
 
@@ -80,6 +146,8 @@ custom sections, or bespoke motion?**
   decaying into 38 separate sites. Fixes flow upstream to `packages/`.
 - **Don't skip the token structure** by hard-coding brand values in the app —
   the next person can't tell identity from implementation.
+- **Don't assume adding the app added the group page,** or the reverse. They
+  are separate lists; check both the `apps/` folder and `BRAND_PAGES`.
 - **Don't launch without the redirect map** if the brand had an old site —
   losing existing search ranking costs more than the build did.
 - **Don't point the domain at Vercel before its email is moved off the root.**

@@ -26,8 +26,8 @@ No build · no CI · no Vercel project · created **27 September 2026**
 Before the dashboard writes to the real site repositories it needs a real
 GitHub repository to write to: the same GitHub App, the same commit path, the
 same history and undo, the same login and email — everything except the last
-step. A sandbox repo gives the team that for training and testing, and it
-exercises the production code path (`GitHubStore`) daily, so the only thing
+step. A sandbox repo gives the team that for training and testing, and every
+practice publish exercises the production code path (`GitHubStore`), so the only thing
 left untested at go-live is the *target*, not the machinery. The local
 `.sandbox/` repos cannot do that job: they live on one laptop, and a
 serverless deployment has no disk to keep them on.
@@ -93,7 +93,10 @@ flowchart LR
 ## Refreshing it
 
 The copy drifts from the real sites as developers change them, and that is
-fine for practice. To bring it back in line, copy each site's locale files
+fine for practice. It has already drifted: the seed predates, for example,
+the footer-credit strings Jumeira and Zad Al-Hkoul gained on 28 September and
+the Zad Al-Hkoul writer's v2 copy, so the practice files lack keys the live
+sites have. To bring it back in line, copy each site's locale files
 and allow-listed image folders from its `main` into the matching folder here
 and commit. Two rules make that safe:
 

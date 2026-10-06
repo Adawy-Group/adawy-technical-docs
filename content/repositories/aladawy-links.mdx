@@ -194,8 +194,22 @@ domain such as `links.aladawypack.com` is anticipated but not attached;
 `NEXT_PUBLIC_SITE_URL` (the only variable in `.env.example`, optional) is how
 metadata would pick it up. See [Deployment](/how-we-work/deployment).
 
+**Every response carries an `X-Robots-Tag`**, chosen in `next.config.ts` from
+`VERCEL_ENV` exactly as on the Group page: `noindex, nofollow` on a preview
+deployment (a plain `vercel deploy` without `--prod`), and an explicit
+`index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1`
+everywhere else. *Why a header:* it reaches the OG image and the pattern
+tiles, which a `<meta>` tag cannot, and it keeps a by-hand preview out of
+search with no publishing switch to forget. The metadata sets
+`publisher: "Adawy Software"`, the studio signature on every site the
+department builds; the page has no visible footer credit.
+
 ## Recent history
 
+- **2026-09-27 → 29** — `publisher` metadata credits Adawy Software; markup
+  moves to semantic elements (the contact block becomes an `<address>` holding
+  a list), carried across from the Group page; `X-Robots-Tag` on every
+  response. With no workflow here, the org's Actions stoppage changed nothing.
 - **2026-09-19** — pnpm pinned to 11.26.0; Next 16.3.5, React 19.3, ESLint 10,
   TypeScript 7 and Vitest 5.
 - **2026-09-02 → 03** — Next, TypeScript, React and type packages aligned with

@@ -53,22 +53,23 @@ flowchart TD
 
 | | Built today | Decided, not built |
 | --- | --- | --- |
-| Apps | `group`, `studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev` | `sites`, `api` |
-| Packages | all **nine** `@adawy/*` | — |
+| Apps | `group`, `studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev`, and twenty-four holding apps for the newer brands (`software` … `manufacturer`) | `sites`, `api` |
+| Packages | all **ten** `@adawy/*` | — |
 | Domains | adawygroup.com, adawystudio.com, adawypack.com, adawyprint.com, adawysupplies.com, adawymarketingsolutions.com, adawybusinessdevelopment.com | The long tail's, through `sites` |
 | Tooling | The [content dashboard](/repositories/adawy-dashboard), in practice mode ([ADR-014](/architecture/adrs)) | — |
 | Behind them | — | the backend, PostgreSQL, both portals |
 
-Every app except `group` is a **holding page**, and all seven are live on
-their own domains ([Domains, DNS & Email](/architecture/domains-and-email)).
+Every app except `group` and `studio` is a **holding page**. Seven apps are
+live on their own domains ([Domains, DNS & Email](/architecture/domains-and-email));
+the twenty-four added in September 2026 have none yet and stay `noindex`.
 The dotted edge is the [content dashboard](/repositories/adawy-dashboard): it
 sits outside the monorepo and, once live, publishes text and image changes
 into it as ordinary commits
 ([how](/architecture/platform-architecture#4-commits-that-do-not-come-from-a-developer)).
-They are one branded screen each, on
-`@adawy/holding` (and, for `apps/print` so far, the newer `@adawy/brand-app`
-shell). They are real apps with real deploys, which is why a change to
-`packages/ui` verifies and deploys seven apps rather than one.
+The holding pages are one branded screen each — the older flagships on
+`@adawy/holding`, `print` and the twenty-four newer apps on the
+`@adawy/brand-app` shell. They are real apps with real deploys, which is why a
+change to `packages/ui` verifies and deploys every app rather than one.
 
 ## Why this shape (the business reason)
 
@@ -107,8 +108,8 @@ department.
     exists to prevent.
   </Cards.Card>
   <Cards.Card title="Platform Architecture" href="/architecture/platform-architecture" arrow>
-    How `apps/group` is actually built: three layers, one WebGL canvas, one
-    quality governor.
+    How `apps/group` is actually built: three layers, one WebGL canvas, thirteen brand pages on one
+    template, one quality governor.
   </Cards.Card>
   <Cards.Card title="Vocabulary & Map" href="/architecture/glossary" arrow>
     `apps/group`'s own language — which route each feature serves, and what a

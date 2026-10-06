@@ -239,21 +239,29 @@ and both mark and wordmark take `currentColor`.
 ## CI
 
 One workflow, `.github/workflows/deploy.yml` (**Verify & deploy (Vercel)**),
-on pushes to `main` and pull requests into `main`:
+and today it runs **by hand only**: its one trigger is `workflow_dispatch`.
+It ran on pushes to `main` and pull requests into `main` until 2026-09-27,
+when the org's free Actions minutes (spent since 2026-09-23) led to every
+automatic trigger being swapped for a manual one rather than left to queue
+runs that could not start. The quota reset on 1 October; the triggers have not
+been restored.
 
 ```mermaid
 flowchart LR
-  T[push or PR to main] --> V[verify: install, lint, typecheck, test, format:check]
+  T[workflow_dispatch] --> V[verify: install, lint, typecheck, test, format:check]
   V -->|VERCEL_TOKEN set| D[deploy: vercel pull, build, deploy --prebuilt]
   V -->|no token| S[deploy skipped, run stays green]
 ```
 
 - `verify` always runs, on Node 24 with `pnpm install --frozen-lockfile`.
-- `deploy` sends pushes to the `production` environment and pull requests to
-  `preview`, writing the URL into the run summary. Its gate is a step output
-  from `verify`, because secrets cannot be read in a job-level `if`.
+- `deploy` targets `preview` for a pull request and `production` for every
+  other event, so **a dispatched run deploys production**. It writes the URL
+  into the run summary. Its gate is a step output from `verify`, because
+  secrets cannot be read in a job-level `if`.
 - Concurrency cancels a PR's superseded run but never a production deploy
-  mid-upload — pushes to `main` queue behind each other instead.
+  mid-upload — production runs queue behind each other instead.
+- Restoring the automatic pipeline is the two trigger blocks and nothing else;
+  the job conditions still read the event name.
 
 ## Deployment
 
@@ -264,14 +272,23 @@ repo. Same arrangement as [`adawy-platform`](/repositories/adawy-platform);
 see [Deployment](/how-we-work/deployment).
 
 <Callout type="warning">
-  **The deploy job is not live yet.** The repo has `VERCEL_ORG_ID` and
-  `VERCEL_PROJECT_ID` but no `VERCEL_TOKEN` secret (checked 2026-09-27), so
-  every run shows `verify` green and `deploy` skipped. Until the token is
-  added, production ships by hand with `vercel deploy --prod` — run the four
-  CI checks first, because nothing else runs them on that path. Since
-  2026-09-23 that is doubly true: GitHub Actions in the org is blocked by a
-  billing failure, so even `verify` does not run on a push.
+  **Production ships from a terminal.** The repo has `VERCEL_ORG_ID` and
+  `VERCEL_PROJECT_ID` but no `VERCEL_TOKEN` secret (checked 2026-10-06), so
+  even a dispatched run would show `verify` green and `deploy` skipped — and
+  with the workflow manual-only, nothing runs on a push at all. Ship with
+  `vercel deploy --prod`, and run the four CI checks first, because nothing
+  else runs them on that path.
 </Callout>
+
+**Every response carries an `X-Robots-Tag`**, set in `next.config.ts` from
+`VERCEL_ENV`: `noindex, nofollow` on a preview deployment, and on production
+an explicit `index, follow, max-image-preview:large, max-snippet:-1,
+max-video-preview:-1`. *Why a header rather than only the meta tag:* it also
+reaches the OG image and the pattern tiles, which a `<meta>` tag never can, and
+it keeps preview URLs out of search without a publishing switch. The metadata
+also sets `publisher: "Adawy Software"`, the studio signature every site the
+department builds carries. Unlike the client sites, the page itself carries
+no visible studio credit in its footer.
 
 `lib/site.ts` resolves the public origin as `NEXT_PUBLIC_SITE_URL` →
 `https://$VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`, and feeds
@@ -293,6 +310,10 @@ change.
 
 ## Recent history
 
+- **2026-09-27 → 29** — `publisher` metadata credits Adawy Software; the
+  workflow becomes manual-only; markup moves to semantic elements (the contact
+  block is an `<address>` holding a list, one `ContactLine` per number or
+  inbox); `X-Robots-Tag` on every response.
 - **2026-09-19** — pnpm pinned to 11.26.0; Next 16.3.5, React 19.3, ESLint 10,
   TypeScript 7 and Vitest 5.
 - **2026-09-02 → 03** — Next 16.3.4 and TypeScript 6; `@types/node`

@@ -37,11 +37,11 @@ these states, and nothing on this page is in a fourth one.
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Monorepo | **Turborepo + pnpm** — `apps/` per brand + nine shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`, `brand-app`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Monorepo | **Turborepo + pnpm** — `apps/` per brand + ten shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`, `brand-app`, `analytics`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
 | Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team. Note: middleware is `proxy.ts` in this version |
 | Styling | **Tailwind CSS v4 + shadcn/ui** (`@adawy/ui`, `@adawy/design`) | Tokens are CSS-first (`@theme`): `@adawy/design` defines the token structure, each brand overrides the values — accessible, owned by the team, no component library subscription |
 | Motion | **GSAP + Lenis** (`@adawy/motion`) | The brand guidelines require cinematic, scroll-driven motion; GSAP is the industry standard and Lenis provides smooth scrolling, driven by GSAP's ticker so they share one clock. Wired once in `@adawy/motion` — the package ships primitives, brands own choreography |
-| 3D | **three.js**, plus **Rapier** for the physics playground | One WebGL context serves the whole page as a set of passes ([platform architecture](/architecture/platform-architecture)) |
+| 3D | **three.js**, plus **Rapier** for the physics playground | One WebGL context serves the home page as a set of passes; each of the thirteen brand pages plays its own take through the same host ([platform architecture](/architecture/platform-architecture)) |
 | i18n | **next-intl** (`@adawy/i18n`) | `en` / `ar` / `fr` with RTL by design; locale routing and direction handling wired once, used by every brand |
 | Forms | **React Hook Form + Zod** | Type-safe forms with one validation schema shared between client and server ([forms & enquiries](/guides/forms-and-enquiries)) |
 | Transactional email | **Resend** | Contact and quote submissions; reached through a single delivery seam so the provider is swappable |
@@ -99,13 +99,13 @@ since 27 September 2026 ([`adawy-dashboard`](/repositories/adawy-dashboard)).
 aladawyshop.com and aladawypack.com are **WordPress on the Verpex host's
 cPanel**, not Next.js on Vercel ([ADR-015](/architecture/adrs)).
 
-| | Aladawy Shop ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)) | Aladawy Pack |
+| | Aladawy Shop ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)) | Aladawy Pack ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp)) |
 | --- | --- | --- |
 | Platform | WordPress + **WooCommerce** | WordPress |
-| Code | Classic PHP theme `aladawy` (presentation) + plugin `aladawy-core` (data, rules, bilingual routing, checkout, SEO), no page builder | Theme `aladawy-pack`, ported from the Next.js build — not yet in a repository |
-| Languages | Arabic at the root, English under `/en/`, built into the theme and plugin rather than a translation plugin | Arabic and English |
-| Local development | WordPress Playground (WordPress + WooCommerce in Node, no Docker); PHPUnit, PHPCS and Playwright | — |
-| Deploy | `staging.aladawyshop.com` first, then plugin and theme zips uploaded to live ([deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging)) | Not yet documented |
+| Code | Classic PHP theme `aladawy` (presentation) + plugin `aladawy-core` (data, rules, bilingual routing, checkout, SEO), no page builder | Theme `aladawy-pack`, ported from the Next.js build; no plugin |
+| Languages | Arabic at the root, English under `/en/`, built into the theme and plugin rather than a translation plugin | English at the root, Arabic under `/ar/`, built into the theme |
+| Local development | WordPress Playground (WordPress + WooCommerce in Node, no Docker); PHPUnit, PHPCS and Playwright | None in the repo; `npm run build` builds the CSS and JS only |
+| Deploy | `staging.aladawyshop.com` first, then plugin and theme zips uploaded to live ([deployment](/how-we-work/deployment#wordpress-sites-deploy-through-staging)) | `sh deploy.sh` — build, zip, extract over the live theme through the cPanel API ([repo page](/repositories/aladawy-pack-wp#deploying)) |
 
 ## Backend <Badge tone="planned">Decided, not built</Badge>
 
@@ -130,9 +130,9 @@ cPanel**, not Next.js on Vercel ([ADR-015](/architecture/adrs)).
 
 | Tool | Status | Purpose |
 | ---- | ------ | ------- |
-| **Vercel** | <Badge tone="live">Running</Badge> | Frontend hosting, one project per app, plus the content dashboard. On the **Hobby** plan today, which cannot Git-deploy from the org's private repos, so deploys are CLI-driven — and since GitHub Actions stopped on 23 September 2026, run by hand ([deployment](/how-we-work/deployment)) |
+| **Vercel** | <Badge tone="live">Running</Badge> | Frontend hosting, one project per app, plus the content dashboard. On the **Hobby** plan today, which cannot Git-deploy from the org's private repos, so deploys are CLI-driven — from GitHub Actions in `adawy-platform`, and by hand everywhere else ([deployment](/how-we-work/deployment#most-workflows-run-only-by-hand)) |
 | **Neon** (via Vercel Marketplace) | <Badge tone="live">Running</Badge> | Postgres for the content dashboard's logins |
-| **GitHub** | <Badge tone="live">Running</Badge> | Code hosting in the `Adawy-Group` org. Actions (CI) is **blocked by a billing failure** since 23 September 2026 ([deployment](/how-we-work/deployment#github-actions-is-stopped)) |
+| **GitHub** | <Badge tone="live">Running</Badge> | Code hosting in the `Adawy-Group` org. Actions (CI) runs on the free plan's monthly minutes. They ran out on 23 September 2026 and reset on 1 October; only `adawy-platform` runs automatically again ([deployment](/how-we-work/deployment#most-workflows-run-only-by-hand)) |
 | **Verpex** (reseller hosting) | <Badge tone="live">Running</Badge> | DNS for most group domains, through its nameservers, plus cPanel email, the two Aladawy WordPress sites (with Softaculous for the staging copy), and the old sites of domains not yet moved. Kept on purpose ([ADR-013](/architecture/adrs), [Domains, DNS & Email](/architecture/domains-and-email)) |
 | **Cloudflare** | <Badge tone="live">Running</Badge> | DNS for adawybusinessdevelopment.com only |
 | **Name.com** | <Badge tone="live">Running</Badge> | Domain registrar. Renewals happen here, not at the host |

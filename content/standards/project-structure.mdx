@@ -21,12 +21,13 @@ one multi-tenant app ([ADR-008](/architecture/adrs)).
 adawy-platform/
 ├── apps/
 │   ├── group/      Adawy Group   → adawygroup.com   (the full site)
-│   ├── studio/     Adawy Studio  → adawystudio.com (holding page)
+│   ├── studio/     Adawy Studio  → adawystudio.com (one-page site)
 │   ├── pack/       Adawy Pack    → adawypack.com (holding page)
 │   ├── print/      Adawy Print   → adawyprint.com (holding page, on @adawy/brand-app)
 │   ├── supplies/   Adawy Supplies → adawysupplies.com (holding page)
 │   ├── marketing/  Adawy Marketing Solutions → adawymarketingsolutions.com (holding page)
 │   ├── bizdev/     Adawy Business Development → adawybusinessdevelopment.com (holding page)
+│   ├── software/ … manufacturer/  24 newer brands' holding pages on @adawy/brand-app (no domain yet)
 │   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config (planned, ADR-008)
 │   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
@@ -36,17 +37,19 @@ adawy-platform/
     ├── i18n/               @adawy/i18n              (locale list, direction)
     ├── site/               @adawy/site              (identity, routes, alternates, request config)
     ├── holding/            @adawy/holding           (the shared holding-page shell)
-    ├── brand-app/          @adawy/brand-app         (the holding-app shell; apps/print so far)
+    ├── brand-app/          @adawy/brand-app         (the holding-app shell; print + the 24 newer brands)
+    ├── analytics/          @adawy/analytics         (PostHog behind consent)
     ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules)
     └── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
 ```
 
 <Callout type="info">
-  **Today** all seven apps and all nine packages exist. Every app but
-  `apps/group` is a **holding page** — one branded screen each, sharing
-  `@adawy/holding` (`apps/print` also runs on the newer `@adawy/brand-app`
-  shell) — which is why a change to `packages/ui` verifies and deploys seven
-  apps rather than one. `apps/sites` and `apps/api` are planned.
+  **Today** thirty-one apps and all ten packages exist. Every app but
+  `apps/group` and `apps/studio` is a **holding page** — one branded screen
+  each, the older flagships on `@adawy/holding`, `print` and the twenty-four
+  newer apps on the `@adawy/brand-app` shell — which is why a change to
+  `packages/ui` verifies and deploys every app rather than one. `apps/sites`
+  and `apps/api` are planned.
 
   `@adawy/seo` and `@adawy/utils` were once planned and **were never
   extracted**. `@adawy/site` took the metadata and routing role instead, and

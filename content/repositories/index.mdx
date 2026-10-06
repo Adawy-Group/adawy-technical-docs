@@ -6,13 +6,13 @@ tags: ['Reference', 'Start here']
 
 # The Repository Map
 
-**Twelve repositories.** Knowing which world a repo belongs to tells you which
+**Thirteen repositories.** Knowing which world a repo belongs to tells you which
 rules apply to it before you open a single file.
 
 <Stats>
-  <Stat value="12" label="repositories" hint="in the Adawy-Group org" />
+  <Stat value="13" label="repositories" hint="in the Adawy-Group org" />
   <Stat value="1" label="Group monorepo" hint="every brand site" />
-  <Stat value="7" label="client projects" hint="one repo each" />
+  <Stat value="8" label="client projects" hint="one repo each" />
   <Stat value="3" label="internal" hint="dashboard, its sandbox, this handbook" />
 </Stats>
 
@@ -20,12 +20,13 @@ rules apply to it before you open a single file.
 | ---------- | ----- | ---------- | ----- |
 | [`adawy-platform`](/repositories/adawy-platform) | <Badge tone="group">Group</Badge> | The monorepo behind every Adawy Group brand site | Turborepo + pnpm, Next.js 16 |
 | [`adawy-group-links`](/repositories/adawy-group-links) | <Badge tone="group">Group</Badge> | The Group's own link-in-bio page — standalone, and an [open question](#the-third-case-and-the-open-question) | Next.js 16, standalone |
-| [`aladawy-pack`](/repositories/aladawy-pack) | <Badge tone="client">Client</Badge> | The Next.js build of the Aladawy Pack website — aladawypack.com now serves a WordPress port of it | Next.js 16, standalone |
+| [`aladawy-pack`](/repositories/aladawy-pack) | <Badge tone="client">Client</Badge> | The Next.js build of the Aladawy Pack website — **superseded** by `aladawy-pack-wp`, kept as the design reference | Next.js 16, standalone |
+| [`aladawy-pack-wp`](/repositories/aladawy-pack-wp) | <Badge tone="client">Client</Badge> | **What runs aladawypack.com since 26 Sept 2026** — the custom WordPress theme ported from `aladawy-pack` | WordPress theme, Tailwind v4 + GSAP, on cPanel |
 | [`aladawy-links`](/repositories/aladawy-links) | <Badge tone="client">Client</Badge> | Aladawy Pack's link-in-bio page — `adawy-group-links` rebranded | Next.js 16, standalone |
 | [`aladawy-shop-wp`](/repositories/aladawy-shop-wp) | <Badge tone="client">Client</Badge> | **What runs aladawyshop.com since 24 Sept 2026** — the WordPress + WooCommerce rebuild | WordPress theme + plugin, on cPanel |
 | [`aladawy-shop`](/repositories/aladawy-shop) | <Badge tone="client">Client</Badge> | The earlier Next.js storefront — **superseded** by `aladawy-shop-wp`, kept as the reference implementation | Next.js 16 + Redux, standalone |
 | [`jumeira`](/repositories/jumeira) | <Badge tone="client">Client</Badge> | Pre-launch film site for Jumeira Catering, Benghazi | Next.js 16, standalone |
-| [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | One-page scroll-story site for Zad Al-Hkoul for Agricultural Crops, pre-launch | Next.js 16, standalone |
+| [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | One-page scroll-story site for Zad Al-Hkoul for Agricultural Crops — **live at zadalhkoul.com since 29 Sept 2026** | Next.js 16, standalone |
 | [`baron-menu`](/repositories/baron-menu) | <Badge tone="client">Client</Badge> | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
 | [`adawy-dashboard`](/repositories/adawy-dashboard) | <Badge tone="internal">Internal</Badge> | The content dashboard at admin.adawygroup.com — edit a site's text and images without a developer | Next.js 16, Better Auth |
 | [`adawy-content-sandbox`](/repositories/adawy-content-sandbox) | <Badge tone="internal">Internal</Badge> | Where the dashboard publishes while it runs in practice mode — deployed nowhere | Content files only |
@@ -40,7 +41,7 @@ monorepo, `adawy-platform`, on shared `@adawy/*` packages. This is where
 the only place they apply.
 
 **Client work** is software the department builds *for other businesses*.
-Aladawy Pack (its website and its link page), Aladawy Shop (both builds), Jumeira Catering,
+Aladawy Pack (both builds of its website, and its link page), Aladawy Shop (both builds), Jumeira Catering,
 Zad Al-Hkoul and Baron are customers of the department, not Group brands. Each gets **its own standalone
 repository**, deliberately not coupled to `@adawy/*` — see
 [ADR-010](/architecture/adrs) for why, and
@@ -78,7 +79,8 @@ precedent. Starting a new Group property outside the platform is still an
   - **Adawy** Pack is a Group brand. It lives at `apps/pack` inside
     `adawy-platform`.
   - **Alad**awy Pack (Aladawy Pack for Printing & Packaging, est. 1971) is a
-    client. Its website lives in `aladawy-pack`, its link-in-bio page in
+    client. Its live website is `aladawy-pack-wp` (WordPress), the Next.js build it
+    was ported from is `aladawy-pack`, and its link-in-bio page is in
     `aladawy-links`.
 
   They have different owners, different domains, different codebases, and
@@ -93,9 +95,9 @@ precedent. Starting a new Group property outside the platform is still an
 | A shared component, token, or motion primitive | `adawy-platform` → `packages/` |
 | A new Adawy Group brand site | `adawy-platform` → a new `apps/<brand>` ([guide](/guides/launch-new-brand)) |
 | The Group's link-in-bio page | `adawy-group-links` |
-| The Aladawy Pack website | Its WordPress theme on the host — no Adawy-Group repo holds it yet ([status](/repositories/aladawy-pack)); `aladawy-pack` is the Next.js build it was ported from |
+| The Aladawy Pack website (aladawypack.com) | `aladawy-pack-wp` — its text and products are edited in `wp-admin`, not in code |
 | Aladawy Pack's link-in-bio page | `aladawy-links` |
-| The Aladawy Shop site (aladawyshop.com) | `aladawy-shop-wp`, branch `build/wordpress-rebuild` |
+| The Aladawy Shop site (aladawyshop.com) | `aladawy-shop-wp` |
 | Text or an image on a site, without code | Nobody clones anything — use the [dashboard](/repositories/adawy-dashboard) ([videos](/guides/training-videos)) |
 | The content dashboard itself | `adawy-dashboard` |
 | The Jumeira Catering site | `jumeira` |
@@ -111,7 +113,7 @@ running proves your toolchain before anything harder depends on it.
 
 <Cards num={3}>
   <Cards.Card title="adawy-platform" href="/repositories/adawy-platform" arrow>
-    The monorepo. Seven apps, one WebGL canvas, three locales, nine shared packages.
+    The monorepo. Thirty-one apps, thirteen brand scenes, three locales, ten shared packages.
   </Cards.Card>
   <Cards.Card title="adawy-dashboard" href="/repositories/adawy-dashboard" arrow>
     Edit text, swap an image, publish — every publish is one git commit.
@@ -123,7 +125,10 @@ running proves your toolchain before anything harder depends on it.
     One screen, seven doors, two locales — and an open placement question.
   </Cards.Card>
   <Cards.Card title="aladawy-pack" href="/repositories/aladawy-pack" arrow>
-    A monochrome marketing site with a surface system worth learning.
+    The design reference for the live Pack theme — a surface system worth learning.
+  </Cards.Card>
+  <Cards.Card title="aladawy-pack-wp" href="/repositories/aladawy-pack-wp" arrow>
+    The live Aladawy Pack site: one WordPress theme, two languages by URL, deployed by one script.
   </Cards.Card>
   <Cards.Card title="aladawy-links" href="/repositories/aladawy-links" arrow>
     The Group's link page, rebuilt for a client. Same construction, different brand.
@@ -138,7 +143,7 @@ running proves your toolchain before anything harder depends on it.
     One pinned scroll carrying three scrubbed films. The hardest client build.
   </Cards.Card>
   <Cards.Card title="zad-alhkoul" href="/repositories/zad-alhkoul" arrow>
-    English-default, `src/`-rooted feature folders, a three-layer design system, 126 tests.
+    Live at zadalhkoul.com. English-default, `src/`-rooted feature folders, a three-layer design system.
   </Cards.Card>
   <Cards.Card title="baron-menu" href="/repositories/baron-menu" arrow>
     No framework, no build step, on purpose. Edit one file to change the menu.
@@ -157,23 +162,25 @@ know is not — so here is the honest matrix.
 | | Package manager | AGENTS.md | CI | Tests | Bilingual |
 | --- | --- | --- | --- | --- | --- |
 | `adawy-platform` | pnpm 11.26 | ✅ | ✅ | ✅ | en · ar · fr |
-| `adawy-group-links` | pnpm 11.26 | ⚠️ stub | ⚠️ deploy skipped | ✅ | en · ar |
+| `adawy-group-links` | pnpm 11.26 | ⚠️ stub | ⚠️ manual only, deploy skipped | ✅ | en · ar |
 | `aladawy-links` | pnpm 11.26 | ⚠️ stub | ❌ | ✅ | en · ar |
-| `aladawy-pack` | pnpm 11.26 | ❌ | ✅ | ✅ | en · ar |
+| `aladawy-pack` | pnpm 11.26 | ❌ | ⚠️ manual only | ✅ | en · ar |
+| `aladawy-pack-wp` | npm | ❌ | ❌ | ❌ | en · ar |
 | `aladawy-shop` | pnpm 11.26 | ✅ | ❌ | ✅ | ar · en |
 | `aladawy-shop-wp` | pnpm 12.4 + Composer | ❌ | ⚠️ manual only | ✅ | ar · en |
 | `adawy-dashboard` | pnpm 11.26 | ❌ | ❌ | ✅ | ar · en |
-| `jumeira` | pnpm 11.26 | ✅ +4 more | ✅ | ✅ | ar · en |
-| `zad-alhkoul` | pnpm 11.26 | ⚠️ stub | ✅ | ✅ | en · ar |
+| `jumeira` | pnpm 11.26 | ✅ +4 more | ⚠️ manual only | ✅ | ar · en |
+| `zad-alhkoul` | pnpm 11.26 | ⚠️ stub | ⚠️ manual only | ✅ | en · ar |
 | `baron-menu` | npm (image script only) | ❌ | ❌ | ❌ | en · ar |
-| `adawy-technical-docs` | **npm** | ❌ | ✅ | ❌ | English only |
+| `adawy-technical-docs` | **npm** | ❌ | ⚠️ manual only | ❌ | English only |
 
 **What is genuinely universal:**
 
 - **`main` is the deployable branch.** Work lands through reviewed pull
   requests ([git workflow](/how-we-work/git-workflow)).
 - **A `README.md`** covering what the project is, how to run it, and what
-  ships. The README is the tour; `AGENTS.md` is the contract.
+  ships — except the two WordPress repos, which have none yet. The README is
+  the tour; `AGENTS.md` is the contract.
 - **Bilingual with real RTL** in every product repo — `baron-menu` included —
   with every human-readable string in a message file rather than in a component
   (`baron-menu`, having no framework, keeps them in one `I18N` table in
@@ -185,8 +192,10 @@ know is not — so here is the honest matrix.
 
 **Where the gaps are, and what they mean:**
 
-- **`aladawy-pack`, `baron-menu`, `aladawy-shop-wp` and `adawy-dashboard` have no
-  `AGENTS.md`** (the two newest keep their contract in `docs/`), and in
+- **`aladawy-pack`, `aladawy-pack-wp`, `baron-menu`, `aladawy-shop-wp` and
+  `adawy-dashboard` have no `AGENTS.md`** (`aladawy-shop-wp` and
+  `adawy-dashboard` keep their contract in `docs/`; `aladawy-pack-wp` has no
+  README either — its file headers are the map), and in
   `adawy-group-links`, `aladawy-links` and `zad-alhkoul` the file holds only the
   block Next.js generates. `zad-alhkoul` and `aladawy-links` at least carry
   their constraints in a tracked README; `adawy-group-links` keeps them in an
@@ -194,11 +203,16 @@ know is not — so here is the honest matrix.
   you are the next person into one of those repos, writing it is the
   highest-value small PR
   available ([working with AI](/how-we-work/working-with-ai)).
-- **GitHub Actions has not run anywhere since 23 September 2026.** A billing
-  failure on the organization makes every workflow fail within seconds, so
-  every ✅ in the CI column is currently a ✅ on paper: run the gates by hand
-  and deploy with `vercel deploy --prod`
-  ([deployment](/how-we-work/deployment)).
+- **Most CI runs only when started by hand.** The organisation's free GitHub
+  Actions minutes ran out on 23 September 2026, and on 27 September every
+  workflow was switched to `workflow_dispatch` only. The minutes reset on
+  1 October, but only `adawy-platform` went back to automatic triggers. In a
+  ⚠️ manual-only repo a merge checks and deploys nothing: run the gates by
+  hand, then deploy with the Vercel CLI ([deployment](/how-we-work/deployment#most-workflows-run-only-by-hand)).
+- **`aladawy-pack-wp` has no CI, no tests and no staging copy.** `deploy.sh`
+  builds and ships straight to the live site, so the comparison with live
+  before and the check after are by hand
+  ([how](/repositories/aladawy-pack-wp#deploying)).
 - **`aladawy-shop-wp`'s workflow only runs when started by hand**, and
   `bin/check.sh` is the real gate. Its code reaches the live site by upload
   through cPanel, not by a merge ([how](/repositories/aladawy-shop-wp)).
@@ -208,8 +222,9 @@ know is not — so here is the honest matrix.
 - **`aladawy-links` has no CI, on purpose.** Its workflow was removed because
   a page that changes a few times a year was not worth the pipeline; run its
   five gates, then `vercel deploy --prod`.
-- **`adawy-group-links`' deploy job always skips.** `verify` runs on every push
-  and PR, but the repo has no `VERCEL_TOKEN` secret, so production ships by
+- **`adawy-group-links`' deploy job always skips.** The workflow is manual-only
+  now, and even a dispatched run skips the deploy because the repo has no
+  `VERCEL_TOKEN` secret, so production ships by
   hand ([deployment](/how-we-work/deployment#client-projects-deploy-the-same-way)).
 - **`jumeira` splits its contract across five files.** `AGENTS.md` is the entry
   point, and `SECTIONS.md`, `CHROME.md`, `FILMS.md` and `PRODUCT.md` carry what

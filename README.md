@@ -17,9 +17,10 @@ npm run build                  # the real gate on content
 npm run check-links:external   # also requests every off-site URL (network)
 ```
 
-The external check runs weekly in CI rather than on pull requests: it needs the
-network, and a third party being briefly down should not fail a branch that
-changed nothing.
+The external check is kept out of the pull-request gate: it needs the network,
+and a third party being briefly down should not fail a branch that changed
+nothing. Both workflows run only when started by hand since 27 September 2026
+(the org's Actions minutes ran out), so run the two gates yourself.
 
 This repo uses **npm**. Every other repo in the org uses pnpm.
 

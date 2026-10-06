@@ -67,6 +67,17 @@ flowchart LR
   and tap-any-item to open a photo "peek" `<dialog>`. Seven categories: family
   meals, appetizers, wings, beef burgers, chicken sandwiches, beverages,
   extras.
+- **Phone-first, but not phone-only** (since 29 Sep 2026). A landscape phone
+  gets a two-column gate and a side-by-side peek; a tablet hangs the sticker
+  photo higher; from 1024px each category panel becomes a spread with a
+  sticky title-and-photo column beside the items. Every panel title is sized
+  from the **longest single word across all titles**, which `script.js`
+  measures in the current language and hands to the CSS as `--title-chars`,
+  *so no word ever hides behind the sticker photo*, in either language.
+- **The footer credits the studio**: *Designed & developed by Adawy Software*,
+  linking to the group site in the visitor's language (`script.js` swaps the
+  `/en` or `/ar` at the end of the one URL in `index.html`). The head carries
+  a matching `<meta name="publisher" content="Adawy Software">`.
 
 ## The one file that matters
 
@@ -129,6 +140,13 @@ vercel deploy --prod --yes
   alongside it.
 </Callout>
 
+**`vercel.json` is configuration, not a build.** It does one thing: sends
+`X-Robots-Tag: index, follow, max-image-preview:large, max-snippet:-1,
+max-video-preview:-1` on every response. *Why state it on a site that is
+meant to be indexed anyway:* the food photos are what sells, and only a header
+can tell a search engine an image may be shown full size — a meta tag never
+reaches an image response.
+
 What ships is decided by `.vercelignore`: the npm files, the image script,
 `qr/` and stray root screenshots are excluded. It anchors `/baron-*.png` to the
 root on purpose — *an unanchored pattern once also excluded
@@ -144,7 +162,8 @@ python3 -m http.server 8848   # → http://localhost:8848  (python on Windows)
 
 | File / folder | What it is |
 | ------------- | ---------- |
-| `index.html`, `styles.css`, `script.js` | The site (~155 / ~900 / ~460 lines) |
+| `index.html`, `styles.css`, `script.js` | The site (~160 / ~1,100 / ~490 lines) |
+| `vercel.json` | One response header (`X-Robots-Tag`) — no build settings |
 | `data/menu.js` | **The menu — edit this** |
 | `images/` | Optimized food photos (WebP), badge, wordmark, illustrations |
 | `qr/` | The QR code (PNG for screens, SVG for large prints) — not deployed |
@@ -168,7 +187,11 @@ Being framework-free does not exempt it from the department's bars:
 - **WCAG AA contrast**, verified: cream `#F7F1EB` against red `#CE2733` is
   4.7:1 and used for text both ways.
 - **Full `prefers-reduced-motion` alternatives**, visible focus rings,
-  semantic headings per category, alt text on every food photo.
+  semantic headings per category, alt text on every food photo. The markup
+  uses landmark elements rather than bare `div`s (the gate is a labelled
+  `<section>` with its own `<header>`), and class names are BEM-style and say
+  what a thing is (`gate-option--primary`, `lang-toggle`), since a cleanup on
+  28 Sep 2026.
 - **Real RTL** using logical properties — not a mirrored stylesheet — with
   Lalezar + Rubik as the Arabic pairing (Google Fonts).
 - **Prices match the printed menu exactly.** The print PDF is the source of

@@ -15,8 +15,8 @@ Group brand.
 
 Private · WordPress theme `aladawy` + plugin `aladawy-core` on WooCommerce ·
 not part of the monorepo · **live at `aladawyshop.com` since 24 September
-2026** · the work sits on branch `build/wordpress-rebuild` (a draft pull request
-into `main`, which holds only the design documents)
+2026** · `main` is the branch (the rebuild was merged into it on 2 October
+2026)
 
 <Stats>
   <Stat value="53" label="catalogue lines" hint="imported from the Next.js catalogue" />
@@ -37,11 +37,13 @@ exported into the plugin, and its design system was ported into the theme.
 The customer can browse in Arabic or English, build a quote with tiers and
 options, and then either **request a quote** (no payment; staff confirm by
 phone or WhatsApp) or **pay cash on delivery** when their governorate has a
-delivery fee. Staff run everything from wp-admin: products, orders, customers
-and the shop's own settings. Order mail goes to the shop's inbox.
+delivery fee. Staff run everything from wp-admin: products, orders, customers,
+the WhatsApp signup list and the shop's own settings. Order mail goes to the
+shop's inbox.
 
-Staff training is [twelve short videos](/guides/training-videos), six in Arabic
-and six in English, recorded on staging.
+Training is [six short videos](/guides/training-videos#aladawy-shop) with
+Arabic captions, recorded on staging: three for customers, three for the
+shop's staff.
 
 ## Why WordPress, when a Next.js build already existed
 
@@ -51,8 +53,9 @@ From the rebuild design (`docs/specs/2026-09-21-wordpress-rebuild-design.md`):
   WooCommerce keeps the owner managing products and orders in the tool they
   know, instead of a committed TypeScript file only a developer can edit.
 - **The site already has state the Next.js build does not.** Customer
-  accounts, existing orders and customers, and the Mailchimp signup were all on
-  the WordPress site and had to be kept.
+  accounts, existing orders and customers, and a Mailchimp signup were all on
+  the WordPress site and had to be kept. (The Mailchimp form has since been
+  replaced by a WhatsApp signup — [below](#the-whatsapp-signup).)
 - **The real problem was the front end, not the platform.** The live site ran
   a WoodMart demo theme with demo copy still showing, 58 products priced at 0
   in USD with no codes, English only, and an admin username exposed through
@@ -104,15 +107,16 @@ wp-content/plugins/aladawy-core/
   src/Http/ src/Lookup/     legacy-URL redirects; /p/<code> → the product
   src/Order/ src/Quote/     the "Quote requested" status, line meta, WhatsApp text
   src/Contact/              the contact form route
+  src/Signup/               the footer's WhatsApp signup route and the WhatsApp list
   migration/                catalog.json + the 53 product photos
   templates/emails/         the "we received your quote request" email
 wp-content/themes/aladawy/
   *.php, woocommerce/       page templates and WooCommerce overrides
   inc/                      setup, assets, WooCommerce hooks, settings, REST
   assets/css/src/ → app.css Tailwind v4 source → committed build
-  assets/js/                six small vanilla modules, no jQuery
+  assets/js/                seven small vanilla modules, no jQuery
 tests/php/                  PHPUnit (pure classes, no WordPress)
-tests/e2e/                  Playwright specs + a test-only mu-plugin + Playground blueprint
+tests/e2e/                  Playwright specs + test-only mu-plugins + Playground blueprint
 tools/                      catalogue export, i18n, image/font/brand copy
 bin/                        dev.sh, check.sh, php
 docs/specs/                 the rebuild design and the COD & accounts design
@@ -155,9 +159,10 @@ refinements made while building. The rules that matter most:
 9. **Only the classic checkout exists.** The WooCommerce Store API checkout
    answers 403. *Why:* that route skipped the phone check, honeypot and rate
    limit.
-10. **The contact form has no nonce** — it relies on a same-origin check, a
-    honeypot and a rate limit. *Why:* a nonce baked into a cached page expires
-    and refuses real visitors.
+10. **The contact form and the footer signup have no nonce** — they rely on a
+    same-origin check, a honeypot and a rate limit. *Why:* a nonce baked into
+    a cached page expires and refuses real visitors, and the footer is on
+    every page.
 11. **Sign-in is throttled per IP and account, and per IP.** Five failures of
     one account from one IP in 15 minutes lock that pair; twenty from one IP
     lock the IP. *Why:* one guesser behind a shared carrier-grade NAT address
@@ -165,6 +170,43 @@ refinements made while building. The rules that matter most:
 12. **Committed build output.** `assets/css/app.css` and the `.po/.mo` files are
     committed and checked for staleness. *Why:* the host has no build step and
     no shell; what is in the repo is what gets uploaded.
+13. **Robots directives go out twice, from one source.** The plugin's
+    `wp_robots` filter (at priority 99, after core and WooCommerce add their
+    `noindex`) builds the robots meta tag, and the same filter output is sent
+    as an `X-Robots-Tag` header. An indexable page states
+    `index, follow, max-image-preview:large, max-snippet:-1,
+    max-video-preview:-1` rather than leaving it to defaults. *Why:* built from
+    one filter, the header and the tag cannot disagree.
+14. **Adawy Software is credited, the store is the owner.** The `publisher`
+    meta tag, the plugin's and the theme's `Author`, and a footer line
+    ("Designed & developed by Adawy Software", the name kept in Latin in both
+    languages) name the department's company; the JSON-LD still names Aladawy
+    Shop as the site's owner. *Why:* it is the signature on every site the
+    department builds — authorship, not ownership.
+
+## The WhatsApp signup
+
+The footer asks for a WhatsApp number for new products and offers. It
+replaced the Mailchimp form on 28 September 2026; the rebuild design in
+`docs/specs/` still describes the Mailchimp form, so the commits are the
+record of the change.
+
+- **The route is `POST /aladawy/v1/signup`** (`src/Signup/`), with the contact
+  form's guards: same-origin check, honeypot, five requests per IP per ten
+  minutes, no nonce. The number must be a valid Egyptian mobile and is stored
+  in national form; a number already on the list answers as a success.
+- **It works without JavaScript.** The browser posts the form and is sent back
+  to the page with `?joined=1` or `?signup_error=<code>`. The route returns
+  error *codes*, and the theme words them in the visitor's language. *Why:* a
+  REST request does not carry the page's language.
+- **Each number is a private post** (`aladawy_subscriber`) with the visitor's
+  language, listed in wp-admin under **WhatsApp list** with search, bulk delete
+  and a CSV download, for anyone who can manage WooCommerce. "Add new" and
+  editing are switched off, because numbers arrive only through the form.
+  *Why a post type and not a table:* search, trash and bulk delete come with
+  the stock list screen, and nothing needs migrating.
+- **Nothing sends to the list.** Messaging the numbers is done outside the
+  site, from the CSV.
 
 ## Running locally
 
@@ -192,6 +234,37 @@ bash bin/check.sh        # everything CI would run, locally
 `pnpm dev` mounts the plugin, the theme, the repo's mu-plugins, the test-only
 mu-plugins and the migration folder into the Playground site.
 
+### On Windows
+
+`pnpm dev` and `pnpm test:e2e` both call `bash bin/dev.sh`, and on Windows
+`bash` there resolves to **WSL's** bash rather than Git Bash, so the script
+does not run against your Windows checkout. Nor can its `--mount=<host>:<vfs>`
+form take a host path with a drive letter: Playground rejects it. So
+start Playground yourself from PowerShell, in the repo root, with
+`--mount-dir <host> <vfs>`, which takes the two paths as separate arguments:
+
+```powershell
+pnpm exec wp-playground-cli server --php=8.2 --port=9400 --login `
+  --blueprint="$PWD\tests\e2e\blueprint.json" `
+  --mount-dir "$PWD\wp-content\plugins\aladawy-core" /wordpress/wp-content/plugins/aladawy-core `
+  --mount-dir "$PWD\wp-content\themes\aladawy" /wordpress/wp-content/themes/aladawy `
+  --mount-dir "$PWD\wp-content\mu-plugins" /wordpress/wp-content/aladawy-mu `
+  --mount-dir "$PWD\tests\e2e\mu-plugins" /wordpress/wp-content/aladawy-test-mu `
+  --mount-dir "$PWD\migration" /wordpress/wp-content/aladawy-migration
+```
+
+Then, in a second terminal, `pnpm test:e2e`. Outside CI Playwright reuses a
+server already answering on `:9400` instead of starting its own, so it never
+reaches `bin/dev.sh`. All five mounts matter: the tests wait on a readiness
+endpoint that only the test mu-plugins provide.
+
+**A Windows run is not yet a trusted baseline.** A partial run on Windows in
+October 2026 failed four specs that have not been triaged: My Account order
+statuses, registration attempt limiting, the sign-in throttle, and the
+catalogue migration preview. If one of those fails for you on Windows, run it
+on `main` on the same machine before deciding your change broke it, and
+treat CI or a Linux run as the reference.
+
 ## Testing
 
 - **PHPUnit** (`composer test`) covers the pure classes with no WordPress
@@ -204,15 +277,21 @@ mu-plugins and the migration folder into the Playground site.
   against it on **one worker, in file order**. *Why:* one in-memory site holds
   all the state, so the migration spec must run before the ones that browse,
   and the `zz-admin-*` specs sort last on purpose. Specs cover both languages,
-  the cart, checkout, COD by governorate, accounts, the sign-in throttle, SEO,
-  search and `/p/<code>`, plus axe accessibility checks.
-- `tests/e2e/mu-plugins/` is **test-only** — it adds a readiness endpoint and
-  a migrate endpoint for the tests. It is never uploaded to a real site.
+  the cart, checkout, COD by governorate, accounts, the sign-in throttle, SEO
+  and the `X-Robots-Tag` header, search, `/p/<code>`, the WhatsApp signup, and
+  the footer credit, plus axe accessibility checks.
+- `tests/e2e/mu-plugins/` is **test-only** — it adds a readiness endpoint, a
+  migrate endpoint, and switches off a Playground mu-plugin that would loop
+  `/sitemap.xml` and `/wp-sitemap.xml` into each other. It is never uploaded
+  to a real site.
 
 **CI is manual-only.** `.github/workflows/ci.yml` runs on `workflow_dispatch`
-alone (PHP, e2e, i18n jobs), and its own comment says to run it when billing
-allows. The gate day to day is **`bin/check.sh`**, which runs the same checks
-and fails on stale CSS or stale translations. Run it before building a release.
+alone (PHP, e2e, i18n jobs). Its push and pull-request triggers were removed
+on 23 September 2026, the day the organisation's free GitHub Actions minutes
+ran out, and were not restored when the quota reset on 1 October. Start it
+from the Actions tab when you want a Linux run. The gate day to
+day is **`bin/check.sh`**, which runs the same checks and fails on stale CSS
+or stale translations. Run it before building a release.
 
 ## Hosting
 
@@ -295,19 +374,22 @@ mode, which lets admins through, or accept the window.
 
 The repo does not yet record a procedure for a **later** code release. The
 safe reading of the above is steps 1, 2, 5 and 11: backups, zips, upload,
-checks. The migration is **not** run again.
+checks — built from `main`. The migration is **not** run again.
 
 ## Current state
 
-Verified 27 September 2026:
+Verified from outside on 6 October 2026:
 
 - `aladawyshop.com` serves the `aladawy` theme (`<html lang="ar" dir="rtl">`),
   and `/en/` answers 200. Staging answers 401 without credentials.
 - The migration ran once on live on 24 September. It updated the 53 products,
   imported their photos, created the 6 categories and retired the old pages
   and demo posts as drafts with redirects. Nothing was deleted.
-- The code on live is the head of `build/wordpress-rebuild`. The pull request
-  into `main` is still a draft. **Merge it**, so `main` matches what is live.
+- The releases made after go-live are on live: the Adawy Software credit
+  (27–28 September), the WhatsApp signup (28 September) and the
+  `X-Robots-Tag` header (29 September). Those are the last commits on `main`,
+  which the rebuild branch was merged into on 2 October, so **`main` is what
+  is live**. How those releases were shipped is not recorded.
 
 Left for the owner or the next person:
 
@@ -322,9 +404,9 @@ Left for the owner or the next person:
   updates. Remove them once the owner is sure there is no rollback.
 - The live `wp-config.php` defines `WP_DEBUG` twice. That was there before the
   rebuild, and it logs a warning on every request.
-- **The old Next.js deployment is still indexable** and does not redirect. The
-  design says noindex, then redirect to `aladawyshop.com`
-  ([details](/repositories/aladawy-shop)).
+- **The old Next.js deployment sends `noindex, nofollow`** since 29 September,
+  but does not redirect yet. The design says noindex, then redirect to
+  `aladawyshop.com` ([details](/repositories/aladawy-shop)).
 - Not installed yet, though the design lists them: LiteSpeed Cache and Two
   Factor. Search Console and Merchant Center need the owner's Google account.
 
@@ -339,9 +421,10 @@ Left for the owner or the next person:
   "Sign in" or "My account" on the server. There is no page cache on live
   today. If LiteSpeed Cache is ever installed, keep "Cache Logged-in Users"
   off.
-- **The sign-in throttle trusts `REMOTE_ADDR`.** If a proxy or CDN is ever put
-  in front of the site, every visitor shares one address and the throttle
-  locks out everyone. Check what the server sees before adding one.
+- **The sign-in throttle and the form rate limits trust `REMOTE_ADDR`.** If a
+  proxy or CDN is ever put in front of the site, every visitor shares one
+  address and the throttle locks out everyone. Check what the server sees
+  before adding one.
 - **A locked-out admin has to wait.** There is no shell to clear the counters;
   they are transients that expire after 15 minutes.
 - **Stale CSS or translations fail the gate.** Run `pnpm css` and `pnpm i18n`
@@ -350,3 +433,12 @@ Left for the owner or the next person:
   against the printed counter list.
 - **Aladawy Shop is a client.** No `@adawy/*` packages and no Group branding
   in this repo ([Client Projects](/how-we-work/client-projects)).
+
+## Agent guidance
+
+There is **no `README.md` and no `AGENTS.md`**. The contract is the two
+design documents in `docs/specs/`, with their refinement sections, and the
+docblocks at the top of each class, which state the reason at the point of
+use. Changes made after go-live (the WhatsApp signup, the credit, the
+`X-Robots-Tag` header) are not in the specs yet; their commits and this page
+are the record.

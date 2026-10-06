@@ -15,9 +15,9 @@ for clients is a separate track with separate rules — see
 
 | System | What it is | Status |
 | ------ | ---------- | ------ |
-| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per flagship brand — `apps/group` plus six brand holding pages (`studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev`) today — all on shared `@adawy/*` packages, each deployed to its own domain(s) | <Badge tone="live">Built</Badge> Phase 1 |
+| **Brand sites platform** | One Turborepo monorepo: a thin Next.js app per Adawy brand — thirty-one today: `apps/group`, the studio's one-page site, five flagship holding pages (`pack`, `print`, `supplies`, `marketing`, `bizdev`) and twenty-four holding pages for the brands added in September 2026 — all on shared `@adawy/*` packages, each its own Vercel project; seven are on their own domains | <Badge tone="live">Built</Badge> Phase 1 |
 | **The multi-tenant app** | One `apps/sites` mapping hostname → brand config, for the long tail ([ADR-008](/architecture/adrs)) | <Badge tone="planned">Decided, not built</Badge> |
-| **Shared design system** | The nine `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell), `brand-app` (the holding-app shell), plus `eslint-config` and `typescript-config`, which machine-enforce the rules the others assume | <Badge tone="live">Built</Badge> the most important technical deliverable |
+| **Shared design system** | The ten `@adawy/*` packages: `ui` (shadcn primitives), `design` (Tailwind v4 tokens), `motion` (GSAP + Lenis), `i18n` (locales + direction), `site` (identity, routes, metadata), `holding` (the holding-page shell), `brand-app` (the holding-app shell), `analytics` (PostHog behind consent), plus `eslint-config` and `typescript-config`, which machine-enforce the rules the others assume | <Badge tone="live">Built</Badge> the most important technical deliverable |
 | **Backend service** | Node.js (NestJS) in the same monorepo as `apps/api` ([ADR-009](/architecture/adrs)): authentication, business logic, Odoo integration, background jobs, real-time | <Badge tone="planned">Phase 2</Badge> first build of the phase |
 | **Client portal** | portal.adawygroup.com — orders across all sub-brands, brand assets, invoices, structured intake, AI assistant | <Badge tone="planned">Phase 2</Badge> the flagship |
 | **Employee portal** | One internal home: internal AI assistant, search across all company systems, operational dashboards, content engine | <Badge tone="planned">Phase 3</Badge> |
@@ -68,8 +68,8 @@ Upstash. The backend column is still a plan; the one managed database that
 exists today is the dashboard's login store, a Neon Postgres database added
 through the Vercel Marketplace.
 
-Two client sites run on neither column: **aladawyshop.com** and
-**aladawypack.com** are WordPress + WooCommerce on the Verpex host's cPanel
+Two client sites run on neither column: **aladawyshop.com** (WordPress + WooCommerce) and
+**aladawypack.com** (WordPress) run on the Verpex host's cPanel
 ([below](#the-client-sites-that-stay-on-wordpress)).
 
 ## Odoo — the system of record
@@ -107,12 +107,12 @@ theme ([ADR-015](/architecture/adrs)). The shop's rebuild design states the
 reason — the business keeps managing its products and orders in `wp-admin`,
 the tool its staff already use — which is the difference from adawygroup.com,
 where the department itself edits the site. Aladawy Pack followed on
-27 September 2026; its reasoning is not yet written down anywhere.
+26 September 2026; its reasoning is not yet written down anywhere.
 
 | Site | What runs | State |
 | ---- | --------- | ----- |
-| aladawyshop.com | WordPress + WooCommerce with the department's `aladawy` theme and `aladawy-core` plugin ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)): bilingual Arabic/English, quote request, cash on delivery where a delivery fee is set, customer accounts. Built and tested on `staging.aladawyshop.com`, a password-protected copy, and pushed to live with Softaculous | <Badge tone="live">Live</Badge> since 24 September 2026 |
-| aladawypack.com | WordPress with an `aladawy-pack` theme ported from the Next.js build, since about 27 September 2026 — site text under Appearance → Site content, products, and an Enquiries screen for the site's forms | <Badge tone="live">Live</Badge> theme source not yet in a repository |
+| aladawyshop.com | WordPress + WooCommerce with the department's `aladawy` theme and `aladawy-core` plugin ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp)): bilingual Arabic/English, quote request, cash on delivery where a delivery fee is set, customer accounts. Built and tested on `staging.aladawyshop.com`, a password-protected copy, and released to live as uploaded plugin and theme zips | <Badge tone="live">Live</Badge> since 24 September 2026 |
+| aladawypack.com | WordPress with the department's `aladawy-pack` theme ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp)), ported from the Next.js build — site text under Appearance → Site content, products, and an Enquiries screen for the site's forms. Deployed by a script through the cPanel API, with no staging copy | <Badge tone="live">Live</Badge> since 26 September 2026 |
 
 Both are **client deliverables, not Group systems**, so the detail lives under
 [Repositories](/repositories). They also sit outside most of this handbook's

@@ -52,7 +52,10 @@ delivery, priority first:
    and Marketing Solutions already have holding pages live on their own
    domains (`apps/print`, `apps/supplies`, `apps/marketing`), and Business
    Development's (`apps/bizdev`) on adawybusinessdevelopment.com since
-   23 September 2026.*
+   23 September 2026.* *On 29 September twenty-four more brands got holding
+   apps on `@adawy/brand-app` (Software, IT, AI, Law Firm, Production and the
+   rest), none on a domain yet, and on 1 October seven of them got company
+   pages on adawygroup.com.*
    ([the workflow](/guides/launch-new-brand)). Six weeks per site becomes
    one week per site as the packages mature.
 
@@ -66,16 +69,16 @@ e-commerce. Ship excellent websites, prove the platform, then add scope.
 ## What is next in the short term
 
 The phases are the direction; this is the queue in front of them, as of
-27 September 2026. Most items wait on an owner decision rather than on
+6 October 2026. Most items wait on an owner decision rather than on
 engineering, which is why each one names what unblocks it.
 
 | # | Item | Unblocked by | Why it matters |
 | - | ---- | ------------ | -------------- |
-| 1 | **Fix GitHub Actions billing** | The owner settling the GitHub account's payment | Until then no repo runs `verify`, and every production deploy is [by hand](/how-we-work/deployment#github-actions-is-stopped) — no accessibility gate, no previews per PR |
+| 1 | **Turn automatic CI back on** | Restoring the push and pull-request triggers in each repo still on `workflow_dispatch`, and the owner deciding whether to pay for minutes so they do not run out again | The minutes reset on 1 October and `adawy-platform` is back on automatic deploys, but every other repo runs no `verify` on a pull request and deploys only [by hand](/how-we-work/deployment#most-workflows-run-only-by-hand) — no previews per PR |
 | 2 | **Content dashboard go-live** | The owner's go, then the steps below in order | The dashboard exists so a changed headline needs no developer ([ADR-014](/architecture/adrs)); in practice mode it saves nobody any work yet |
-| 3 | **Aladawy Shop after launch** | Engineering, plus the owner's Google account for Search Console | The shop has been live since 24 September. The old Next.js build on `aladawy-shop.vercel.app` is still up and indexable, and the rebuild's design calls for it to redirect to aladawyshop.com after go-live, so it does not compete with the real site in search |
-| 4 | **Aladawy Pack's theme into a repository** | Engineering | The WordPress theme serving aladawypack.com since 27 September exists only on the server; nothing reviews or can restore it ([ADR-015](/architecture/adrs)) |
-| 5 | **The remaining domains** | An app for each | adawy.com, adawyit.com and adawyfinance.com are still on the Verpex host, and adawyproduction.com on Name.com's nameservers. Each moves by [the procedure](/guides/move-a-domain-to-vercel) once it has something to serve |
+| 3 | **Aladawy Shop after launch** | Engineering, plus the owner's Google account for Search Console | The shop has been live since 24 September. The old Next.js build on `aladawy-shop.vercel.app` has been out of search since 29 September but is still up and does not redirect; the rebuild's design calls for a redirect to aladawyshop.com |
+| 4 | **Aladawy Pack: a local WordPress and a safer deploy** | Engineering | The theme is in git since 2 October ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp)), but nothing boots it locally and `deploy.sh` ships straight to live with no test and no staging copy |
+| 5 | **The remaining domains** | A `PRODUCTION_HOST` for the app that will serve each — apps for IT, Financial and Production exist since 29 September | adawy.com, adawyit.com and adawyfinance.com are still on the Verpex host, and adawyproduction.com on Name.com's nameservers. Each moves by [the procedure](/guides/move-a-domain-to-vercel) once it has something to serve |
 | 6 | **The training-video recorder into a repository** | Engineering | Without the scripts, every screen change makes a [training video](/guides/training-videos) stale with no cheap way to re-record it |
 
 Dashboard go-live, in order — each step depends on the one before:

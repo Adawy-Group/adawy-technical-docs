@@ -1,7 +1,7 @@
 ---
 title: aladawy-pack
-description: The Next.js build of the Aladawy Pack for Printing & Packaging website — now ported to a WordPress theme on aladawypack.com — its content model, its colour system, CI-driven deploy to staging, and what is and is not known about its future.
-tags: ['Client work', 'Next.js 16', 'Staging only']
+description: The Next.js build of the Aladawy Pack for Printing & Packaging website — superseded on aladawypack.com by its WordPress port, aladawy-pack-wp, and kept as the design reference — its content model, its colour system, and its hand-run deploy to staging.
+tags: ['Client work', 'Next.js 16', 'Superseded']
 ---
 
 # `aladawy-pack`
@@ -16,28 +16,20 @@ Private · standalone Next.js 16 app · not part of the monorepo · staging at
 `aladawy-pack.vercel.app` · **not what `aladawypack.com` serves**
 
 <Callout type="important">
-  **`aladawypack.com` now runs a WordPress port of this build** (around 27
-  September 2026). What was checked on 27 September 2026, from outside:
+  **`aladawypack.com` runs a WordPress port of this build, not this build.**
+  The port has served the domain since 26 September 2026, and its source is
+  [`aladawy-pack-wp`](/repositories/aladawy-pack-wp). **Change the live site
+  there, or in its `wp-admin`, not here.** A change merged here reaches only
+  the staging deployment at `aladawy-pack.vercel.app`, which sends
+  `noindex, nofollow` so it never competes with the live site in search.
 
-  - The domain answers from WordPress on the Verpex host (LiteSpeed, a
-    `wp-json` API), not from Vercel.
-  - The active theme is named **Aladawy Pack**, version 1.0.0, and its own
-    header describes it as a "bilingual (EN/AR) site, ported from the Next.js
-    build". It serves the same six pages as this repo, with English at the root
-    and Arabic under `/ar/` (hreflang for both).
-  - `/wp-admin/` redirects signed-out visitors to a 404, so the login address
-    is not the default one. The group's content dashboard now links to the
-    WordPress admin for this site instead of editing this repo's messages.
-  - `aladawy-pack.vercel.app` still deploys from this repo and still sends
-    `noindex, nofollow`, so it does not compete with the live site in search.
-
-  **Not known:** where the WordPress theme's source is kept. No repository
-  under the Adawy-Group organisation holds it, and this repo has had no
-  commits since 19 September 2026. No decision is recorded on whether this repo is
-  kept as the design reference, as with
-  [`aladawy-shop`](/repositories/aladawy-shop) and its WordPress rebuild, or
-  archived. **Until that is settled, change the live site in WordPress, not
-  here.** A change merged here only reaches the staging deployment.
+  In practice this repo is now the **design reference**, as
+  [`aladawy-shop`](/repositories/aladawy-shop) is for the shop: the port copied
+  `globals.css` unchanged, rebuilt each component as a PHP template part of the
+  same name, and exported `lib/content` and both message files once. No script
+  carries a later change across, so a fix made here reaches the live site only
+  if someone ports it by hand. Whether this repo is eventually archived is not
+  decided.
 </Callout>
 
 Its link-in-bio page is a separate repo:
@@ -53,7 +45,7 @@ Its link-in-bio page is a separate repo:
   <Stat label="Pages" value="6" />
   <Stat label="Locales" value="en · ar" />
   <Stat label="Package manager" value="pnpm 11.26.0" />
-  <Stat label="CI" value="verify → deploy" />
+  <Stat label="CI" value="verify → deploy" hint="run by hand only" />
 </Stats>
 
 ## Stack
@@ -99,9 +91,10 @@ pnpm format              # prettier --write
 pnpm assets:bake         # re-encode photography (manual, commits its output)
 ```
 
-Run the same sequence CI runs — `format:check → lint → typecheck → test →
-build` — before pushing. *Why:* a push to `main` deploys, so a red CI run is
-the only thing between a mistake and the staging site.
+Run the same sequence the workflow runs — `format:check → lint → typecheck →
+test → build` — before pushing. *Why:* nothing runs it on a push any more
+([CI and deploy](#ci-and-deploy)), so your local run is the only check between
+a mistake and the staging site.
 
 ## Layout
 
@@ -223,17 +216,21 @@ production ([forms & enquiries](/guides/forms-and-enquiries)).
 
 ## CI and deploy
 
-One workflow, `.github/workflows/verify.yml`, on push to `main` and on every
-pull request (in-progress runs for the same ref are cancelled).
+One workflow, `.github/workflows/verify.yml`, and **it runs only when started
+by hand** (`workflow_dispatch`, from the Actions tab or `gh workflow run`).
+It used to run on every push to `main` and every pull request; on
+27 September 2026 those triggers were removed because the organisation had
+used up its free GitHub Actions minutes, and they have not been restored since
+the quota reset on 1 October. In-progress runs for the same ref are cancelled.
 
 ```mermaid
 flowchart LR
-  push["push / PR"] --> verify
+  run["started by hand<br/>(workflow_dispatch)"] --> verify
   subgraph verify["job: verify"]
     direction LR
     i["install --frozen-lockfile"] --> f["format:check"] --> l["lint"] --> t["typecheck"] --> te["test"] --> b["build"]
   end
-  verify -- "push to main only" --> deploy
+  verify -- "run on main only" --> deploy
   subgraph deploy["job: deploy (environment: production)"]
     direction LR
     p["vercel pull"] --> vb["vercel build --prod"] --> vd["vercel deploy --prebuilt --prod"]
@@ -244,7 +241,8 @@ flowchart LR
   then `format:check`, `lint`, `typecheck`, `test`, `build`. Formatting runs
   first because it is the cheapest check and the one most often forgotten
   locally.
-- **`deploy`** — needs `verify`, runs only on a push to `main`, and ships to
+- **`deploy`** — needs `verify`, runs only when the workflow is started on
+  `main`, and ships to
   `https://aladawy-pack.vercel.app`. *Why Actions and not Vercel's Git
   integration:* the Vercel project is on the Hobby plan, which refuses to link
   a private organisation-owned repository (`repo_owned_by_org`). The CLI is
@@ -252,6 +250,11 @@ flowchart LR
   and `--prebuilt` uploads exactly what the job built. It needs one repository
   secret, `VERCEL_TOKEN`; the org and project IDs are inlined because they are
   identifiers, not credentials.
+
+**So a merge deploys nothing.** Either start the workflow on `main`, or run
+the gates locally and deploy with the Vercel CLI
+([deployment](/how-we-work/deployment)). For a staging copy of a superseded
+site, that is rarely urgent.
 
 `.gitattributes` pins every text file to LF. *Why:* CI checks formatting on
 Linux, and a Windows checkout with `core.autocrlf=true` would otherwise fail
@@ -281,7 +284,7 @@ deliberate: staging must never outrank the client's real site.
 
 **This build is not on a path to `aladawypack.com` today.** The domain, its
 DNS and its email are on the group's Verpex host, and the domain serves the
-WordPress port described at the top of this page. A
+WordPress port, [`aladawy-pack-wp`](/repositories/aladawy-pack-wp). A
 [domain move to Vercel](/guides/move-a-domain-to-vercel) is not planned while
 WordPress serves the site. `PRODUCTION_HOST` is
 `null` in both files that state it, and should stay `null` unless the site
@@ -300,6 +303,10 @@ previews stay out of search. Full procedure:
 Two facts on the site derive rather than hardcode: "years of experience" is
 computed from `FOUNDED_YEAR = 1971`, so it never goes stale; `siteUrl` falls
 back to the Vercel host, so a preview's share card points at its own images.
+
+The root layout sets the `publisher` meta tag to **Adawy Software**, the
+signature on every site the department builds; the JSON-LD still names
+Aladawy Pack as the owner. The WordPress port does not carry that tag yet.
 
 ## Agent guidance
 
