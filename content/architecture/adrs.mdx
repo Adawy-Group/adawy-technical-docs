@@ -32,6 +32,7 @@ through for the 10% of occasions where the reasoning matters.
 | [013](#adr-013--websites-on-vercel-dns-and-email-stay-on-the-old-host) | Websites moved to Vercel; DNS and email stayed on the Verpex host | <Badge tone="live">Built</Badge> | Every domain |
 | [014](#adr-014--a-content-dashboard-that-commits-to-the-site-repos-not-a-cms) | Non-developers edit site text and images in a dashboard that publishes by committing to each site's repo — no CMS, no content database | <Badge tone="building">Practice mode</Badge> | Every Next.js site |
 | [015](#adr-015--the-aladawy-client-sites-stay-on-wordpress) | aladawyshop.com and aladawypack.com stay on WordPress, rebuilt with the department's own theme and plugin | <Badge tone="live">Built</Badge> | Two clients |
+| [016](#adr-016--the-icoffee-store-stays-on-shopify) | The ICOFFEE store stays on Shopify: the department builds its theme and a small app, and the checkout runs on draft orders | <Badge tone="building">Built, not launched</Badge> | One client |
 
 ## How to add one
 
@@ -238,7 +239,7 @@ was wrong is the most useful thing in the file.
   work** is Adawy Group's own brands, where a shared design system pays for
   itself across dozens of sites ([ADR-001](#adr-001--one-monorepo-a-thin-app-per-brand-on-shared-packages)).
   **Client work** is software built for other businesses — Aladawy Pack,
-  Aladawy Shop, Jumeira Catering, Zad Al-Hkoul and Baron. Early on these were
+  Aladawy Shop, Jumeira Catering, Zad Al-Hkoul, Baron and ICOFFEE. Early on these were
   treated as the same thing, which put client sites on the Group roadmap and
   made the monorepo rules look like they applied to everything.
 - **Decision:** Two patterns, chosen by *who owns the outcome*.
@@ -476,3 +477,56 @@ was wrong is the most useful thing in the file.
     retired or redirected deliberately, or they compete with the real domains
     in search. Both now send `noindex` (`aladawy-shop` since 29 September);
     neither redirects yet.
+
+## ADR-016 — The ICOFFEE store stays on Shopify
+
+- **Context:** ICOFFEE Egypt came to the department with a store already
+  running on Shopify: products, customers, an order history, staff who work in
+  the Shopify admin, and a theme from a previous design. The brief was a new
+  bilingual storefront with customer accounts, a bundle builder and a checkout
+  that takes cash on delivery.
+  The [tech stack](/architecture/tech-stack) rules out Shopify for the
+  department's own commerce, because dozens of stores would compound into
+  subscriptions and revenue-tied fees, and
+  [ADR-005](#adr-005--aladawy-shop-ships-as-a-quote-request-not-a-checkout)
+  turned it down for Aladawy Shop, whose customers never check out. Neither
+  reason holds here: this is one store, and it already sells through a real
+  checkout. It is the same shape as
+  [ADR-015](#adr-015--the-aladawy-client-sites-stay-on-wordpress): the
+  business keeps the tool its staff already run.
+- **Decision:** Keep the store on Shopify and build on it, in one repository
+  ([`icoffee`](/repositories/icoffee)):
+  - **The storefront is a Shopify theme.** Shopify's Horizon theme with the
+    ICOFFEE design added as sections and snippets under one prefix, in English
+    and Arabic. It is built on an unpublished copy and published at launch.
+  - **What the theme cannot do goes into a small app**, a Cloudflare Worker
+    behind the store's app proxy, with no database of its own. It saves the
+    customer's profile, addresses and wishlist, and it runs the checkout.
+  - **The checkout runs on draft orders.** The store's plan does not allow a
+    custom checkout, so the theme collects the delivery details and the app
+    prices and places the order through a draft order. Shopify still computes
+    every price, discount and shipping rate, and if the app cannot answer, the
+    page hands over to Shopify's standard checkout.
+  - **Discounts are Shopify's own.** The bundle builder previews a saving that
+    Shopify applies as an automatic discount, rather than computing one in the
+    theme.
+- **Consequences:** The client keeps its admin, its order history and its
+  payment setup, and the department still owns the code that matters, in git.
+  The costs:
+  - **A third platform and a third language** — Liquid, beside TypeScript and
+    PHP. The [floor](/architecture/tech-stack#what-a-client-project-is-required-to-run)
+    cannot apply; what carries over is the standards.
+  - **No pipeline and no automated tests.** A theme has no build to gate. The
+    checks are scripts that drive the preview in a browser, run by hand.
+  - **The store is shared with the live shop.** Products, prices and discounts
+    belong to the published theme as much as to the new one, so store changes
+    cannot be staged: they are made by scripts that read first, and the bundle
+    discounts wait for launch.
+  - **The checkout is ours to keep working.** A draft-order checkout is more
+    code than Shopify's own, and it depends on the app, on its permissions and
+    on the store's shipping rates keeping their names. The fallback to
+    Shopify's checkout is what makes that acceptable.
+  - **A subscription and Shopify's rules stay with the client.** Plan limits
+    decide what is possible: the plan is why the checkout is built this way.
+  - **The work reached git a week after it started** (11 October 2026). Until
+    then the app's source existed on one laptop.

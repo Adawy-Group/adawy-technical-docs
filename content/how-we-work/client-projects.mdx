@@ -12,15 +12,23 @@ own brands, in the [`adawy-platform`](/repositories/adawy-platform) monorepo.
 [Aladawy Pack](/repositories/aladawy-pack) (and [its link page](/repositories/aladawy-links)),
 [Aladawy Shop](/repositories/aladawy-shop),
 [Jumeira Catering](/repositories/jumeira),
-[Zad Al-Hkoul](/repositories/zad-alhkoul) and
-[Baron](/repositories/baron-menu).
+[Zad Al-Hkoul](/repositories/zad-alhkoul),
+[Baron](/repositories/baron-menu) and
+[ICOFFEE](/repositories/icoffee).
 
-Six client repositories for five clients is already more than the Group side has, which is why
+Nine client repositories for six clients is already more than the Group side has, which is why
 the patterns below matter more than they look: everything learned on one is
 paid for again on the next unless it is written down here.
 
 The rule is one line: **one client, one standalone repository, no `@adawy/*`
 dependency.** [ADR-010](/architecture/adrs) records why.
+
+Most of this page is about the Next.js client repos. Three clients run on a
+platform they already had: the two Aladawy sites on WordPress
+([ADR-015](/architecture/adrs)) and the ICOFFEE store on Shopify
+([ADR-016](/architecture/adrs)). The rule above holds for them too; the
+scaffold, the locale tree and the go-live switch below do not, and each of
+their repository pages says what replaces them.
 
 ## Why client work does not join the monorepo
 

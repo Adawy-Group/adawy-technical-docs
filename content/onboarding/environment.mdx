@@ -1,6 +1,6 @@
 ---
 title: Dev Environment Setup
-description: Everything needed to get any of the thirteen repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
+description: Everything needed to get any of the fourteen repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
 tags: ['Tutorial', 'Day 1', '~45 min']
 ---
 
@@ -64,6 +64,7 @@ If those two pass, your toolchain is correct.
 | [`jumeira`](/repositories/jumeira) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
 | [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
 | [`baron-menu`](/repositories/baron-menu) | **none** to run (npm for its image script) | serve the folder | one page | none |
+| [`icoffee`](/repositories/icoffee) | npm | `npm install` → `npm run theme:dev` — serves the unpublished Shopify theme, and uploads every file you save to it | the store's preview | none: a staff sign-in on the store, through the Shopify CLI |
 | [`adawy-dashboard`](/repositories/adawy-dashboard) | pnpm 11.26 | `pnpm install` → `pnpm seed:sandbox` → `pnpm dev --port 3100` | sign-in page | `.env.local`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` — then `pnpm auth:setup` for the first admin |
 | [`aladawy-shop-wp`](/repositories/aladawy-shop-wp) | pnpm | `pnpm install` → `pnpm dev` — a throwaway WordPress + WooCommerce in Arabic, on port 9400 | `/` | none to boot |
 | [`adawy-content-sandbox`](/repositories/adawy-content-sandbox) | — | nothing to run: it is the dashboard's practice data | — | — |
@@ -76,9 +77,9 @@ uses 9400. Clone any of them with
 
 <Callout type="warning">
   **Getting the package manager wrong produces a dependency tree the lockfile
-  does not describe, and errors that make no sense.** This handbook is the only
-  npm repo in the org (`baron-menu` keeps an npm lockfile only for its image
-  script); everything else is pnpm. Check which repo you are in
+  does not describe, and errors that make no sense.** This handbook,
+  `aladawy-pack-wp` and `icoffee` are the npm repos (`baron-menu` keeps an npm
+  lockfile only for its image script); everything else is pnpm. Check which repo you are in
   before you install.
 </Callout>
 
