@@ -12,5 +12,6 @@ export default {
   jumeira: 'jumeira',
   'zad-alhkoul': 'zad-alhkoul',
   'baron-menu': 'baron-menu',
+  icoffee: 'icoffee',
   'adawy-technical-docs': 'adawy-technical-docs'
 }

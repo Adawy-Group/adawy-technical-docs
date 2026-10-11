@@ -6,13 +6,13 @@ tags: ['Reference', 'Start here']
 
 # The Repository Map
 
-**Thirteen repositories.** Knowing which world a repo belongs to tells you which
+**Fourteen repositories.** Knowing which world a repo belongs to tells you which
 rules apply to it before you open a single file.
 
 <Stats>
-  <Stat value="13" label="repositories" hint="in the Adawy-Group org" />
+  <Stat value="14" label="repositories" hint="in the Adawy-Group org" />
   <Stat value="1" label="Group monorepo" hint="every brand site" />
-  <Stat value="8" label="client projects" hint="one repo each" />
+  <Stat value="9" label="client projects" hint="one repo each" />
   <Stat value="3" label="internal" hint="dashboard, its sandbox, this handbook" />
 </Stats>
 
@@ -28,6 +28,7 @@ rules apply to it before you open a single file.
 | [`jumeira`](/repositories/jumeira) | <Badge tone="client">Client</Badge> | Pre-launch film site for Jumeira Catering, Benghazi | Next.js 16, standalone |
 | [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | One-page scroll-story site for Zad Al-Hkoul for Agricultural Crops — **live at zadalhkoul.com since 29 Sept 2026** | Next.js 16, standalone |
 | [`baron-menu`](/repositories/baron-menu) | <Badge tone="client">Client</Badge> | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
+| [`icoffee`](/repositories/icoffee) | <Badge tone="client">Client</Badge> | ICOFFEE Egypt's store on Shopify — the new theme (built, not published yet), the accounts and checkout app, and the store scripts | Shopify theme (Liquid) + Cloudflare Worker |
 | [`adawy-dashboard`](/repositories/adawy-dashboard) | <Badge tone="internal">Internal</Badge> | The content dashboard at admin.adawygroup.com — edit a site's text and images without a developer | Next.js 16, Better Auth |
 | [`adawy-content-sandbox`](/repositories/adawy-content-sandbox) | <Badge tone="internal">Internal</Badge> | Where the dashboard publishes while it runs in practice mode — deployed nowhere | Content files only |
 | [`adawy-technical-docs`](/repositories/adawy-technical-docs) | <Badge tone="internal">Internal</Badge> | This handbook | Nextra 4 |
@@ -42,7 +43,7 @@ the only place they apply.
 
 **Client work** is software the department builds *for other businesses*.
 Aladawy Pack (both builds of its website, and its link page), Aladawy Shop (both builds), Jumeira Catering,
-Zad Al-Hkoul and Baron are customers of the department, not Group brands. Each gets **its own standalone
+Zad Al-Hkoul, Baron and ICOFFEE are customers of the department, not Group brands. Each gets **its own standalone
 repository**, deliberately not coupled to `@adawy/*` — see
 [ADR-010](/architecture/adrs) for why, and
 [Client Projects](/how-we-work/client-projects) for how to run one.
@@ -103,6 +104,7 @@ precedent. Starting a new Group property outside the platform is still an
 | The Jumeira Catering site | `jumeira` |
 | The Zad Al-Hkoul site | `zad-alhkoul` |
 | Baron's menu — a price, an item, a photo | `baron-menu` |
+| The ICOFFEE store — its theme, its checkout, a price change across the catalogue | `icoffee` — a single product or price is edited in the Shopify admin, not in code |
 | Fixing this handbook | `adawy-technical-docs` |
 
 If you are new, clone [`adawy-technical-docs`](/repositories/adawy-technical-docs)
@@ -148,6 +150,9 @@ running proves your toolchain before anything harder depends on it.
   <Cards.Card title="baron-menu" href="/repositories/baron-menu" arrow>
     No framework, no build step, on purpose. Edit one file to change the menu.
   </Cards.Card>
+  <Cards.Card title="icoffee" href="/repositories/icoffee" arrow>
+    A Shopify store: the new theme, a checkout built on draft orders, and the scripts that update the shop.
+  </Cards.Card>
   <Cards.Card title="adawy-technical-docs" href="/repositories/adawy-technical-docs" arrow>
     This handbook. The best first clone and the best first pull request.
   </Cards.Card>
@@ -172,6 +177,7 @@ know is not — so here is the honest matrix.
 | `jumeira` | pnpm 11.26 | ✅ +4 more | ⚠️ manual only | ✅ | ar · en |
 | `zad-alhkoul` | pnpm 11.26 | ⚠️ stub | ⚠️ manual only | ✅ | en · ar |
 | `baron-menu` | npm (image script only) | ❌ | ❌ | ❌ | en · ar |
+| `icoffee` | npm | ✅ | ❌ | ❌ | en · ar |
 | `adawy-technical-docs` | **npm** | ❌ | ⚠️ manual only | ❌ | English only |
 
 **What is genuinely universal:**
@@ -219,6 +225,9 @@ know is not — so here is the honest matrix.
 - **`aladawy-shop` has no CI at all.** It has tests and it has a `test` script;
   nothing runs them on a push. Its gates are yours to run by hand until that is
   fixed.
+- **`icoffee` has no CI and no automated tests.** A Shopify theme has no build to gate. Its `tools/` scripts
+  drive the unpublished theme in a browser and are run by hand, and the published theme is one missing
+  `--theme` away on every push ([the rules](/repositories/icoffee#the-rules-to-know-before-editing)).
 - **`aladawy-links` has no CI, on purpose.** Its workflow was removed because
   a page that changes a few times a year was not worth the pipeline; run its
   five gates, then `vercel deploy --prod`.

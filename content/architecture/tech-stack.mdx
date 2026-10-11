@@ -72,7 +72,9 @@ publishing switch that keeps the site out of the index before launch.
 **Below the floor, by client decision:** the two Aladawy domains run
 **WordPress** ([below](#the-wordpress-client-sites)). The floor governs the
 department's Next.js client repos; a WordPress site cannot run it, and
-[ADR-015](/architecture/adrs) records why those two stay there anyway.
+[ADR-015](/architecture/adrs) records why those two stay there anyway. The
+ICOFFEE store runs on **Shopify** for the same kind of reason
+([ADR-016](/architecture/adrs), [`icoffee`](/repositories/icoffee)).
 
 *Why state a floor instead of a stack:* a stack list goes stale the first time
 a project makes a defensible different choice, and then the handbook is either
@@ -167,7 +169,9 @@ cPanel**, not Next.js on Vercel ([ADR-015](/architecture/adrs)).
 - **No Shopify / per-store commerce** — dozens of stores would compound into a
   significant subscription and operational burden; custom commerce on our
   stack has no vendor dependency and no revenue-tied fees
-  ([ADR-005](/architecture/adrs)).
+  ([ADR-005](/architecture/adrs)). This is about the Group's own stores: a
+  client who already sells on Shopify keeps it
+  ([ADR-016](/architecture/adrs)).
 - **No dedicated vector database** — pgvector in the existing PostgreSQL.
 - **No third-party analytics holding our user data** — Vercel Analytics on the
   frontend, self-hosted Metabase for internal dashboards.
