@@ -1,0 +1,33 @@
+# Monthly, grouped: at most one minor/patch PR per ecosystem and one npm majors
+# PR a month. Security updates ignore this schedule and still open straight away.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+      majors:
+        update-types: [major]
+    ignore:
+      # Framework majors are migrations, not bumps: do them by hand.
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: nextra
+        update-types: [version-update:semver-major]
+      - dependency-name: nextra-theme-docs
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
