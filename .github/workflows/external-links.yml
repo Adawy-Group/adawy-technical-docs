@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
 
       # No `npm ci`: the checker is dependency-free by design, and installing
       # the site's toolchain to make one HTTP request would be the slowest
