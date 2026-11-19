@@ -155,7 +155,7 @@ holds a password or a token.
 <Callout type="error">
   **Never point `theme:dev` at the live theme.** `shopify theme dev` uploads
   every file you save to the theme it serves. Run without `--theme` it serves a
-  hidden development theme of your own; with `--theme 186397524153` every save
+  hidden development theme of your own; with `--theme` and the live theme's id every save
   reaches customers at once. Do not create temporary files inside `theme/`
   while it runs either: they are uploaded too.
 </Callout>
@@ -182,7 +182,8 @@ The repository's `AGENTS.md` is the full list. These are the ones that cost
 the most when missed:
 
 - **Every theme push is live, so name the theme.** `shopify theme push --theme
-  186397524153 --nodelete --only <file>`, after trying the change in
+  <live theme id> --nodelete --only <file>` (the id is in the repo's README;
+  this public handbook does not carry it), after trying the change in
   `theme:dev`. A push with no theme asks which one to use, and the published
   theme is on that list.
 - **The store is live.** Products, prices, discounts, shipping rates and pages
@@ -215,7 +216,7 @@ There is no pipeline. The three parts ship three ways:
 
 | Part | How it ships |
 | --- | --- |
-| Theme | `shopify theme push` to the live theme `186397524153`, named every time, with `--nodelete --only`. Try it in `theme:dev` first |
+| Theme | `shopify theme push` to the live theme, named by its id every time, with `--nodelete --only`. Try it in `theme:dev` first |
 | App | `npx wrangler@4 deploy` from `icoffee-accounts/`. `shopify app deploy` only when `shopify.app.toml` changes (scopes, proxy, webhooks), and then a staff member has to approve the new access; until then the affected routes answer `403 not_ready` and the theme falls back |
 | Store data | A script in `tools/`, run by hand, `--check` first |
 

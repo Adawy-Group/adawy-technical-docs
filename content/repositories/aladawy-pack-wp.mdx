@@ -252,13 +252,12 @@ does not yet print the `publisher` meta tag naming Adawy Software, which the
 Next build and the shop both carry.
 
 **The JSON-LD escaping does nothing.** `ap_jsonld()` is meant to escape `<` so
-no string can close the script tag, but its one line is
-`str_replace('<', '<', wp_json_encode(…))`: it replaces `<` with itself, and
-has since the import. Combined with `JSON_UNESCAPED_SLASHES`, a `</script>`
-inside any JSON-LD value would end the tag early. Today every value comes from
-theme constants and `data/content.json`, not from wp-admin, so nothing on the
-live site triggers it. The fix is one line (replace with `'<'`, or pass
-`JSON_HEX_TAG`); make it before any editable string reaches the JSON-LD.
+no string can close the script tag, but the replacement it makes is a no-op,
+and has been since the import. Today every value comes from theme constants
+and `data/content.json`, not from wp-admin, so nothing on the live site can
+reach it. The fix is one line (pass `JSON_HEX_TAG` to `wp_json_encode`); make
+it before any editable string reaches the JSON-LD, because from then on an
+editor could break the page's markup without meaning to.
 
 **7. Reduced motion means no ScrollTrigger**, and the authored markup must
 already be the finished layout — the same rule, for the same reason, as
@@ -319,8 +318,7 @@ console.
 </Steps>
 
 **Credentials** — the WHM host, user and API token — live in a local,
-untracked env file outside the repository (`.secrets/aladawypack.env` in the
-workspace folder), which `deploy.sh` sources. They are
+untracked env file outside the repository, which `deploy.sh` sources. They are
 never committed and never pasted into an issue or a PR. Ask for them
 ([who to ask](/help/who-to-ask)).
 
