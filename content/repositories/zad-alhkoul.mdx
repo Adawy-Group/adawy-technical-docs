@@ -71,16 +71,16 @@ lint errors, not conventions.
 
 | | |
 | --- | --- |
-| Framework | Next.js **16.3.5** (App Router, Turbopack), React **19.3.0** |
-| Language | TypeScript, strict; `typescript.ignoreBuildErrors: false`. **TypeScript 7** (`@typescript/native`) runs `tsc`; the TS 6 API package stays installed as `typescript` for typescript-eslint and Next |
-| Styling | Tailwind CSS v4.3 (CSS-first `@theme`, no JS config) + shadcn/ui (`base-nova`) on `@base-ui/react` 1.8 |
+| Framework | Next.js **16.4.5** (App Router, Turbopack), React **19.3.1** |
+| Language | TypeScript **6.0.3**, strict; `typescript.ignoreBuildErrors: false`. One plain `typescript` package runs `tsc`, typescript-eslint and Next. The TS 7 `tsc` beside a TS 6 alias was dropped on 2026-11-03, *because typescript-eslint peers `typescript <6.1` and every Adawy repo runs the same 6.0.x*; Dependabot skips TypeScript majors and minors for the same reason |
+| Styling | Tailwind CSS v4.3 (CSS-first `@theme`, no JS config) + shadcn/ui (`base-nova`) on `@base-ui/react` 1.9 |
 | Motion | GSAP 3.15 + `@gsap/react`, Lenis 1.3 driven off the GSAP ticker |
 | i18n | next-intl 4.14 — `en` (default, unprefixed) + `ar`, timezone pinned `Asia/Riyadh` |
 | Icons | lucide-react |
 | Lint / format | ESLint **10** (`eslint-config-next` wrapped in `@eslint/compat`'s `fixupConfigRules`), Prettier 3 + `prettier-plugin-tailwindcss` |
 | Tests | **Vitest 5** + Testing Library + jsdom 30; plus a dependency-free smoke script |
 | Commits | Conventional Commits via commitlint + husky; lint-staged on `pre-commit` |
-| Package manager | **pnpm 11.26.0** (`packageManager`), Node `>=20.9.0` (CI uses 22) |
+| Package manager | **pnpm 12.16.1** (`packageManager`; `pnpm/action-setup` reads the same field), Node **24.x** (`engines`, and `node-version: 24` in all three workflows) |
 | Fonts | Fraunces (Latin display), Mona Sans (Latin text), Rubik (Arabic) — all SIL OFL, self-hosted through `next/font`, none preloaded |
 | Hosting | Vercel, deployed with the Vercel CLI — from a dispatched workflow or a terminal ([CI and deploy](#ci-and-deploy)) |
 
@@ -88,9 +88,10 @@ lint errors, not conventions.
 plugins still call context APIs ESLint 10 removed. The wrapper comes out once
 they support ESLint 10 — the comment in `eslint.config.mjs` says so.
 
-`pnpm-workspace.yaml` is not a workspace — it only carries pnpm 11's
-`allowBuilds` list (`@parcel/watcher` and `@swc/core` may run install scripts;
-`sharp` and `unrs-resolver` may not).
+`pnpm-workspace.yaml` is not a workspace — it carries pnpm's `allowBuilds`
+list (`@parcel/watcher` and `@swc/core` may run install scripts; `sharp` and
+`unrs-resolver` may not) and one override, `minimatch` 10 → 11.0.4, *because
+GHSA-g3hv-75wg-m249 has no 10.x fix and ESLint 10 still asks for ^10*.
 
 ## Commands
 
@@ -364,8 +365,10 @@ private org repos on the Hobby plan. Jobs need `VERCEL_TOKEN`, `VERCEL_ORG_ID`
 and `VERCEL_PROJECT_ID`, and skip themselves (not fail) if the token is
 missing. The Vercel CLI is **pinned to 59.10.0** (59.11.0 shipped depending on
 an unpublished package and broke every deploy), and all actions are pinned to
-commit SHAs; Dependabot bumps the `github-actions` ecosystem monthly, grouped
-into one PR. The installed CLI itself is cached, so a cache hit skips the
+commit SHAs. Dependabot runs monthly on both ecosystems: one PR for the
+actions, and npm grouped into one minor-and-patch PR and one majors PR, with
+framework (`next`, `react`) and `@types/node` majors skipped *because those
+are migrations done by hand*. The installed CLI itself is cached, so a cache hit skips the
 install. Production runs `vercel pull --environment=production` then
 `vercel build --prod` then `vercel deploy --prebuilt --prod` — *the verify
 build is a staging artifact by construction, because `NEXT_PUBLIC_*` values are

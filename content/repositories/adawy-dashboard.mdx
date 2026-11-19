@@ -12,7 +12,7 @@ picks a website, changes its wording or replaces a photo, presses
 rebuilds by itself. No developer in the loop for a changed headline.
 
 <Badge tone="internal">Internal</Badge> <Badge tone="building">Practice mode</Badge>
-Private · standalone Next.js 16.3 app · `pnpm@11.26.0` · Vercel project
+Private · standalone Next.js 16.4 app · Node 24 · `pnpm@12.16.1` · Vercel project
 `adawy-dashboard` (region `fra1`) · online at
 [admin.adawygroup.com](https://admin.adawygroup.com) since **27 September 2026**
 · **deployed by hand**
@@ -82,6 +82,10 @@ single-site repo, `apps/<name>` inside
 | Aladawy Shop | WordPress | — | card opens its `wp-admin` |
 | Aladawy Pack | WordPress | — | card opens its `wp-admin` |
 
+**[`aladawy-shop-links`](/repositories/aladawy-shop-links) is not in the
+registry**: it was created after the dashboard, and nobody has added its entry
+or a sandbox folder for it. Its text is edited in code until someone does.
+
 **The film-frame folders are left out on purpose** (`jumeira/public/hero`,
 `zad-alhkoul/public/hero`): swapping one frame of a scrubbed sequence would
 put a single foreign image in the middle of a film.
@@ -127,18 +131,35 @@ pnpm test && pnpm typecheck && pnpm lint && pnpm build   # the full check
 
 | | |
 | --- | --- |
-| Framework | Next.js 16.3.5 (App Router), React 19.3 — `proxy.ts` is the Next 16 name for middleware |
+| Framework | Next.js 16.4.5 (App Router), React 19.3.1 — `proxy.ts` is the Next 16 name for middleware |
 | UI | Tailwind CSS v4 + shadcn/ui on `radix-ui`, `lucide-react`, `sonner` toasts |
 | i18n | next-intl 4 — interface language from the `ui-lang` cookie, `ar` by default; no locale in the URL |
-| Auth | Better Auth 1.7 with its `admin` plugin — [below](#auth-and-roles) |
+| Auth | Better Auth 1.7 (`~1.7.14`, patch updates only) with its `admin` plugin — [below](#auth-and-roles) |
 | Database | `node:sqlite` locally, Postgres (`pg`) in production — logins only |
 | Content | Octokit + `@octokit/auth-app` (GitHub), `git` via `execFile` (local) |
 | Images | `react-easy-crop` in the browser, `sharp` on the server |
 | Validation | zod 4 |
 | Tests | Vitest 5, `lib/**/*.test.ts`, Node environment |
 | Hosting | Vercel, `vercel.json` pins `fra1` |
+| Tooling | Node 24 (`engines: 24.x`), pnpm 12.16.1, TypeScript 6.0.3 (held below 6.1 for `typescript-eslint`) |
 
-No `AGENTS.md`, no `.github/` directory.
+No `AGENTS.md`. The only file under `.github/` is `dependabot.yml`; there are
+no workflows.
+
+**New package versions wait three days.** `pnpm-workspace.yaml` sets
+`minimumReleaseAge: 4320` (minutes), so pnpm refuses any version published
+less than three days ago. A hijacked release is usually caught and pulled
+within hours, and this app holds the login database and a GitHub App key, so
+it can afford to be a few days behind. The rule is kept whole rather than
+punched with exceptions: when the November security update first asked for
+releases younger than that, it settled on the newest versions old enough to
+pass (Next 16.4.3 already carried the October advisory fixes) instead of
+adding an exclude list.
+
+**Dependabot opens the dependency PRs**, monthly and grouped, so a month is a
+few PRs rather than dozens; security updates still arrive at once. With no CI,
+nothing checks a Dependabot PR: run the full check below on its branch before
+merging, and then deploy by hand, because merging deploys nothing.
 
 ## How a publish works
 

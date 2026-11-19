@@ -45,7 +45,7 @@ a **quote request** ([ADR-005](/architecture/adrs)).
   <Stat label="Catalogue lines" value="53" />
   <Stat label="Categories" value="6" />
   <Stat label="Locales" value="ar · en" />
-  <Stat label="Package manager" value="pnpm 11.26.0" />
+  <Stat label="Package manager" value="pnpm 12.16.1" />
 </Stats>
 
 ## The domain fact that shapes the whole codebase
@@ -109,8 +109,8 @@ genuinely lower.
 
 | | |
 | --- | --- |
-| Framework | Next.js 16.3.5 (App Router, Turbopack), React 19.3 |
-| Language | TypeScript — `tsc` is TypeScript 7, the API is TS 6 (see below) |
+| Framework | Next.js 16.4 (App Router, Turbopack), React 19.3 |
+| Language | TypeScript 6.0 (see below) |
 | Styling | Tailwind CSS v4, shadcn/ui on the unified `radix-ui` package (RTL) |
 | State | Redux Toolkit — quote, saved lines, recently viewed, overlays |
 | Forms | react-hook-form + zod 4, schemas shared with the API routes |
@@ -119,16 +119,18 @@ genuinely lower.
 | UI extras | cmdk (search palette), sonner (toasts), vaul (drawer) |
 | Images | sharp 0.35, baked to AVIF/WebP ahead of build |
 | Tests | Vitest 5 |
-| Package manager | `pnpm@11.26.0` (pinned in `packageManager`) |
+| Package manager | `pnpm@12.16.1` (pinned in `packageManager`), Node 24 (`engines.node: 24.x`) |
 
 This is the only repo in the org using **Redux Toolkit** — justified by a
 quote that persists across routes and reloads, which is genuinely
 cross-cutting client state. Do not take it as a house pattern.
 
-**TypeScript 7 runs side by side with 6.** `@typescript/native` (TS 7)
-provides the `tsc` binary, while `typescript` is aliased to
-`@typescript/typescript6` because typescript-eslint and Next still load the TS
-6 API. **ESLint 10** wraps `eslint-config-next`'s configs in `@eslint/compat`'s
+**TypeScript stays on 6.0** (`~6.0.3`). *Why:* typescript-eslint, through
+`eslint-config-next`, only accepts TypeScript below 6.1. The TypeScript 7
+side-by-side setup (`@typescript/native` for `tsc`) was removed in the
+November dependency update. Dependabot updates the rest monthly in grouped
+PRs, and the audit is clean, with `minimatch` overridden to 11 in
+`pnpm-workspace.yaml` for an advisory that has no 10.x fix. **ESLint 10** wraps `eslint-config-next`'s configs in `@eslint/compat`'s
 `fixupConfigRules`, because its react, jsx-a11y and import plugins still call
 context APIs ESLint 10 removed — drop the wrapper once they catch up.
 
@@ -141,7 +143,7 @@ pnpm build && pnpm start
 
 pnpm format:check             # prettier --check
 pnpm lint                     # eslint — React Compiler rules are errors here
-pnpm typecheck                # tsc --noEmit (TypeScript 7)
+pnpm typecheck                # tsc --noEmit (TypeScript 6)
 pnpm test                     # vitest run
 pnpm test messages/parity     # single file (vitest path filter)
 pnpm format                   # prettier --write
@@ -335,8 +337,8 @@ Vitest 5, `**/*.test.ts`, `@/` aliased in `vitest.config.ts`. Two files:
 
 ## CI and deploy
 
-**There is no CI.** The repo has no `.github/workflows`, so nothing runs the
-tests, lint or typecheck on a push — the gates are yours to run by hand before
+**There is no CI.** The repo has no `.github/workflows` (`.github/` holds only
+the Dependabot config), so nothing runs the tests, lint or typecheck on a push — the gates are yours to run by hand before
 you merge. That is a gap, not a design
 ([the matrix](/repositories#what-the-repos-actually-share)). The repo also
 records no deploy mechanism; a change reaches `aladawy-shop.vercel.app`, which

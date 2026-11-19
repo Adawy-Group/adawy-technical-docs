@@ -13,7 +13,7 @@ LinkedIn and a WhatsApp chat, with the 10th of Ramadan plant's contact details
 and the Mansoura head office under them — in English and Arabic, light and
 dark.
 
-Private · standalone Next.js 16.3 app · Vercel project `aladawy-links`
+Private · standalone Next.js 16.4 app · Vercel project `aladawy-links`
 (team `adawy-s-projects`) · **deployed by hand**
 
 <Callout type="warning">
@@ -56,22 +56,24 @@ page for the reasons; this one covers what differs.
 
 The two are **copies, not a shared package**. A fix to the shared
 construction made in one repo does not reach the other; carry it across by
-hand.
+hand. Since October there is a third copy,
+[`aladawy-shop-links`](/repositories/aladawy-shop-links), built from this one
+for Aladawy Shop, so a shared fix now has two other repos to reach.
 
 ## Stack
 
 | | |
 | --- | --- |
-| Framework | Next.js 16.3.5 (App Router), React 19.3 |
-| Language | TypeScript, strict — `@typescript/native` (TypeScript 7) installed alongside, `typescript` aliased to `@typescript/typescript6` |
+| Framework | Next.js 16.4.5 (App Router), React 19.3.1 |
+| Language | TypeScript 6.0.3, strict, pinned exactly. The TypeScript 7 `tsc` alias was dropped because `typescript-eslint` only accepts TypeScript below 6.1 |
 | Styling | Tailwind CSS v4 (CSS-first) + shadcn/ui (base-nova) on `@base-ui/react`, RTL |
 | Theme | next-themes with the hand-rolled circular clip-path reveal |
 | Motion | GSAP 3 (`@gsap/react`), gated on JavaScript and reduced motion |
 | i18n | next-intl 4 — `en` (default) + `ar`, `localePrefix: 'always'` |
 | Fonts | Archivo, Inter, IBM Plex Sans Arabic (static 400–700), all `preload: false` |
 | Tests | Vitest 5 — five files |
-| Lint / format | ESLint 10 (`eslint-config-next` 16.3.5), Prettier 3 + `prettier-plugin-tailwindcss` |
-| Tooling | pnpm **11.26.0** (pinned in `packageManager`); Node ≥ 22.18 per the README (no `engines` field) |
+| Lint / format | ESLint 10 (`eslint-config-next` 16.4.4), Prettier 3 + `prettier-plugin-tailwindcss` |
+| Tooling | pnpm **12.16.1** (pinned in `packageManager`); Node 24 (`engines: 24.x`) |
 | Agent contract | `AGENTS.md` holds **only** the block `next dev` generates — no repo-specific rules |
 
 No API routes, no server actions, no forms, no database. Seven client
@@ -172,8 +174,8 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm format:check && pnpm build
 vercel deploy --prod
 ```
 
-There is **no CI and no push-to-deploy** — the repo has no `.github/`
-directory and GitHub reports zero workflows. It used to have the same
+There is **no CI and no push-to-deploy** — the only file under `.github/` is
+`dependabot.yml`, and GitHub reports zero workflows. It used to have the same
 workflow as `adawy-group-links`; commit `7e79121` removed it, reasoning that
 the page *"changes a few times a year — a link, a number, a new profile PDF"*
 and that the pipeline was more moving parts than that earns. Its deploy job
@@ -187,6 +189,16 @@ produced a green check that had deployed nothing.
   the Hobby plan refuses to connect a private organisation repo (the API
   answers `repo_owned_by_org`).
 </Callout>
+
+**Dependabot opens the dependency PRs, monthly and grouped.** Next, React and
+their type packages travel in one group because they are pinned to exact
+versions and break the build when split across PRs, and framework majors are
+ignored because a major is a migration to do by hand. `adawy-group-links` and
+`aladawy-shop-links` carry the same npm rules, so the three pages stay on the
+same versions (only the Group page, having a workflow, also updates GitHub
+Actions). With no CI, a Dependabot PR has no checks: run the
+five commands on its branch before merging, and remember that merging deploys
+nothing, so `vercel deploy --prod` still follows.
 
 `lib/site.ts` resolves the public origin as `NEXT_PUBLIC_SITE_URL` →
 `https://$VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`. A custom
@@ -206,6 +218,11 @@ department builds; the page has no visible footer credit.
 
 ## Recent history
 
+- **2026-11-17 → 19** — the first Dependabot PR: Next 16.4.5.
+- **2026-11-03** — security update: Next 16.4.4 (the `next/og` RCE and image
+  optimizer SSRF advisories), React 19.3.1, Node 24 in `engines`, pnpm
+  12.16.1, TypeScript pinned to 6.0.3, a `minimatch` override, and the monthly
+  grouped Dependabot config.
 - **2026-09-27 → 29** — `publisher` metadata credits Adawy Software; markup
   moves to semantic elements (the contact block becomes an `<address>` holding
   a list), carried across from the Group page; `X-Robots-Tag` on every

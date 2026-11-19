@@ -41,12 +41,21 @@ npm run build                  # the real gate on content
 
 | | |
 | --- | --- |
-| Framework | Nextra 4 (`nextra` + `nextra-theme-docs`) on Next.js 16, React 19 |
+| Framework | Nextra 4.6 (`nextra` + `nextra-theme-docs`) on Next.js 16.4, React 19.3 |
+| Runtime | Node 24 (`engines: 24.x`), the same line as CI |
 | Language | TypeScript — two compilers side by side (below) |
-| Search | Pagefind, built by `postbuild` |
+| Search | Pagefind, built by `postbuild` ([below](#search)) |
 | Diagrams | Mermaid, rendered from fenced code blocks |
 | CI | GitHub Actions on Node 24 — `verify` and `external-links`, both started by hand since 27 September 2026 |
+| Dependencies | Dependabot, monthly and grouped; `overrides` pin `zod` (below), plus `katex` and `minimatch` for advisories in packages we do not install directly |
 | Hosting | Vercel, through its Git integration — merging to `main` deploys |
+
+**Dependabot opens at most one minor-and-patch PR and one majors PR per
+ecosystem a month**, so dependency work arrives as a few reviewable batches
+rather than a stream; security updates ignore the schedule and open at once.
+Majors of `next`, `react`, `react-dom` and Nextra are ignored, because a
+framework major is a migration to do by hand. With CI manual-only, a
+Dependabot PR has no checks until you run the two gates on its branch.
 
 **`tsc` is TypeScript 7; the `typescript` package is still 6.** Two
 devDependencies do this: `@typescript/native` (aliased to TypeScript 7) owns
@@ -65,6 +74,8 @@ content/              every handbook page (MDX) — the sidebar mirrors the fold
 components/           the site's own MDX components + the JSON-LD helper
 lib/seo.ts            metadata, canonicals, structured data
 scripts/check-links.mjs   the link, anchor and sidebar checker
+scripts/unshallow.mjs     prebuild: deepens a shallow clone so page dates are right
+scripts/pagefind.mjs      postbuild: the search index
 next.config.mjs       Nextra config
 mdx-components.tsx    the MDX component map — a component missing here is undefined
 ```
@@ -271,8 +282,9 @@ reader; a blockquote is someone else speaking.
 <Callout type="warning">
   **Neither workflow runs by itself.** The org's free Actions minutes ran out
   on 2026-09-23, and on 2026-09-27 both workflows were switched to
-  `workflow_dispatch` only; the minutes reset on 1 October, but the triggers
-  have not been restored. Run `node scripts/check-links.mjs` and
+  `workflow_dispatch` only. The minutes reset on 1 October and have run out
+  again since, so the triggers stay manual rather than queueing runs that
+  cannot start. Run `node scripts/check-links.mjs` and
   `npm run build` yourself before merging. Deploys are unaffected, because
   Vercel's Git integration builds this repo, not Actions.
 </Callout>
@@ -300,12 +312,23 @@ and no page needs editing.
 | Every Mermaid diagram shows *"Expecting NEWLINE, got SPACE"* locally, but the deployed site is fine | Your working copy has CRLF line endings. The bundled Mermaid does not treat a lone CR as a line terminator | `.gitattributes` checks the repo out as LF everywhere; if you cloned before it existed, re-clone or run `git add --renormalize .` |
 | A multi-line node label renders as one run-on line | A literal `\n` inside the label | Use `<br/>`. This Mermaid build drops `\n` instead of breaking the line |
 | Search returns nothing in `npm run dev` | The Pagefind index is built by `postbuild` | Expected — run `npm run build` to populate it |
+| A Vercel deploy fails in `postbuild` with *No prerendered home page in: …* | `scripts/pagefind.mjs` found no `index.html` in any folder it searches | Check where this Next version writes prerendered pages and add that path to the script's candidates; keep the existing two |
 
 ## Search
 
 `npm run build` runs a `postbuild` step that indexes the site with
 **Pagefind** into `public/_pagefind`. Search is therefore only populated after
 a full build — an empty search box in `npm run dev` is expected, not a bug.
+
+**The script looks for the prerendered pages in two places**, because where
+Next writes them depends on who runs the build. A plain `next build` writes
+them to `.next/server/app`. On Vercel, Next 16.4 builds through Vercel's
+adapter and writes them under `.next/server/route-cache/APP_PAGE/<hash>/$`
+instead, and an index of the empty folder failed the deploy. The script takes
+whichever candidate holds the home page, and fails loudly if none does or if
+it indexes zero pages, because a silently empty index is a search box that
+finds nothing. Keep both paths when you touch it: a local build needs the
+first and Vercel the second.
 
 Two things make the index actually useful, and both are the author's job: an
 `H2` per topic and an `H3` per subtopic, and sections that still make sense

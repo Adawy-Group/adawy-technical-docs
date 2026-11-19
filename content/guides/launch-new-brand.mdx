@@ -62,11 +62,11 @@ custom sections, or bespoke motion?**
 | ---- | ---- | --- |
 | 1. Scaffold the app under `apps/<brand>` from the closest existing app | An hour or two | Developer |
 | 2. Set the brand's tokens and mark, and bake its icons | A few hours | Designer, with dev support |
-| 3. Wire the app into deploys and analytics, and create its Vercel project | ~1 hour | CTO (or any developer) |
-| 4. Move the brand's domain to it and turn indexing on | ~2 hours, mostly waiting | CTO (or any developer) |
+| 3. Wire the app into deploys and analytics, and create its Vercel project | ~1 hour | Head of Technology (or any developer) |
+| 4. Move the brand's domain to it and turn indexing on | ~2 hours, mostly waiting | Head of Technology (or any developer) |
 | 5. Add the group brand page (only if the brand joins the group's story) | 1–2 weeks | Designer + developer |
 | 6. Populate content and any custom design (MDX/config in the app, via PR) | 2–5 days, plus ~1 week if bespoke | Team, with copy from marketing |
-| 7. Quality review and launch | 1–2 days | CTO |
+| 7. Quality review and launch | 1–2 days | Head of Technology |
 
 ## Step notes
 
@@ -121,7 +121,7 @@ custom sections, or bespoke motion?**
    supplies the copy; the team commits it
    ([ADR-004](/architecture/adrs) — the CMS is deferred for now).
    **Custom tweaks** are configuration over customization. If a request
-   can't be met with tokens, it goes through the CTO as an explicitly scoped
+   can't be met with tokens, it goes through the Head of Technology as an explicitly scoped
    exception — and if the new section is genuinely reusable, it's built in
    `@adawy/ui`, not in the app.
 7. **Quality gate before launch:** Lighthouse mobile ≥ 90, WCAG 2.1 AA pass

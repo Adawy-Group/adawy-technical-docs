@@ -1,6 +1,6 @@
 ---
 title: aladawy-pack
-description: The Next.js build of the Aladawy Pack for Printing & Packaging website — superseded on aladawypack.com by its WordPress port, aladawy-pack-wp, and kept as the design reference — its content model, its colour system, and its hand-run deploy to staging.
+description: The Next.js build of the Aladawy Pack for Printing & Packaging website — superseded on aladawypack.com by its WordPress port, aladawy-pack-wp, which has since been redesigned — its content model, its original colour system, and its hand-run deploy to staging.
 tags: ['Client work', 'Next.js 16', 'Superseded']
 ---
 
@@ -23,13 +23,19 @@ Private · standalone Next.js 16 app · not part of the monorepo · staging at
   the staging deployment at `aladawy-pack.vercel.app`, which sends
   `noindex, nofollow` so it never competes with the live site in search.
 
-  In practice this repo is now the **design reference**, as
+  In practice this repo is now a **reference**, as
   [`aladawy-shop`](/repositories/aladawy-shop) is for the shop: the port copied
   `globals.css` unchanged, rebuilt each component as a PHP template part of the
   same name, and exported `lib/content` and both message files once. No script
   carries a later change across, so a fix made here reaches the live site only
-  if someone ports it by hand. Whether this repo is eventually archived is not
-  decided.
+  if someone ports it by hand.
+
+  **It is no longer the live site's design.** On 27 October 2026 the WordPress
+  theme was redesigned as a light, premium packaging site (Host Grotesk and
+  Alexandria, light grounds, the press inks retired) and gained a careers page.
+  Neither change came back here, so this build still shows the original dark
+  design described below. It is neither retired nor in sync; whether it is
+  archived, or brought up to the live design, is not decided.
 </Callout>
 
 Its link-in-bio page is a separate repo:
@@ -44,7 +50,7 @@ Its link-in-bio page is a separate repo:
 <Stats>
   <Stat label="Pages" value="6" />
   <Stat label="Locales" value="en · ar" />
-  <Stat label="Package manager" value="pnpm 11.26.0" />
+  <Stat label="Package manager" value="pnpm 12.16.1" />
   <Stat label="CI" value="verify → deploy" hint="run by hand only" />
 </Stats>
 
@@ -52,23 +58,28 @@ Its link-in-bio page is a separate repo:
 
 | | |
 | --- | --- |
-| Framework | Next.js 16.3.5 (App Router, Turbopack), React 19.3 |
-| Language | TypeScript, strict — `tsc` is TypeScript 7 (see below) |
+| Framework | Next.js 16.4 (App Router, Turbopack), React 19.3 |
+| Language | TypeScript 6.0, strict (see below) |
 | Styling | Tailwind CSS v4 + shadcn/ui on Radix |
 | Motion | GSAP 3.15 (ScrollTrigger, SplitText) + Lenis |
 | Forms | react-hook-form + zod 4 |
 | i18n | next-intl 4 — `/en` (default), `/ar`, full RTL |
 | Tests | Vitest 5 |
 | Images | sharp 0.35, baked to AVIF/WebP ahead of build |
-| Package manager | `pnpm@11.26.0` (pinned in `packageManager`), Node 24 in CI |
+| Package manager | `pnpm@12.16.1` (pinned in `packageManager`), Node 24 (`engines.node: 24.x`, and in CI) |
 
-Statically prerendered, deployed on Vercel from GitHub Actions.
+Statically prerendered, deployed on Vercel from GitHub Actions. Dependencies
+are kept current by Dependabot, monthly and grouped (one minor/patch PR and
+one majors PR), with Next, React and `@types/node` majors left to be done by
+hand; the audit is clean, with `minimatch` overridden to 11 in
+`pnpm-workspace.yaml` for an advisory that has no 10.x fix.
 
-**TypeScript 7 runs side by side with 6.** `@typescript/native` (TS 7)
-provides the `tsc` binary that `pnpm typecheck` runs, while the `typescript`
-package is aliased to `@typescript/typescript6` because typescript-eslint and
-Next still load the TS 6 API. *Why:* the fast native checker is usable today,
-but the tooling around it is not ready for the 7 API yet.
+**TypeScript stays on 6.0.** `typescript` is pinned `~6.0.3`, and Dependabot
+ignores its minor and major updates. *Why:* typescript-eslint, through
+`eslint-config-next`, only accepts TypeScript below 6.1. The TypeScript 7
+side-by-side setup (`@typescript/native` for `tsc`) was removed in the
+November dependency update; lift the pin once typescript-eslint supports a
+newer TypeScript.
 
 **ESLint 10 goes through `@eslint/compat`.** `eslint-config-next`'s react,
 jsx-a11y and import plugins still call context APIs ESLint 10 removed, so their
@@ -84,7 +95,7 @@ pnpm build && pnpm start
 
 pnpm format:check        # prettier --check (CI runs this first)
 pnpm lint                # eslint
-pnpm typecheck           # tsc --noEmit (TypeScript 7)
+pnpm typecheck           # tsc --noEmit (TypeScript 6)
 pnpm test                # vitest run
 pnpm format              # prettier --write
 
@@ -246,7 +257,7 @@ flowchart LR
   `https://aladawy-pack.vercel.app`. *Why Actions and not Vercel's Git
   integration:* the Vercel project is on the Hobby plan, which refuses to link
   a private organisation-owned repository (`repo_owned_by_org`). The CLI is
-  pinned (`vercel@58`) so a new release cannot change the deploy between runs,
+  pinned (`vercel@65`) so a new release cannot change the deploy between runs,
   and `--prebuilt` uploads exactly what the job built. It needs one repository
   secret, `VERCEL_TOKEN`; the org and project IDs are inlined because they are
   identifiers, not credentials.

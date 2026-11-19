@@ -1,6 +1,6 @@
 ---
 title: Dev Environment Setup
-description: Everything needed to get any of the fourteen repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
+description: Everything needed to get any of the fifteen repositories running locally — prerequisites, the per-repo table, and the errors you will hit on the way.
 tags: ['Tutorial', 'Day 1', '~45 min']
 ---
 
@@ -13,8 +13,8 @@ anything harder depends on it.
 ## Prerequisites
 
 <Checklist id="env-prereqs">
-  <Task>**Node.js 22** through a version manager (`fnm` or `nvm`), not a system package. The platform requires ≥ 20 and its CI runs 22 — `jumeira` and `aladawy-pack` run 24, so check the repo's workflow rather than assuming one version.</Task>
-  <Task>**pnpm** — `corepack enable` is the simplest route. Every repo except this handbook uses it.</Task>
+  <Task>**Node.js 24** through a version manager (`fnm` or `nvm`), not a system package. Since 3 November 2026 every repo declares `"node": "24.x"` in `package.json` and every workflow runs 24, so one version covers them all.</Task>
+  <Task>**pnpm** — `corepack enable` is the simplest route: each pnpm repo pins `pnpm@12.16.1` in `packageManager`, and corepack fetches exactly that. Every repo uses it except this handbook, `aladawy-pack-wp`, `icoffee` and `baron-menu`.</Task>
   <Task>**Git**, configured with your name and work email.</Task>
   <Task>**An SSH key on your GitHub account.** Every clone command here is `git@github.com:…`, so without one the very first command fails with `Permission denied (publickey)`. [GitHub's guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) — generate, then add to your account, then `ssh -T git@github.com` to confirm.</Task>
   <Task>**The Vercel CLI** (`npm i -g vercel`), then `vercel login`. Needed for `vercel env pull` and for the one repo that deploys by hand.</Task>
@@ -55,17 +55,18 @@ If those two pass, your toolchain is correct.
 
 | Repo | Manager | Install → run | Serves | Env vars |
 | ---- | ------- | ------------- | ------ | -------- |
-| [`adawy-platform`](/repositories/adawy-platform) | pnpm 11.26 | `pnpm install` → `pnpm turbo dev --filter=group` | `/en` | `apps/group/.env.example` |
-| [`adawy-group-links`](/repositories/adawy-group-links) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
-| [`aladawy-links`](/repositories/aladawy-links) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
-| [`aladawy-pack`](/repositories/aladawy-pack) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/en` | none to boot |
+| [`adawy-platform`](/repositories/adawy-platform) | pnpm 12.16 | `pnpm install` → `pnpm turbo dev --filter=group` | `/en` | `apps/group/.env.example` |
+| [`adawy-group-links`](/repositories/adawy-group-links) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
+| [`aladawy-links`](/repositories/aladawy-links) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/en` | `.env.example` (optional) |
+| [`aladawy-pack`](/repositories/aladawy-pack) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/en` | none to boot |
 | [`aladawy-pack-wp`](/repositories/aladawy-pack-wp) | npm | `npm install` → `npm run build` — builds the CSS and JS only; nothing in the repo boots WordPress | — | deploy credentials, only to deploy |
-| [`aladawy-shop`](/repositories/aladawy-shop) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
-| [`jumeira`](/repositories/jumeira) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
-| [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 11.26 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
+| [`aladawy-shop-links`](/repositories/aladawy-shop-links) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`aladawy-shop`](/repositories/aladawy-shop) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`jumeira`](/repositories/jumeira) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/ar` | none to boot |
+| [`zad-alhkoul`](/repositories/zad-alhkoul) | pnpm 12.16 | `pnpm install` → `pnpm dev` | `/` (en) | `.env.example` |
 | [`baron-menu`](/repositories/baron-menu) | **none** to run (npm for its image script) | serve the folder | one page | none |
-| [`icoffee`](/repositories/icoffee) | npm | `npm install` → `npm run theme:dev` — serves the unpublished Shopify theme, and uploads every file you save to it | the store's preview | none: a staff sign-in on the store, through the Shopify CLI |
-| [`adawy-dashboard`](/repositories/adawy-dashboard) | pnpm 11.26 | `pnpm install` → `pnpm seed:sandbox` → `pnpm dev --port 3100` | sign-in page | `.env.local`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` — then `pnpm auth:setup` for the first admin |
+| [`icoffee`](/repositories/icoffee) | npm | `npm install` → `npm run theme:dev` — serves your own hidden development theme with the live store's products, and uploads every file you save to it. Never add `--theme` with the live theme's id: every save would reach customers at once | `127.0.0.1:9292` | none: a staff sign-in on the store, through the Shopify CLI |
+| [`adawy-dashboard`](/repositories/adawy-dashboard) | pnpm 12.16 | `pnpm install` → `pnpm seed:sandbox` → `pnpm dev --port 3100` | sign-in page | `.env.local`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` — then `pnpm auth:setup` for the first admin |
 | [`aladawy-shop-wp`](/repositories/aladawy-shop-wp) | pnpm | `pnpm install` → `pnpm dev` — a throwaway WordPress + WooCommerce in Arabic, on port 9400 | `/` | none to boot |
 | [`adawy-content-sandbox`](/repositories/adawy-content-sandbox) | — | nothing to run: it is the dashboard's practice data | — | — |
 | `adawy-technical-docs` | **npm** | `npm install` → `npm run dev` | `/` | none |
@@ -151,7 +152,7 @@ vercel env pull .env.local    # for Vercel-linked projects
 
 Only two repos document their variables in a committed `.env.example`
 (`adawy-platform`, in `apps/group/`, and `zad-alhkoul`). The rest boot with
-none. Anything not covered comes from the team password manager or the CTO —
+none. Anything not covered comes from the team password manager or the Head of Technology —
 **never invent a value** ([security](/standards/security)).
 
 What each prefix means, and why it is a security fact rather than a naming
@@ -164,7 +165,7 @@ one: [Next.js & React](/standards/nextjs#environment-variables-and-configuration
 | `Permission denied (publickey)` on the first clone | No SSH key on your GitHub account. Generate one, add it, then `ssh -T git@github.com` |
 | `pnpm: command not found` after `corepack enable` | Corepack is enabled but pnpm has not been provisioned — run `corepack prepare pnpm@latest --activate`, or install pnpm directly |
 | Dependency errors that make no sense in a platform or client repo | You ran `npm install` in a pnpm repo. Delete `node_modules` and `package-lock.json`, then `pnpm install` |
-| Wrong Node version errors | You skipped the version manager — `fnm use 22` / `nvm use 22`. Only some repos pin a version, so name it explicitly |
+| Wrong Node version errors | You skipped the version manager — `fnm use 24` / `nvm use 24`. Every repo declares `24.x` in `engines` but none has an `.nvmrc`, so name the version explicitly |
 | `Error: Your codebase isn't linked to a project` from `vercel env pull` | Run `vercel link` in that repo first |
 | CI fails on formatting after a green local `turbo lint` | `pnpm format:check` is a separate gate and is not a turbo task. Run it too |
 | A class exists in your source but not in the served CSS | Stale Turbopack CSS chunk — `rm -rf .next` (or `apps/<app>/.next`) and restart. A plain restart is not enough |
