@@ -7,18 +7,20 @@ tags: ['Group work', 'Next.js 16', 'One route', 'Open question']
 # `adawy-group-links`
 
 **Adawy Group's own property.** The "link in bio" page: one screen carrying the
-website, a WhatsApp chat, the company profile PDF, four social accounts
-(Instagram, Facebook, LinkedIn, TikTok), the head-office contact details and
-the branch list — in English and Arabic, light and dark.
+website, a WhatsApp chat, the company profile (an English and an Arabic PDF,
+one per page language), four social accounts (Instagram, Facebook, LinkedIn,
+TikTok), the head-office contact details and the branch list — in English and
+Arabic, light and dark.
 
-Private · standalone Next.js 16.3 app · **not** part of the monorepo ·
+Private · standalone Next.js 16.4 app · **not** part of the monorepo ·
 production at `adawy-group-links.vercel.app`
 
-It has a client sibling built from the same code:
+It has two client siblings built from the same code:
 [`aladawy-links`](/repositories/aladawy-links), the same page rebranded for
-Aladawy Pack. A change to the shared construction (motion, theme reveal, copy
-buttons, tests) usually wants making in both — see
-[below](#its-client-sibling-aladawy-links).
+Aladawy Pack, and [`aladawy-shop-links`](/repositories/aladawy-shop-links),
+rebranded again for Aladawy Shop. A change to the shared construction (motion,
+theme reveal, copy buttons, tests) usually wants making in all three — see
+[below](#its-client-siblings-aladawy-links-and-aladawy-shop-links).
 
 <Stats>
   <Stat value="1" label="route" hint="everything else 404s inside the locale" />
@@ -55,16 +57,16 @@ inbox.
 
 | | |
 | --- | --- |
-| Framework | Next.js 16.3.5 (App Router), React 19.3 |
-| Language | TypeScript, strict — `@typescript/native` (TypeScript 7) is installed alongside, and the `typescript` package is aliased to `@typescript/typescript6` |
+| Framework | Next.js 16.4.5 (App Router), React 19.3.1 |
+| Language | TypeScript 6.0.3, strict, pinned exactly. The TypeScript 7 `tsc` alias was dropped because `typescript-eslint` only accepts TypeScript below 6.1 |
 | Styling | Tailwind CSS v4 (CSS-first) + shadcn/ui (base-nova) on `@base-ui/react`, `rtl: true` |
 | Theme | next-themes, `attribute="class"`, with a hand-rolled reveal animation |
 | Motion | GSAP 3 (`@gsap/react`) entrance, gated on JavaScript **and** reduced motion |
 | i18n | next-intl 4 — `en` (default) + `ar`, `localePrefix: 'always'` |
 | Fonts | Montserrat (Latin) + Cairo (Arabic), `preload: false` |
 | Tests | Vitest 5 — five files, and they cover the things reviewers cannot see |
-| Lint / format | ESLint 10 (`eslint-config-next` 16.3.5), Prettier 3 + `prettier-plugin-tailwindcss` |
-| Tooling | pnpm **11.26.0** (pinned in `packageManager`); Node ≥ 22.18 per the README (no `engines` field); CI runs Node 24 |
+| Lint / format | ESLint 10 (`eslint-config-next` 16.4.4), Prettier 3 + `prettier-plugin-tailwindcss` |
+| Tooling | pnpm **12.16.1** (pinned in `packageManager`); Node 24 (`engines: 24.x`), the same as CI |
 | Agent contract | `AGENTS.md` holds **only** the block `next dev` generates — no repo-specific rules |
 
 No API routes, no server actions, no forms, no database, no client state
@@ -95,7 +97,8 @@ lib/          links.ts · contact.ts · site.ts (+ tests)
 messages/     en.json · ar.json (+ parity and brand-spelling tests)
 i18n/ + proxy.ts               next-intl routing, request config, proxy
 scripts/build-pattern-tile.ts  the pattern:bake script
-public/       adawy-group-company-profile.pdf · pattern/tile-{ink,chalk}.png
+public/       adawy-group-company-profile.pdf (English) · …-ar.pdf (Arabic) ·
+              pattern/tile-{ink,chalk}.png
 ```
 
 `lib/` is pure data with relative imports, so Vitest reads it without the
@@ -165,7 +168,7 @@ guarding facts that render identically whether they are right or wrong:
 | Test | What would otherwise ship broken |
 | ---- | -------------------------------- |
 | `lib/contact.test.ts` | `tel:` and `mailto:` — *"invisible to the eye but what a tap actually dials"*. The `tel:` form must equal the display number with spaces stripped; branches are unique and named in both locales; the address has two lines in both |
-| `lib/links.test.ts` | Exactly seven destinations, website first and WhatsApp second; every `kind: "document"` exists on disk under `public/`, so renaming the company profile PDF breaks the suite instead of the page; the `wa.me` digits equal `CONTACT.phone.tel`; the WhatsApp opener is URL-escaped and differs per locale |
+| `lib/links.test.ts` | Exactly seven destinations, website first and WhatsApp second; every `kind: "document"` exists on disk under `public/`, and each locale's `Links.profile.href` names a different PDF that exists there, so renaming a profile breaks the suite instead of the page; the `wa.me` digits equal `CONTACT.phone.tel`; the WhatsApp opener is URL-escaped and differs per locale |
 | `messages/parity.test.ts` | Identical key trees across locales, and no empty strings |
 | `messages/brand-spelling.test.ts` | The Arabic brand form, as above |
 | `components/brand/lib/mark-pattern-tile.test.ts` | The generated pattern geometry — six outlines, one solid, a one-pixel hairline at on-screen size |
@@ -186,6 +189,17 @@ the things that break silently, never the markup
   localized opener (`Links.whatsapp.opener`) so the first message arrives in
   the visitor's language, `encodeURIComponent`-escaped because the Arabic
   opener is not URL-safe.
+- **The company profile is one PDF per language, so its path is a
+  translation.** The English page opens `adawy-group-company-profile.pdf` and
+  the Arabic page opens `adawy-group-company-profile-ar.pdf`, because a visitor
+  reading Arabic should not land in an English brochure. Each locale names its
+  file in `Links.profile.href`, and the link list reads the href from the
+  messages rather than from `LINKS` (which keeps the English path). To update
+  a profile, replace the file and keep its name. Because the path now sits in
+  `messages/`, the [content dashboard](/repositories/adawy-dashboard) offers it
+  as an editable string like any other, and a mistyped path there would ship
+  a door to nothing: only `lib/links.test.ts` checks it, and a dashboard
+  publish runs no tests.
 - **The theme flip is a hand-rolled Web Animations clip-path reveal, not the
   View Transitions API.** VT snapshots the whole page before it can animate,
   which is dead time after the tap on mobile; the overlay is one solid
@@ -243,8 +257,8 @@ and today it runs **by hand only**: its one trigger is `workflow_dispatch`.
 It ran on pushes to `main` and pull requests into `main` until 2026-09-27,
 when the org's free Actions minutes (spent since 2026-09-23) led to every
 automatic trigger being swapped for a manual one rather than left to queue
-runs that could not start. The quota reset on 1 October; the triggers have not
-been restored.
+runs that could not start. The quota reset on 1 October and has run out again
+since, so the triggers stay manual.
 
 ```mermaid
 flowchart LR
@@ -263,6 +277,15 @@ flowchart LR
 - Restoring the automatic pipeline is the two trigger blocks and nothing else;
   the job conditions still read the event name.
 
+`.github/dependabot.yml` opens dependency PRs monthly and grouped: Next, React
+and their type packages in one group, because they are pinned to exact
+versions and break the build when split; framework majors are ignored, because
+a major is a migration to do by hand. GitHub Actions versions get a monthly
+group of their own. `aladawy-links` and `aladawy-shop-links` carry the same npm
+rules, so the three pages stay on the same versions. With the workflow
+manual-only, a Dependabot PR arrives with no checks: run the four CI commands on
+its branch before merging.
+
 ## Deployment
 
 Vercel project `adawy-group-links` (team `adawy-s-projects`), deployed from
@@ -273,7 +296,7 @@ see [Deployment](/how-we-work/deployment).
 
 <Callout type="warning">
   **Production ships from a terminal.** The repo has `VERCEL_ORG_ID` and
-  `VERCEL_PROJECT_ID` but no `VERCEL_TOKEN` secret (checked 2026-10-06), so
+  `VERCEL_PROJECT_ID` but no `VERCEL_TOKEN` secret (checked 2026-11-19), so
   even a dispatched run would show `verify` green and `deploy` skipped — and
   with the workflow manual-only, nothing runs on a push at all. Ship with
   `vercel deploy --prod`, and run the four CI checks first, because nothing
@@ -297,19 +320,29 @@ no visible studio credit in its footer.
 currently resolve to the Vercel project host. `NEXT_PUBLIC_SITE_URL` is the
 only variable in `.env.example`, and it is optional.
 
-## Its client sibling: `aladawy-links`
+## Its client siblings: `aladawy-links` and `aladawy-shop-links`
 
 [`aladawy-links`](/repositories/aladawy-links) is this page, file for file,
 rebranded for [Aladawy Pack](/repositories/aladawy-pack): its own monogram,
 wordmark and fonts, six destinations instead of seven, a head-office pin
-instead of a branch list, and **no CI at all**. The two are separate
-repositories, not a shared package — a fix to the shared construction has to
+instead of a branch list, and **no CI at all**.
+[`aladawy-shop-links`](/repositories/aladawy-shop-links) was built from
+`aladawy-links` for Aladawy Shop: Arabic first, on the shop's red, with three
+destinations and an inbox. All three are separate repositories with the same
+dependency set, not a shared package — a fix to the shared construction has to
 be carried across by hand, so when you touch the entrance, the theme reveal,
-the copy button or a test here, check whether `aladawy-links` wants the same
+the copy button or a test here, check whether the other two want the same
 change.
 
 ## Recent history
 
+- **2026-11-17 → 19** — the first Dependabot PR: Next 16.4.5.
+- **2026-11-03** — security update: Next 16.4.4 (the `next/og` RCE and image
+  optimizer SSRF advisories), React 19.3.1, Node 24 in `engines`, pnpm
+  12.16.1, TypeScript pinned to 6.0.3, `@types/node` back to 24.x to match the
+  runtime, a `minimatch` override, and the monthly grouped Dependabot config.
+- **2026-10-28** — the new company profile, served per language: the English
+  PDF replaced, an Arabic one added, each locale naming its own (PR #5).
 - **2026-09-27 → 29** — `publisher` metadata credits Adawy Software; the
   workflow becomes manual-only; markup moves to semantic elements (the contact
   block is an `<address>` holding a list, one `ContactLine` per number or

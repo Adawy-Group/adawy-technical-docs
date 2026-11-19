@@ -1,6 +1,6 @@
 ---
 title: aladawy-pack-wp
-description: The custom WordPress theme that runs aladawypack.com — ported from the Next.js build, bilingual by URL prefix, Tailwind v4 and GSAP compiled into two files, edited in wp-admin, and deployed to cPanel by one script with no shell.
+description: The custom WordPress theme that runs aladawypack.com — ported from the Next.js build and since redesigned as a light, premium packaging site, bilingual by URL prefix, Tailwind v4 and GSAP compiled into two files, edited in wp-admin, with a careers form, and deployed to cPanel by one script with no shell.
 tags: ['Client work', 'WordPress', 'Live']
 ---
 
@@ -24,10 +24,10 @@ not part of the monorepo · npm · **live at `aladawypack.com` since 26 Septembe
 </Callout>
 
 <Stats>
-  <Stat value="6" label="pages" hint="home, products, services, build, about, contact" />
+  <Stat value="7" label="pages" hint="home, products, services, build, about, contact, careers" />
   <Stat value="15" label="products" hint="seeded once, then edited in wp-admin" />
   <Stat value="en · ar" label="locales" hint="English at the root, Arabic under /ar/" />
-  <Stat value="2" label="forms" hint="contact · build your own bag" />
+  <Stat value="3" label="forms" hint="contact · build your own bag · careers" />
 </Stats>
 
 ## What it is
@@ -37,11 +37,13 @@ existing WordPress install. Its own stylesheet header says what it is:
 *"bilingual (EN/AR) site, ported from the Next.js build"*. What came across,
 and how:
 
-- **The design, unchanged.** `src/globals.css` is the Next app's
-  `globals.css` with only the asset URLs changed, so the monochrome surface
-  system, the four press inks and the Arabic type rules on the
-  [`aladawy-pack` page](/repositories/aladawy-pack#the-rules-to-know-before-editing)
-  apply here word for word.
+- **The design, at first unchanged.** `src/globals.css` started as the Next
+  app's `globals.css` with only the asset URLs changed. The theme has since
+  been redesigned ([below](#the-anatomy-and-atelier-redesign)), so only the
+  structure of that file is still shared: the `@theme inline` aliases, the
+  surface classes that re-declare the same slots, and the `:lang(ar)` rules on
+  the [`aladawy-pack` page](/repositories/aladawy-pack#the-rules-to-know-before-editing).
+  The values (colours, fonts, radii, sizes) are no longer the Next build's.
 - **The components, as template parts.** Each React section became a PHP file
   under `parts/` with the same name (`parts/home/process-rail.php`,
   `parts/services/substrates.php`), and the motion became vanilla modules under
@@ -52,7 +54,40 @@ and how:
   them, so the two repos now drift independently.
 
 What the Next build did not have: staff edit every string and every product in
-`wp-admin`, and enquiries are stored in WordPress as well as emailed.
+`wp-admin`, enquiries are stored in WordPress as well as emailed, and there is
+a careers page and a photo carousel on About. **The Next build is now neither
+retired nor in sync:** it still has the old dark design and no careers page,
+and nothing carries a change in either direction.
+
+### The Anatomy and Atelier redesign
+
+On 27 October 2026 the theme was redesigned and deployed (PR #3). The brief was
+"pack, not print": a premium packaging company, not a print shop. It combines
+two directions: **Anatomy** (the pack taken apart) and **Atelier** (packs shown
+as objects).
+
+- **Light grounds.** Mineral (`.surface-field`, `#EDEFEF`), sheet white
+  (`.surface-paper`) and gallery stone (`.surface-stone`, for packs on
+  plinths), with graphite ink on all three. The dark field, film grain,
+  CMYK accents and uppercase headings are gone; the four `--ink-*` press inks
+  are retired to one steel grey, so old accents read as quiet rules.
+- **Type and shape.** Host Grotesk for Latin display, text and figures (specs
+  use its tabular numbers instead of a monospace), Alexandria for Arabic, light
+  display weights at a calmer scale, sentence-case labels, pill buttons and soft
+  corners.
+- **Home.** A spout pouch that comes apart into its four films (print/PET,
+  aluminium, PA, PE), with no pinned hero; the films set as a materials data
+  sheet; featured packs on plinths; and the four ISO certificates, food safety
+  (ISO 22000) first.
+- **Products and Build.** Each pack in a softly lit stone tile with pill
+  filters; the build form has finish swatches and a pack preview that follows
+  the chosen shape and finish.
+- **New copy uses new message keys.** *Why:* a string an editor had saved in
+  Site content would otherwise mask the new default
+  ([rule 2](#the-rules-to-know-before-editing)).
+
+The premium components live in `src/components.css`; everything inside
+`.anatomy` sizes in container units so the pouch scales with its column.
 
 **How it got into git.** The theme went live on 26 September 2026 from an
 untracked folder inside the `aladawy-pack` working copy. On 2 October 2026 it
@@ -70,14 +105,17 @@ flowchart LR
   WP --> D["data/content.json<br/>structure that does not translate"]
   WP --> P["ap_product posts<br/>the catalogue"]
   F["Contact and build forms"] --> R["REST ap/v1/contact · ap/v1/quote"]
+  C["Careers form<br/>+ CV upload"] --> RC["REST ap/v1/careers"]
   R --> E["ap_enquiry post<br/>stored first"]
+  RC --> E
   E --> MAIL["wp_mail → the group inbox"]
+  E --> CMAIL["wp_mail + CV →<br/>careers@aladawypack.com"]
 ```
 
 **The theme is the whole site, including its SEO.** There is no plugin of the
 department's in this install, unlike [`aladawy-shop-wp`](/repositories/aladawy-shop-wp),
-which splits presentation from rules. The repo records no reason; with six
-pages, two forms and no commerce, there are no rules a theme swap could take
+which splits presentation from rules. The repo records no reason; with seven
+pages, three forms and no commerce, there are no rules a theme swap could take
 away that the site would still need. The consequence to know: **switching
 themes switches off the post types too** — products and enquiries stay in the
 database but vanish from `wp-admin` until this theme is active again.
@@ -90,10 +128,10 @@ database but vanish from `wp-admin` until this theme is active again.
 | Language | PHP — uses `match`, so **PHP 8.0 or later**, whatever the stylesheet header says (below) |
 | Styling | Tailwind CSS v4 (`@tailwindcss/cli`) + `tw-animate-css`, scanning the PHP templates and the JS |
 | Motion | GSAP 3.15 (ScrollTrigger, SplitText) + Lenis, bundled by esbuild into one IIFE |
-| Fonts | Archivo, Inter, JetBrains Mono, IBM Plex Sans Arabic from Google Fonts (`next/font` did this before) |
+| Fonts | Host Grotesk (Latin) and Alexandria (Arabic) from Google Fonts, since the redesign; the Next build's Archivo, Inter, JetBrains Mono and IBM Plex Sans Arabic are gone |
 | Build | `node build.mjs` → `assets/app.css` + `assets/app.js` |
-| Package manager | **npm** (`package-lock.json`, no `packageManager` pin) — not pnpm like the Next build |
-| CI, tests | None |
+| Package manager | **npm** (`package-lock.json`, no `packageManager` pin) — not pnpm like the Next build. `engines.node` is `24.x` |
+| CI, tests | None. `.github/` holds only a Dependabot config (monthly, grouped npm updates) |
 
 ## Building it
 
@@ -124,16 +162,20 @@ inc/i18n.php             /ar routing, ap_t() / ap_str() strings, the locale filt
 inc/content.php          data/content.json, ap_img(), the ap_product post type
 inc/seo.php              title, description, canonical, hreflang, Open Graph, JSON-LD
 inc/forms.php            form rules, REST endpoints, the Enquiries post type
+inc/careers.php          the careers endpoint (CV upload), where CVs are kept, the CV download
 inc/admin.php            Appearance → Site content; the product edit box
-inc/setup.php            first-run seeding of pages and products (Tools → Aladawy setup)
-front-page.php, page-<slug>.php   one template per page: about, build, contact, products, services
+inc/setup.php            seeding of pages and products (Tools → Aladawy setup); new pages self-create
+front-page.php, page-<slug>.php   one template per page: about, build, careers, contact, products, services
+header.php, footer.php   document head and foot around parts/layout/
 index.php, 404.php       anything without its own template is a 404
 parts/                   home, about, services, products, forms, layout — one file per section
-src/app.css → globals.css     Tailwind entry → the Next app's design tokens
-src/js/                  app.js entry; home, pages, forms, motion primitives, lib/gsap.js
-data/content.json        products, plant lines, substrates, partners, image dimensions…
+src/app.css              Tailwind entry: font variables, imports globals.css + components.css
+src/globals.css          design tokens; started as the Next app's file, values since redesigned
+src/components.css       the redesign's components: the pouch (.anatomy), plinths, swatches
+src/js/                  app.js entry; home, pages (catalogue, About gallery), forms, motion, lib/gsap.js
+data/content.json        products, plant lines, substrates, certifications, partners, About gallery, image dimensions…
 messages/en.json, ar.json     every string, same keys in both
-assets/                  photography (AVIF + WebP), partner logos, brand marks, icons
+assets/                  photography (AVIF + WebP, gallery/ for About), partner logos, brand marks, icons
 switch-plugin/           one-shot plugin that activates this theme (never deployed)
 build.mjs, deploy.sh     build; build + zip + upload
 ```
@@ -183,15 +225,40 @@ honeypot with `200` and drop it, and **store the enquiry as a private
 `ap_enquiry` post before mailing it**. *Why:* an enquiry survives a mail
 outage, and the Enquiries screen shows "Not sent" in red when the mail failed.
 
+The careers form shares the rule list but not the transport: it posts
+multipart to `ap/v1/careers` (`inc/careers.php`) because it carries a file. It
+takes name, phone, email, job title, an optional portfolio link and a
+**required CV** (PDF or Word, up to 4 MB, or PHP's upload limit if lower). The
+server checks the file's first bytes, not only its name, and rate-limits ten
+applications per IP per ten minutes, looser than the other forms because
+mobile carriers share IPs. The application is saved as an Enquiry (Form:
+Careers) first, then mailed to **`careers@aladawypack.com`** (`AP_CAREERS_TO`)
+with the CV attached and `Reply-To` set to the applicant; contact and build
+enquiries still go to `AP_ENQUIRY_TO`. The CV is kept in `uploads/ap-careers/`,
+in a random sub-folder behind a deny-all `.htaccess`, downloaded from the
+Enquiry in `wp-admin` through a nonced link, and deleted when its Enquiry is
+deleted. *Why:* a CV is personal data, so it must not be reachable by URL and
+must not outlive the record that holds it. On success the form fires the Meta
+`SubmitApplication` event if a pixel is on the page; there is none yet.
+
 **6. The theme is the SEO plugin.** `inc/seo.php` prints the title,
 description, keywords, canonical, `hreflang` for both locales plus
-`x-default` (English), Open Graph, and Organization and WebSite JSON-LD, with
-`<` escaped so no string can close the script tag. WordPress's own canonical
+`x-default` (English), Open Graph, and Organization and WebSite JSON-LD.
+WordPress's own canonical
 and shortlink tags are removed. *Why:* a second SEO plugin would print a second
 set of head tags that disagree with the `/ar` routing. The sitemap is
 WordPress core's `/wp-sitemap.xml`, which lists English URLs only. The theme
 does not yet print the `publisher` meta tag naming Adawy Software, which the
 Next build and the shop both carry.
+
+**The JSON-LD escaping does nothing.** `ap_jsonld()` is meant to escape `<` so
+no string can close the script tag, but its one line is
+`str_replace('<', '<', wp_json_encode(…))`: it replaces `<` with itself, and
+has since the import. Combined with `JSON_UNESCAPED_SLASHES`, a `</script>`
+inside any JSON-LD value would end the tag early. Today every value comes from
+theme constants and `data/content.json`, not from wp-admin, so nothing on the
+live site triggers it. The fix is one line (replace with `'<'`, or pass
+`JSON_HEX_TAG`); make it before any editable string reaches the JSON-LD.
 
 **7. Reduced motion means no ScrollTrigger**, and the authored markup must
 already be the finished layout — the same rule, for the same reason, as
@@ -235,21 +302,25 @@ replaces whatever is live, and the server holds no history.
 
 ### Run `sh deploy.sh`
 
-It sources the credentials, builds, copies the theme files (templates, `inc`,
-`parts`, `messages`, `data`, `assets`) into `dist/aladawy-pack/`, zips them,
+It sources the credentials, builds, copies a fixed list of theme files
+(`style.css`, `functions.php`, `header.php`, `footer.php`, `index.php`,
+`404.php`, `front-page.php`, `page-*.php`, `inc`, `parts`, `messages`, `data`,
+`assets`) into `dist/aladawy-pack/`, zips them,
 opens a cPanel session through the WHM API, uploads the zip and extracts it
 over `wp-content/themes/aladawy-pack`. The theme slug is hardcoded; it prints
 the zip size on success and stops on a failed upload or extract.
 
 ### Check it live
 
-Every page under `/` and `/ar/`, one form submission (it should arrive in the
-inbox and appear under Enquiries as sent), and the browser console.
+Every page under `/` and `/ar/` (careers included), one form submission (it
+should arrive in the inbox and appear under Enquiries as sent), and the browser
+console.
 
 </Steps>
 
 **Credentials** — the WHM host, user and API token — live in a local,
-untracked env file outside the repository, which `deploy.sh` sources. They are
+untracked env file outside the repository (`.secrets/aladawypack.env` in the
+workspace folder), which `deploy.sh` sources. They are
 never committed and never pasted into an issue or a PR. Ask for them
 ([who to ask](/help/who-to-ask)).
 
@@ -284,9 +355,14 @@ on the server is the situation this repo was created to end.
   browser session: the WordPress REST API can activate a plugin but cannot
   switch themes, so this one-file plugin switches to `aladawy-pack` on
   activation and then deactivates itself. Switching the theme runs
-  `ap_setup()`, which creates the six pages, the 15 products with their photos,
+  `ap_setup()`, which creates the pages, the 15 products with their photos,
   and `/%postname%/` permalinks. Setup is idempotent and can be re-run from
   Tools → Aladawy setup or `POST ap/v1/setup` (administrators only).
+- **A new page creates itself.** A slug added to `AP_PAGES` in
+  `inc/setup.php` is created on live on the first request after the deploy,
+  once (the option `ap_pages_seeded` records the list). That is how `/careers`
+  appeared. *Why only pages:* the full setup also re-seeds products someone may
+  have deleted on purpose, so it stays a manual run.
 
 ## Who edits what in wp-admin
 
@@ -294,7 +370,7 @@ on the server is the situation this repo was created to end.
 | ------ | ------------- |
 | Appearance → Site content | Every string on the site, English and Arabic tabs, generated from the shape of `messages/*.json` |
 | Products | The catalogue — names, summaries, descriptions in both languages, category, "featured", spec rows, photo, order |
-| Enquiries | Read-only inbox of both forms, with whether the email went out |
+| Enquiries | Read-only inbox of all three forms, with whether the email went out; a careers row has a "Download CV" link |
 
 The staff [training videos](/guides/training-videos#aladawy-pack) walk through
 all three. The login address is not WordPress's default; ask for it. The
@@ -314,14 +390,33 @@ card opens this site's `wp-admin`.
 | `npm run zip` fails | `package.json` names a `zip.mjs` that does not exist | Use `sh deploy.sh`, which zips by itself |
 | `node build.mjs --watch` builds once and exits | `--watch` only turns off minification | Re-run the build after each change |
 | Dimmed photography shows at full brightness | Smush's lazy-load rewrites every `<img>` and fades it to opacity 1 | `functions.php` switches Smush lazy-load off; keep that filter |
-| A fatal error on PHP 7.4 | The stylesheet says `Requires PHP: 7.4`, but `inc/forms.php` uses `match` | Run 8.0 or later, and correct the header in the next change |
+| A new top-level file or folder (`single.php`, `lib/`) is missing on the live site | `deploy.sh` copies a fixed list of files | Add it to the `cp` line in `deploy.sh` in the same PR |
+| A fatal error on PHP 7.4 | The stylesheet says `Requires PHP: 7.4`, but `inc/forms.php` and `inc/careers.php` use `match` | Run 8.0 or later, and correct the header in the next change |
 | Every visitor hits the form rate limit at once | The limiter keys on `REMOTE_ADDR`; behind a proxy or CDN everyone shares one address | Check what the server sees before putting anything in front of the site |
+
+## Open items
+
+- **The Meta Pixel is not on the site.** The media buyer has not provided it.
+  The careers form already fires `SubmitApplication` when a pixel is present,
+  so adding the pixel needs no form change.
+- **The careers mailbox is unconfirmed.** Nobody has checked that
+  `careers@aladawypack.com` exists on the host. Until it does, applications
+  are safe in Enquiries but the email may bounce; check the Enquiries list for
+  "Not sent".
+- **No privacy policy page**, although the careers form collects CVs.
+- **No staging and no automated tests.** Every deploy goes straight to live.
+- **The JSON-LD escaping bug** ([rule 6](#the-rules-to-know-before-editing)).
+- **The Next.js copy is neither retired nor in sync**
+  ([`aladawy-pack`](/repositories/aladawy-pack)): it still shows the old dark
+  design and has no careers page.
 
 ## Agent guidance
 
 There is **no `README.md` and no `AGENTS.md`** in this repo. The map is the
 comment block at the top of `functions.php` and of each file in `inc/`, which
-state what each part does and why; the design rules are on the
-[`aladawy-pack` page](/repositories/aladawy-pack), because the CSS is the same
-file. Aladawy Pack is a client: no `@adawy/*` packages and no Group branding
+state what each part does and why. The structural CSS rules (surfaces,
+`@theme inline`, Arabic type) are explained on the
+[`aladawy-pack` page](/repositories/aladawy-pack), because `globals.css`
+started as the same file; the colour and font values there no longer apply
+here. Aladawy Pack is a client: no `@adawy/*` packages and no Group branding
 here ([Client Projects](/how-we-work/client-projects)).

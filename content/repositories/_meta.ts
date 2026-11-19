@@ -9,6 +9,7 @@ export default {
   'aladawy-pack-wp': 'aladawy-pack-wp',
   'aladawy-shop': 'aladawy-shop',
   'aladawy-shop-wp': 'aladawy-shop-wp',
+  'aladawy-shop-links': 'aladawy-shop-links',
   jumeira: 'jumeira',
   'zad-alhkoul': 'zad-alhkoul',
   'baron-menu': 'baron-menu',

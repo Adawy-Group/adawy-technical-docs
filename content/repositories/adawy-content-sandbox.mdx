@@ -65,7 +65,9 @@ the repo root to the site id and the branch to `main`.
 
 Only what the dashboard may touch is copied: locale files and the folders in
 each site's `imageDirs` allow-list. The two WordPress sites have no folder,
-because the dashboard does not edit them.
+because the dashboard does not edit them, and neither does
+[`aladawy-shop-links`](/repositories/aladawy-shop-links), because the dashboard
+has no entry for it yet.
 
 ## History
 
@@ -94,9 +96,10 @@ flowchart LR
 
 The copy drifts from the real sites as developers change them, and that is
 fine for practice. It has already drifted: the seed predates, for example,
-the footer-credit strings Jumeira and Zad Al-Hkoul gained on 28 September and
-the Zad Al-Hkoul writer's v2 copy, so the practice files lack keys the live
-sites have. To bring it back in line, copy each site's locale files
+the footer-credit strings Jumeira and Zad Al-Hkoul gained on 28 September,
+the Zad Al-Hkoul writer's v2 copy, and the per-language profile path
+(`Links.profile.href`) `adawy-group-links` gained on 28 October, so the
+practice files lack keys the live sites have. To bring it back in line, copy each site's locale files
 and allow-listed image folders from its `main` into the matching folder here
 and commit. Two rules make that safe:
 

@@ -12,9 +12,10 @@ thirteen company pages that each play a 3D take of their own. A handful of
 ideas hold it together, and knowing them is the difference between adding a
 section in an afternoon and breaking the whole page.
 
-The other thirty apps in the monorepo are much simpler (a holding page or the
-studio's one-page site) and are covered on
-[the repository page](/repositories/adawy-platform).
+The other thirty apps in the monorepo are covered on
+[the repository page](/repositories/adawy-platform): twenty-eight holding
+pages, and the Studio and Software sites, which draw their 3D with an engine of
+their own rather than with the machinery on this page.
 
 This page is the **orientation**. The file-level detail lives in the platform
 repo, and deliberately not here — see [where each fact lives](#where-each-fact-lives)
@@ -64,6 +65,11 @@ work:
   logic; routing those through a UI barrel would be ceremony.
 - **`lib/` is the only layer with unit tests,** and it is testable precisely
   because it imports neither React nor three.js.
+- **What a second feature needs moves down to `platform/`.** When the careers
+  form needed the contact form's mailer, rate limit and email layout, they
+  moved to `platform/mail` (2026-10-11) instead of careers reaching into
+  contact. A feature may reach another only through its barrel, and those
+  were internals.
 
 ## 1. One canvas, many passes
 
@@ -267,10 +273,20 @@ owns only its choreography and what it draws:
   at thirteen points along its progress while it is still hidden. Compiling
   shaders is not enough: the GPU driver builds its pipeline state the first
   time an object is drawn into a target, and an object first met mid-scroll
-  stalls that frame by tens of milliseconds.
+  stalls that frame by tens of milliseconds. Each point is drawn dry first
+  (`compileDraws`), and the real draw waits until every program has linked
+  (#417), because three links a program on its first draw and the main thread
+  waits for the driver, 20 to 500 ms each time. That stall is invisible to
+  PageSpeed, which renders without a GPU and mounts no scene, so measure the
+  3D pages in a real browser as well.
 - **It knows when to draw one still.** Reduced motion always gets a single
   frame. The heavy product takes also reduce under Save-Data, on a device
   reporting 2 GB of memory or less, or on a software GL renderer.
+
+The careers page's badge on a lanyard (#346) is a scene on the same host, so
+it gets the same lifecycle rather than one of its own. The pointer lean, the
+fade and the tiled textures the brand takes share are in common code (#395),
+so a fourteenth take inherits them instead of copying them.
 
 **Not everything that moves is WebGL.** Software's Selected Work is a reel of
 screen recordings of four live flagship sites in a plain browser window,
@@ -283,10 +299,12 @@ needs a pause control (WCAG 2.2.2), loads only near the screen, and plays only
 while in view.
 
 **A brand page links out only to a real domain.** Each entry's `site` stays
-`null` until that brand's own app has a `PRODUCTION_HOST`, and a `null` site
-hides the hero's "Visit site" pill (#328). The `*.vercel.app` holding apps are
-`noindex` placeholders on a platform hostname, and the group site should not
-send a visitor to an address the brand will not keep.
+`null` until that brand's own domain serves its app, and a `null` site hides
+the hero's "Visit site" pill (#328). The `*.vercel.app` deployments are
+`noindex` on a platform hostname, and the group site should not send a visitor
+to an address the brand will not keep. Software shows the difference: its app
+already names adawysoftware.com as `PRODUCTION_HOST`, but the domain is still
+parked, so its brand page has no link yet.
 
 ## Where each fact lives
 
@@ -312,7 +330,7 @@ In the platform repo:
 | `docs/perf.md` | The tier, and what a new effect owes it |
 | `docs/shipping.md` | What is tracked, what is generated, what never ships |
 | `AGENTS.md` | The Next.js and Turborepo warnings, and the shadcn contract — why you edit the component, not the call site |
-| `packages/brand-app/README.md` | The holding-app shell, and what each glyph-brand app still owns |
+| `packages/brand-app/README.md` | The shell all twenty-eight holding apps are built on, and what each still owns |
 | `PRODUCT.md` | Brand personality, design principles, anti-references |
 
 You need repository access to read those. If you have been given work on

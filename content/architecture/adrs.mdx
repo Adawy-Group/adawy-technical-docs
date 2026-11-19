@@ -32,7 +32,7 @@ through for the 10% of occasions where the reasoning matters.
 | [013](#adr-013--websites-on-vercel-dns-and-email-stay-on-the-old-host) | Websites moved to Vercel; DNS and email stayed on the Verpex host | <Badge tone="live">Built</Badge> | Every domain |
 | [014](#adr-014--a-content-dashboard-that-commits-to-the-site-repos-not-a-cms) | Non-developers edit site text and images in a dashboard that publishes by committing to each site's repo — no CMS, no content database | <Badge tone="building">Practice mode</Badge> | Every Next.js site |
 | [015](#adr-015--the-aladawy-client-sites-stay-on-wordpress) | aladawyshop.com and aladawypack.com stay on WordPress, rebuilt with the department's own theme and plugin | <Badge tone="live">Built</Badge> | Two clients |
-| [016](#adr-016--the-icoffee-store-stays-on-shopify) | The ICOFFEE store stays on Shopify: the department builds its theme and a small app, and the checkout runs on draft orders | <Badge tone="building">Built, not launched</Badge> | One client |
+| [016](#adr-016--the-icoffee-store-stays-on-shopify) | The ICOFFEE store stays on Shopify: the department builds its theme and a small app, and the checkout runs on draft orders | <Badge tone="live">Built</Badge> live since 20 Oct 2026 | One client |
 
 ## How to add one
 
@@ -498,10 +498,17 @@ was wrong is the most useful thing in the file.
   ([`icoffee`](/repositories/icoffee)):
   - **The storefront is a Shopify theme.** Shopify's Horizon theme with the
     ICOFFEE design added as sections and snippets under one prefix, in English
-    and Arabic. It is built on an unpublished copy and published at launch.
+    and Arabic. It was built on an unpublished copy and published at launch on
+    20 October 2026; it is now the live theme, so day-to-day work runs
+    against a hidden development theme and reaches the live one only by a
+    named push.
   - **What the theme cannot do goes into a small app**, a Cloudflare Worker
     behind the store's app proxy, with no database of its own. It saves the
-    customer's profile, addresses and wishlist, and it runs the checkout.
+    customer's profile, addresses and wishlist, and it runs the checkout and the store's points programme. The points
+    rules and each customer's ledger live in Shopify metafields, so the
+    Worker still keeps no data of its own (added at launch, when the client
+    asked for points: the department's own build was chosen over a loyalty
+    app so it matches the store's design and adds no subscription).
   - **The checkout runs on draft orders.** The store's plan does not allow a
     custom checkout, so the theme collects the delivery details and the app
     prices and places the order through a draft order. Shopify still computes
@@ -520,8 +527,8 @@ was wrong is the most useful thing in the file.
     checks are scripts that drive the preview in a browser, run by hand.
   - **The store is shared with the live shop.** Products, prices and discounts
     belong to the published theme as much as to the new one, so store changes
-    cannot be staged: they are made by scripts that read first, and the bundle
-    discounts wait for launch.
+    cannot be staged: they are made by scripts that read first and have a
+    `--check` mode.
   - **The checkout is ours to keep working.** A draft-order checkout is more
     code than Shopify's own, and it depends on the app, on its permissions and
     on the store's shipping rates keeping their names. The fallback to
@@ -530,3 +537,7 @@ was wrong is the most useful thing in the file.
     decide what is possible: the plan is why the checkout is built this way.
   - **The work reached git a week after it started** (11 October 2026). Until
     then the app's source existed on one laptop.
+  - **The points are ours to keep honest.** Cash-on-delivery orders earn
+    only once the store team marks them paid, so a team that forgets to mark
+    them paid quietly stops paying out points. The rule is in the hand-over,
+    not in code.

@@ -21,13 +21,14 @@ one multi-tenant app ([ADR-008](/architecture/adrs)).
 adawy-platform/
 ├── apps/
 │   ├── group/      Adawy Group   → adawygroup.com   (the full site)
-│   ├── studio/     Adawy Studio  → adawystudio.com (one-page site)
+│   ├── studio/     Adawy Studio  → adawystudio.com (the full site)
+│   ├── software/   Adawy Software → adawysoftware.com (the full site; domain not pointed yet)
 │   ├── pack/       Adawy Pack    → adawypack.com (holding page)
-│   ├── print/      Adawy Print   → adawyprint.com (holding page, on @adawy/brand-app)
+│   ├── print/      Adawy Print   → adawyprint.com (holding page)
 │   ├── supplies/   Adawy Supplies → adawysupplies.com (holding page)
 │   ├── marketing/  Adawy Marketing Solutions → adawymarketingsolutions.com (holding page)
 │   ├── bizdev/     Adawy Business Development → adawybusinessdevelopment.com (holding page)
-│   ├── software/ … manufacturer/  24 newer brands' holding pages on @adawy/brand-app (no domain yet)
+│   ├── advertising/ … tv/  23 newer brands' holding pages (no working domain yet)
 │   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config (planned, ADR-008)
 │   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
@@ -37,17 +38,17 @@ adawy-platform/
     ├── i18n/               @adawy/i18n              (locale list, direction)
     ├── site/               @adawy/site              (identity, routes, alternates, request config)
     ├── holding/            @adawy/holding           (the shared holding-page shell)
-    ├── brand-app/          @adawy/brand-app         (the holding-app shell; print + the 24 newer brands)
+    ├── brand-app/          @adawy/brand-app         (the one shell every brand app shares, since 8 Nov 2026)
     ├── analytics/          @adawy/analytics         (PostHog behind consent)
     ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules)
     └── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
 ```
 
 <Callout type="info">
-  **Today** thirty-one apps and all ten packages exist. Every app but
-  `apps/group` and `apps/studio` is a **holding page** — one branded screen
-  each, the older flagships on `@adawy/holding`, `print` and the twenty-four
-  newer apps on the `@adawy/brand-app` shell — which is why a change to
+  **Today** thirty-one apps and all ten packages exist. Three are full sites
+  (`apps/group`, `apps/studio`, `apps/software`); the other twenty-eight are
+  **holding pages** — one branded screen each, all on the `@adawy/brand-app`
+  shell since 8 November 2026 — which is why a change to
   `packages/ui` verifies and deploys every app rather than one. `apps/sites`
   and `apps/api` are planned.
 

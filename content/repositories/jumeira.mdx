@@ -1,17 +1,18 @@
 ---
 title: jumeira
-description: Client pre-launch site for Jumeira Catering, Benghazi — one pinned scroll carrying three frame-sequence films, and the delivery rules that make scrubbing them work on a Libyan phone.
-tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Pre-launch', 'GSAP']
+description: Client site for Jumeira Catering, Benghazi, live at jumeiracatering.com — one pinned scroll carrying three frame-sequence films, and the delivery rules that make scrubbing them work on a Libyan phone.
+tags: ['Client work', 'Next.js 16', 'Arabic-default', 'Live', 'GSAP']
 ---
 
 # `jumeira`
 
-**Client project.** The pre-launch site for **Jumeira Catering** — a contract
+**Client project.** The site for **Jumeira Catering** — a contract
 catering and premium buffet company in **Benghazi, Libya**, feeding corporates,
-hospitals, oil fields, aviation, conferences and weddings.
+hospitals, oil fields, aviation, conferences and weddings. **Live and indexable
+at `jumeiracatering.com` since 2026-10-13** ([Going live](#going-live)).
 
-<Badge tone="client">Client</Badge> Private · standalone Next.js 16.3 app ·
-`pnpm@11.26.0` · not part of the monorepo, and **no `@adawy/*` dependencies** —
+<Badge tone="client">Client</Badge> Private · standalone Next.js 16.4 app ·
+`pnpm@12.16.1` · not part of the monorepo, and **no `@adawy/*` dependencies** —
 the client must be able to take the repo and keep building. Patterns from the
 handbook carry over; packages do not.
 
@@ -38,10 +39,10 @@ here.
 
 ## What it is for
 
-`PRODUCT.md` states the job precisely: *"a pre-launch holding page while the
-full site is built… this page is not competing for search traffic, it is
-answering the question 'are these people serious?' for someone who already has
-the link."* Success is defined as **a contract buyer forwarding the link instead
+`PRODUCT.md` states the job precisely: *"a holding page while the full site is
+built… with one route per locale this page is still not competing for search
+traffic, it is answering the question 'are these people serious?' for someone
+who already has the link."* Success is defined as **a contract buyer forwarding the link instead
 of asking for a company profile PDF**.
 
 Two audiences with almost nothing in common: a procurement lead deciding whether
@@ -53,16 +54,16 @@ is a film rather than a page of claims.
 
 | | |
 | --- | --- |
-| Framework | Next.js **16.3.6** (App Router, Turbopack), React **19.3** — `middleware.ts` is `proxy.ts` here, as Next 16 renamed it |
-| Language | **TypeScript 7 and 6 side by side**: `tsc` (so `pnpm typecheck`) is TS 7 through `@typescript/native`, while `typescript` is aliased to `@typescript/typescript6` because typescript-eslint and Next still load the TS 6 API. Strict, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, target ES2022 |
+| Framework | Next.js **16.4.5** (App Router, Turbopack), React **19.3.1** — `middleware.ts` is `proxy.ts` here, as Next 16 renamed it |
+| Language | **TypeScript 6.0.3**, one plain package for `tsc`, typescript-eslint and Next. Until 2026-11-03 `tsc` was TS 7 beside a TS 6 alias; that split is gone *because typescript-eslint peers `typescript <6.1` and every Adawy repo runs the same 6.x*, and Dependabot skips TypeScript majors until typescript-eslint supports 7. Strict, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, target ES2022 |
 | Styling | Tailwind CSS v4 + shadcn/ui (`new-york`, `rtl: true`) on the unified `radix-ui` package; one stylesheet entry, `app/globals.css`, importing `app/styles/*.css` in order |
 | Motion | GSAP 3.15 + ScrollTrigger (`@gsap/react`), **plus Locomotive Scroll v5 as the single scroll authority** — see [below](#the-scroll-authority-is-a-reversed-decision) |
 | i18n | next-intl 4 — `ar` (default) + `en`, `localePrefix: 'always'`, `hreflang` `ar-LY` |
-| Lint / format | **ESLint 10** — `eslint-config-next`'s react, jsx-a11y and import plugins still call context APIs ESLint 10 removed, so their configs go through `@eslint/compat`'s `fixupConfigRules`; `eslint-plugin-unicorn` 76, `simple-import-sort`. Prettier 3 with the Tailwind plugin |
+| Lint / format | **ESLint 10** — `eslint-config-next`'s react, jsx-a11y and import plugins still call context APIs ESLint 10 removed, so their configs go through `@eslint/compat`'s `fixupConfigRules`; `eslint-plugin-unicorn` 79, `simple-import-sort`. Prettier 3 with the Tailwind plugin |
 | Tests | **Vitest 5**, in two projects: `node` and a jsdom `dom` project for `*.browser.test.ts` — [below](#tests) |
 | Fonts | IBM Plex Sans, IBM Plex Sans Arabic, Alexandria — all OFL, through `next/font/google` at build time, none preloaded |
-| Package manager | **pnpm 11.26.0** (`packageManager`; CI's `pnpm/action-setup` reads the same field, so local and CI installs match). `minimumReleaseAge: 4320` in `pnpm-workspace.yaml` |
-| Runtime | Node **24** in CI and on Vercel |
+| Package manager | **pnpm 12.16.1** (`packageManager`; CI's `pnpm/action-setup` reads the same field, so local and CI installs match). `pnpm-workspace.yaml` holds `minimumReleaseAge: 4320` and one override, `minimatch` 10 → 11, *because GHSA-g3hv-75wg-m249 has no 10.x fix* |
+| Runtime | Node **24.x** (`engines`), in CI and on Vercel |
 | Hosting | Vercel (Hobby), deployed by the Vercel CLI — from a dispatched Actions run or from a terminal — [CI and deploys](#ci-and-deploys) |
 
 No forms, no server actions, no API routes, no state library. The only stateful
@@ -546,7 +547,7 @@ reason.
 flowchart LR
   D[workflow_dispatch<br/>deploy input] --> K
   K[Checks<br/>typecheck, lint, format, test, build] -->|preview| PV[Deploy preview]
-  K -->|production| PD[Deploy production<br/>jumeira-two.vercel.app]
+  K -->|production| PD[Deploy production<br/>jumeiracatering.com]
   PD --> L[Lighthouse mobile<br/>/ar and /en]
 ```
 
@@ -559,7 +560,7 @@ back.
 | --- | --- |
 | **Checks** | Node 24, `pnpm install --frozen-lockfile`, then the five gates in the order above |
 | **Deploy preview** | `vercel pull` → `vercel build` → `vercel deploy --prebuilt`; skipped for forks, which never see the token |
-| **Deploy production** | The same with `--prod`, to the pre-launch alias `https://jumeira-two.vercel.app` |
+| **Deploy production** | The same with `--prod`, to `https://jumeiracatering.com` (the `Production` environment's URL since launch) |
 | **Lighthouse (mobile)** | Warms the edge cache and the poster variants, then audits the production alias, three runs per URL |
 
 - **Deploys only ever follow a green `Checks`** (`needs: checks`), through the
@@ -575,7 +576,8 @@ back.
   the composite performance score**, because lab runs of this page swing about
   ±10 points around an LCP heuristic. Media is deliberately unbudgeted: a
   total-weight budget used to force the hero film to wait for a gesture and pop
-  in mid-scrub. SEO is off while the site ships `noindex`.
+  in mid-scrub. SEO is still not asserted: it was switched off while the site
+  shipped `noindex` and has not been measured since launch.
 - **`.vercelignore` must not exclude `node_modules/` or `.next/`.** A
   `--prebuilt` deploy's function configs point at files there, and ignoring
   either creates a deployment that fails on the first missing file while
@@ -586,14 +588,29 @@ back.
 <Callout type="warning">
   **Today a merge to `main` neither checks nor deploys.** Run the five gates
   locally, then either dispatch the workflow (`gh workflow run ci.yml -f
-  deploy=production`) or deploy the pre-launch alias straight from a terminal
-  with the Vercel CLI (`vercel deploy --prod`), and confirm the deployment
-  rather than trusting the merge. A PR shows no checks at all, which says
-  nothing about its code. The repo's own README and `AGENTS.md` still describe
-  the automatic triggers; the workflow file is the truth.
+  deploy=production`) or deploy straight from a terminal with the Vercel CLI
+  (`vercel pull --yes --environment=production`, `vercel build --prod`,
+  `vercel deploy --prebuilt --prod`), and confirm the deployment on
+  `jumeiracatering.com` rather than trusting the merge. A PR shows no checks at
+  all, which says nothing about its code.
 </Callout>
 
-Dependabot opens weekly grouped npm and Actions PRs with a three-day cooldown,
+**On Windows, skip `vercel build` and deploy the source:** delete
+`.vercel/output`, then `vercel deploy --prod --yes`, which builds on Vercel's
+machines. *Why:* a Windows `vercel build` writes functions that share a bundle
+as links inside `.vercel/output/functions/`, which the upload cannot carry, so
+the deployment is created and then fails on the first one (`ENOENT` on
+`[locale]/privacy.func`, 2026-11-19) while production stays on the previous
+build. The stale output has to go first, or the CLI picks it up again.
+
+Dependabot runs **monthly**, so a month brings at most three PRs: npm minor and
+patch, npm majors, and the Actions. It skips the majors of `next`,
+`eslint-config-next`, `react`, `react-dom`, `typescript` and `@types/node`,
+*because framework majors are migrations done by hand, and the other two are
+pinned on purpose* (`AGENTS.md` → "The pinned toolchain"). With CI
+dispatch-only, nothing checks its PRs: run the five gates on the branch, or
+dispatch with `deploy=checks only`, before merging one. Its npm cooldown is
+three days,
 held level with `minimumReleaseAge: 4320` in `pnpm-workspace.yaml`. *Why the two
 must match:* Dependabot resolves each update a second time with that release-age
 cutoff, and with no floor locally the first pass floated a day-old transitive
@@ -611,6 +628,13 @@ Same publishing switch as the other client projects: `PRODUCTION_HOST` set in
 the other ships a half-indexed site — the meta tags and the `X-Robots-Tag`
 header disagree — and a colocated test is the only thing that catches it. Full
 procedure: [Client Projects](/how-we-work/client-projects#the-go-live-switch).
+
+**Both were set to `jumeiracatering.com` on 2026-10-13**, which lifted the
+pre-launch `noindex` everywhere but the privacy page and added HSTS. The apex
+is the primary; `www.jumeiracatering.com` and the old pre-launch alias
+`jumeira-two.vercel.app` redirect to it. DNS is on Cloudflare with the records
+unproxied (the README lists them). The domain was verified in Google Search Console and
+the sitemap submitted on 2026-10-19.
 
 The header is sent on every response either way. Before publishing it is
 `noindex, nofollow`, belt and braces with the meta tag, because a header
@@ -631,10 +655,14 @@ Four things this repo does that the generic checklist does not cover:
   CI runs `vercel build` on a GitHub runner where no `VERCEL_*` host variables
   exist, so the env-var version read back `undefined`, every page prerendered
   with `metadataBase` on `localhost`, and link cards rendered with no image.
-- **A redirect map from the client's legacy domain is a launch blocker.** Only
-  a handful of entry points are mapped today; the rest has to come off the old
-  sitemap before `jumeira-catering.com` moves
-  ([why](/how-we-work/client-projects#launch-checklist)).
+  Since launch the fallback is unreachable, but it stays: it is what the
+  switch returns to if `PRODUCTION_HOST` is ever emptied again.
+- **There was no legacy domain to redirect from.** A redirect map from
+  `jumeira-catering.com` was a launch blocker on paper, but that domain was
+  not registered at all on 2026-10-13. The handful of entry points mapped in
+  `next.config.ts` stay, and the map only matters again if the client
+  registers the domain
+  ([why it would](/how-we-work/client-projects#launch-checklist)).
 - **The privacy page needs its last two changes made together**, now that
   the real text is under `Privacy` in both message files: `noindex: false` in
   `app/[locale]/privacy/page.tsx`, and a `/privacy` entry in
@@ -642,11 +670,12 @@ Four things this repo does that the generic checklist does not cover:
   the page indexed but missing from the sitemap, or listed but refused, and
   nothing catches either.
 
-Still open before launch: the placeholder `SITE.founded`, the eight
+Still open after launch: the placeholder `SITE.founded`, the eight
 testimonials (placeholders today), and the privacy policy. Its text is the
 client's own now (#83), but the page stays `noindex` and out of
 `INDEXABLE_ROUTES` until counsel approves the wording and an effective date is
 on the page, because a policy in a search result is a promise the company has
 not yet made. The street address and `SITE.geo` pin are done: the client
 confirmed the coordinates, and `AGENTS.md`'s "Open items before launch" list
-still names them, so trust `lib/site.ts` over that list.
+still names them (and the legacy redirect map), so trust `lib/site.ts` and the
+README's launch checklist over that list.

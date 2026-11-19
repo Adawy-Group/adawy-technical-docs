@@ -29,7 +29,8 @@ not part of the monorepo · **live at `aladawyshop.com` since 24 September
 
 The same storefront as the Next.js build — the same catalogue, the same
 retail/wholesale pricing rule, the same quote builder, the same black, white
-and red design — rebuilt as a classic WordPress theme and a plugin so that it
+and red design, with the brand red `#c0272d` as the leading colour (the
+`--brand` token and the red surface) — rebuilt as a classic WordPress theme and a plugin so that it
 runs on the shop's existing WordPress + WooCommerce site. The Next.js repo was
 the **reference implementation**: its catalogue and both message files were
 exported into the plugin, and its design system was ported into the theme.
@@ -215,8 +216,8 @@ Node, no Docker, no database server. Every boot starts from
 `tests/e2e/blueprint.json` and holds its state in memory. *Why:* a throwaway
 site can never drift from what the tests assume.
 
-You need Node 24 with `pnpm` (pinned in `packageManager`), PHP 8.2 and
-Composer. `bin/php` prefers Homebrew's `php@8.2` because 8.2 is what the live
+You need Node 24 with `pnpm` (`pnpm@12.16.1`, pinned in `packageManager`), PHP
+8.2 and Composer. `bin/php` prefers Homebrew's `php@8.2` because 8.2 is what the live
 server runs. Regenerating translations also needs `wp-cli` and `gettext`.
 
 ```bash
@@ -253,13 +254,16 @@ pnpm exec wp-playground-cli server --php=8.2 --port=9400 --login `
   --mount-dir "$PWD\migration" /wordpress/wp-content/aladawy-migration
 ```
 
-Then, in a second terminal, `pnpm test:e2e`. Outside CI Playwright reuses a
+Wait until `http://127.0.0.1:9400/wp-json/aladawy-test/v1/ready` answers,
+then, in a second terminal, run `pnpm test:e2e`. Outside CI Playwright reuses a
 server already answering on `:9400` instead of starting its own, so it never
 reaches `bin/dev.sh`. All five mounts matter: the tests wait on a readiness
-endpoint that only the test mu-plugins provide.
+endpoint that only the test mu-plugins provide. Do not change `bin/dev.sh` to
+suit Windows. *Why:* CI runs it.
 
-**A Windows run is not yet a trusted baseline.** A partial run on Windows in
-October 2026 failed four specs that have not been triaged: My Account order
+**A Windows run is not yet a trusted baseline.** A partial run of the 164
+Playwright tests on Windows in October 2026 failed four specs that have not
+been triaged: My Account order
 statuses, registration attempt limiting, the sign-in throttle, and the
 catalogue migration preview. If one of those fails for you on Windows, run it
 on `main` on the same machine before deciding your change broke it, and
@@ -273,13 +277,15 @@ treat CI or a Linux run as the reference.
   migration's catalogue data and more.
 - **PHPCS** (`composer lint`) against the WordPress Coding Standards and PHP
   compatibility for 8.2.
-- **Playwright** (`pnpm test:e2e`) boots its own Playground and runs every spec
-  against it on **one worker, in file order**. *Why:* one in-memory site holds
+- **Playwright** (`pnpm test:e2e`, 164 tests) boots its own
+  Playground and runs every spec against it on **one worker, in file order**.
+  *Why:* one in-memory site holds
   all the state, so the migration spec must run before the ones that browse,
   and the `zz-admin-*` specs sort last on purpose. Specs cover both languages,
   the cart, checkout, COD by governorate, accounts, the sign-in throttle, SEO
   and the `X-Robots-Tag` header, search, `/p/<code>`, the WhatsApp signup, and
-  the footer credit, plus axe accessibility checks.
+  the footer credit, plus axe accessibility checks. The first boot downloads
+  WooCommerce, so it needs the network.
 - `tests/e2e/mu-plugins/` is **test-only** — it adds a readiness endpoint, a
   migrate endpoint, and switches off a Playground mu-plugin that would loop
   `/sitemap.xml` and `/wp-sitemap.xml` into each other. It is never uploaded
@@ -292,6 +298,16 @@ ran out, and were not restored when the quota reset on 1 October. Start it
 from the Actions tab when you want a Linux run. The gate day to
 day is **`bin/check.sh`**, which runs the same checks and fails on stale CSS
 or stale translations. Run it before building a release.
+
+**Dependencies** are updated monthly by Dependabot, in grouped PRs per
+ecosystem (npm, Composer, GitHub Actions). Two transitive packages of
+`@wp-playground/cli` are overridden in `pnpm-workspace.yaml`: `qs` to
+`^6.16.1` (express 4 pins a version with two DoS advisories) and
+`isomorphic-git` to `^1.38.6` (path traversal and symlink file-write on
+checkout, plus a ref-loop DoS). *Why overrides:* Playground pins the
+vulnerable versions, and the fixed ones keep the same API. Drop each override
+once Playground's own pin moves past it. All of it is development tooling;
+none of it ships to the server.
 
 ## Hosting
 
@@ -387,17 +403,26 @@ Verified from outside on 6 October 2026:
   and demo posts as drafts with redirects. Nothing was deleted.
 - The releases made after go-live are on live: the Adawy Software credit
   (27–28 September), the WhatsApp signup (28 September) and the
-  `X-Robots-Tag` header (29 September). Those are the last commits on `main`,
-  which the rebuild branch was merged into on 2 October, so **`main` is what
-  is live**. How those releases were shipped is not recorded.
+  `X-Robots-Tag` header (29 September). Those are the last code commits on
+  `main`, which the rebuild branch was merged into on 2 October, so **`main` is
+  what is live**. How those releases were shipped is not recorded. Every commit
+  since then changes only development tooling (`package.json`, the lockfile,
+  CI and Dependabot), none of which is uploaded.
+- On 5 November 2026 the live catalogue matched the code exactly: 53 products,
+  their codes and retail prices, read from WooCommerce's public Store API.
+  Wholesale prices are not exposed there, so they were checked only in the
+  code.
 
 Left for the owner or the next person:
 
 - **Delivery fees are empty**, so checkout offers only the quote. Cash on
   delivery switches on per governorate as fees are entered in Settings →
   Aladawy.
-- **The WhatsApp number, phone, address and hours are empty.** The quote
-  thank-you page has no WhatsApp button until the number is set.
+- **The shop's phone and WhatsApp number are still a placeholder**,
+  `+20 100 000 0000`, as of 5 November 2026, and the address and hours were
+  empty at go-live. The owner has not given the real details. Until they are
+  set in Settings → Aladawy, the quote thank-you page's WhatsApp button and the
+  contact page point at a number nobody answers.
 - Four products are drafts waiting for a decision: two that share a code with
   another product, and two that are not in the catalogue.
 - The old plugins and themes are deactivated, not deleted, and have pending

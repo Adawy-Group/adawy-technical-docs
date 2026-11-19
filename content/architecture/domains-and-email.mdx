@@ -52,6 +52,37 @@ Six moved on **21 September 2026**; adawybusinessdevelopment.com followed on
 **23 September**, and the dashboard's `admin` subdomain on **27 September**.
 The last four rows have no app yet and have not been touched.
 
+<Callout type="error">
+  **adawygroup.com expires on 15 December 2026** (read from the registry on
+  15 November). The corporate site and the group's Google Workspace email
+  both run on it, so a lapse takes down the site *and* every `@adawygroup.com`
+  mailbox at once. Renewal sits with management, not the department, which
+  is why it is written here rather than trusted to auto-renew. adawypack.com
+  follows on 29 March 2027.
+</Callout>
+
+### The rest of the portfolio: the 27 October audit
+
+The table above is the domains the department has worked on. The group's
+portfolio is **43 domains**, spread across name.com, Cloudflare and cPanel
+accounts, several of them held by people outside the department. A live
+check on 27 October 2026 (rechecked 15 November) found every group website
+built and online on its `vercel.app` address, and **15 group domains not
+reaching it**. Vercel already has each of those domains attached to the right
+project, so every fix is a DNS change at whoever holds the account:
+
+| Problem | Domains | The fix |
+| ------- | ------- | ------- |
+| Parked at name.com | adawysoftware, adawyadvertising, adawyfandb, adawyfinancial, adawyinnovation, adawyinvest, adawylawfirm, adawyprivatelabel, adawyproduction, adawyradio, adawysecurity, adawytv (`.com`) | Point the domain to Vercel at name.com |
+| SSL error 525 on Cloudflare | adawyshop.com, adawyplast.com | Set the Vercel records to **DNS only** (grey cloud), as adawybusinessdevelopment.com is. Cloudflare's proxy in front of Vercel fails the TLS handshake |
+| Points at cPanel | adawyit.com | Point it to Vercel in the cPanel zone, keeping its mail records |
+| Not registered | adawyai, adawyautomation, adawyevents, adawyfarm, adawyfashion, adawyhr, adawymanufacturer, adawymediaproduction, adawyrecycle (`.com`) | A management decision to buy them; each brand's app is already deployed |
+
+Until a domain works, its site stays out of Google: a `vercel.app` address
+sends `noindex`, so the brand is invisible in search no matter how finished
+the site is. The department sends the exact records and checks them after
+they are added; it cannot add them itself.
+
 **The two Aladawy domains are not waiting to move.** Both are client work
 that stays on WordPress ([ADR-015](/architecture/adrs)): aladawyshop.com has
 served the rebuilt shop ([`aladawy-shop-wp`](/repositories/aladawy-shop-wp))

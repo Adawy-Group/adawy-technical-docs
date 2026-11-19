@@ -40,11 +40,14 @@ delivery, priority first:
    [kickoff 14 June → launch 23 July 2026](/about/timeline).
 2. **Adawy Studio** (`apps/studio`) — the creative flagship; sets the design
    bar and hardens the shared packages against a second, very different
-   brand identity. *A branded holding page is live on adawystudio.com; the
-   full build is next.*
+   brand identity. *Built: the studio's own site replaced its holding page on
+   adawystudio.com on 27–28 October 2026, and v2 (a 3D character on a dark
+   stage, with About, Work, Services, Contact and Careers around it) followed
+   on 9–10 November.*
 3. **Adawy Pack** (`apps/pack`) — the industrial flagship; establishes the
    industrial patterns that Print, Production, and Supplies reuse. *Holding
-   page live on adawypack.com.* Not to be confused with the client project
+   page live on adawypack.com; the full flagship site is not built yet, and
+   it is the main open item of Phase 1.* Not to be confused with the client project
    [`aladawy-pack`](/repositories/aladawy-pack).
 4. **Adawy Print, Adawy Supplies, Adawy Marketing Solutions, Adawy Business
    Development, Adawy Media Production, Adawy Production, and the rest** —
@@ -55,7 +58,10 @@ delivery, priority first:
    23 September 2026.* *On 29 September twenty-four more brands got holding
    apps on `@adawy/brand-app` (Software, IT, AI, Law Firm, Production and the
    rest), none on a domain yet, and on 1 October seven of them got company
-   pages on adawygroup.com.*
+   pages on adawygroup.com. On 8 November the twenty-eight brand apps moved
+   onto one shared shell. Adawy Software outgrew its holding page: since
+   22 October it is a full site, the "Inside Adawy Software" scroll film, on
+   `adawy-software.vercel.app` while adawysoftware.com waits on its DNS.*
    ([the workflow](/guides/launch-new-brand)). Six weeks per site becomes
    one week per site as the packages mature.
 
@@ -69,17 +75,20 @@ e-commerce. Ship excellent websites, prove the platform, then add scope.
 ## What is next in the short term
 
 The phases are the direction; this is the queue in front of them, as of
-6 October 2026. Most items wait on an owner decision rather than on
+19 November 2026. Most items wait on an owner decision rather than on
 engineering, which is why each one names what unblocks it.
 
 | # | Item | Unblocked by | Why it matters |
 | - | ---- | ------------ | -------------- |
-| 1 | **Turn automatic CI back on** | Restoring the push and pull-request triggers in each repo still on `workflow_dispatch`, and the owner deciding whether to pay for minutes so they do not run out again | The minutes reset on 1 October and `adawy-platform` is back on automatic deploys, but every other repo runs no `verify` on a pull request and deploys only [by hand](/how-we-work/deployment#most-workflows-run-only-by-hand) — no previews per PR |
+| 0 | **Renew adawygroup.com before 15 December 2026** | Management, who hold the registrar account | The corporate site and every `@adawygroup.com` mailbox stop together if it lapses ([domains](/architecture/domains-and-email)) |
+| 1 | **Turn automatic CI back on** | The owner deciding to pay for Actions minutes (the spending limit is zero), then restoring the push and pull-request triggers in each repo still on `workflow_dispatch` | The minutes have run out every month since August; when they do even the platform deploys only [by hand](/how-we-work/deployment#most-workflows-run-only-by-hand), and every other repo never runs `verify` on a pull request |
 | 2 | **Content dashboard go-live** | The owner's go, then the steps below in order | The dashboard exists so a changed headline needs no developer ([ADR-014](/architecture/adrs)); in practice mode it saves nobody any work yet |
 | 3 | **Aladawy Shop after launch** | Engineering, plus the owner's Google account for Search Console | The shop has been live since 24 September. The old Next.js build on `aladawy-shop.vercel.app` has been out of search since 29 September but is still up and does not redirect; the rebuild's design calls for a redirect to aladawyshop.com |
 | 4 | **Aladawy Pack: a local WordPress and a safer deploy** | Engineering | The theme is in git since 2 October ([`aladawy-pack-wp`](/repositories/aladawy-pack-wp)), but nothing boots it locally and `deploy.sh` ships straight to live with no test and no staging copy |
-| 5 | **The remaining domains** | A `PRODUCTION_HOST` for the app that will serve each — apps for IT, Financial and Production exist since 29 September | adawy.com, adawyit.com and adawyfinance.com are still on the Verpex host, and adawyproduction.com on Name.com's nameservers. Each moves by [the procedure](/guides/move-a-domain-to-vercel) once it has something to serve |
+| 5 | **The remaining domains** | Whoever holds each name.com, Cloudflare or cPanel account adding the records the department sent; management buying the nine unregistered names | 15 group domains do not reach their sites ([the audit](/architecture/domains-and-email#the-rest-of-the-portfolio-the-27-october-audit)), and a site stays out of Google until its domain works |
 | 6 | **The training-video recorder into a repository** | Engineering | Without the scripts, every screen change makes a [training video](/guides/training-videos) stale with no cheap way to re-record it |
+| 7 | **Error tracking and uptime monitoring** | Engineering, and a sign-up | Sentry and Better Stack are chosen and not installed. Today a person checks the live sites after each deploy, so an outage between deploys is found by a visitor |
+| 8 | **The group-site performance pass** | Engineering | Phase 1 asks for 90+ mobile speed on launch pages; Software and the client sites are there, the group site's pass is in progress |
 
 Dashboard go-live, in order — each step depends on the one before:
 
@@ -113,6 +122,15 @@ The experience of *being* an Adawy ecosystem member, at
 claim; with it, it is a product members use every day — and the most
 defensible thing the group can build, because no regional competitor operates
 the integrated stack that makes it possible.
+
+<Callout type="warning">
+  **The Strategic Technology Plan disagrees with this page on two points.**
+  It places the portal at **adawy.com** (and the employee portal at
+  `employee.adawy.com`), and it counts **five phases**, with the portal in
+  its Phases 2–3. This handbook's three phases are the same order of work,
+  grouped by product. Until leadership settles the address, treat both
+  hostnames as undecided; nothing is built on either yet.
+</Callout>
 
 Phase 2 starts with the infrastructure the portal needs:
 
@@ -166,7 +184,7 @@ decided against real delivery.
 
 | Phase | Team size | Added roles |
 | ----- | --------- | ----------- |
-| 1 — Websites | 2 → 3–4 | Current team (CTO + designer); a second frontend developer once the volume of brand apps demands it |
+| 1 — Websites | 2 → 3–4 | Current team (Head of Technology + senior UI/UX designer); a second frontend developer once the volume of brand apps demands it. *Still two people in November 2026: the plan opened the senior backend search during Phase 1 and no hire has been made* |
 | 2 — Client Portal | 4–6 | Senior backend engineer (first hire of the phase — nothing in Phase 2 starts without the backend), part-time DevOps |
 | 3 — Employee Portal | 7–9 | Engineering manager, mid-level full-stack engineers, senior analytics engineer; QA + second designer when workload requires |
 

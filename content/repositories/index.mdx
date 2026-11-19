@@ -6,13 +6,13 @@ tags: ['Reference', 'Start here']
 
 # The Repository Map
 
-**Fourteen repositories.** Knowing which world a repo belongs to tells you which
+**Fifteen repositories.** Knowing which world a repo belongs to tells you which
 rules apply to it before you open a single file.
 
 <Stats>
-  <Stat value="14" label="repositories" hint="in the Adawy-Group org" />
+  <Stat value="15" label="repositories" hint="in the Adawy-Group org" />
   <Stat value="1" label="Group monorepo" hint="every brand site" />
-  <Stat value="9" label="client projects" hint="one repo each" />
+  <Stat value="10" label="client projects" hint="one repo each" />
   <Stat value="3" label="internal" hint="dashboard, its sandbox, this handbook" />
 </Stats>
 
@@ -21,14 +21,15 @@ rules apply to it before you open a single file.
 | [`adawy-platform`](/repositories/adawy-platform) | <Badge tone="group">Group</Badge> | The monorepo behind every Adawy Group brand site | Turborepo + pnpm, Next.js 16 |
 | [`adawy-group-links`](/repositories/adawy-group-links) | <Badge tone="group">Group</Badge> | The Group's own link-in-bio page — standalone, and an [open question](#the-third-case-and-the-open-question) | Next.js 16, standalone |
 | [`aladawy-pack`](/repositories/aladawy-pack) | <Badge tone="client">Client</Badge> | The Next.js build of the Aladawy Pack website — **superseded** by `aladawy-pack-wp`, kept as the design reference | Next.js 16, standalone |
-| [`aladawy-pack-wp`](/repositories/aladawy-pack-wp) | <Badge tone="client">Client</Badge> | **What runs aladawypack.com since 26 Sept 2026** — the custom WordPress theme ported from `aladawy-pack` | WordPress theme, Tailwind v4 + GSAP, on cPanel |
+| [`aladawy-pack-wp`](/repositories/aladawy-pack-wp) | <Badge tone="client">Client</Badge> | **What runs aladawypack.com since 26 Sept 2026** — the custom WordPress theme, ported from `aladawy-pack` and redesigned as a light, premium packaging site on 27 Oct 2026 | WordPress theme, Tailwind v4 + GSAP, on cPanel |
 | [`aladawy-links`](/repositories/aladawy-links) | <Badge tone="client">Client</Badge> | Aladawy Pack's link-in-bio page — `adawy-group-links` rebranded | Next.js 16, standalone |
 | [`aladawy-shop-wp`](/repositories/aladawy-shop-wp) | <Badge tone="client">Client</Badge> | **What runs aladawyshop.com since 24 Sept 2026** — the WordPress + WooCommerce rebuild | WordPress theme + plugin, on cPanel |
 | [`aladawy-shop`](/repositories/aladawy-shop) | <Badge tone="client">Client</Badge> | The earlier Next.js storefront — **superseded** by `aladawy-shop-wp`, kept as the reference implementation | Next.js 16 + Redux, standalone |
-| [`jumeira`](/repositories/jumeira) | <Badge tone="client">Client</Badge> | Pre-launch film site for Jumeira Catering, Benghazi | Next.js 16, standalone |
+| [`aladawy-shop-links`](/repositories/aladawy-shop-links) | <Badge tone="client">Client</Badge> | Aladawy Shop's link-in-bio page — `aladawy-links` rebranded again, Arabic first, on the shop's red | Next.js 16, standalone |
+| [`jumeira`](/repositories/jumeira) | <Badge tone="client">Client</Badge> | Film site for Jumeira Catering, Benghazi, live on jumeiracatering.com since 13 Oct 2026 | Next.js 16, standalone |
 | [`zad-alhkoul`](/repositories/zad-alhkoul) | <Badge tone="client">Client</Badge> | One-page scroll-story site for Zad Al-Hkoul for Agricultural Crops — **live at zadalhkoul.com since 29 Sept 2026** | Next.js 16, standalone |
 | [`baron-menu`](/repositories/baron-menu) | <Badge tone="client">Client</Badge> | QR menu for Baron — The Lord of Fried Chicken | Plain HTML/CSS/JS, no build |
-| [`icoffee`](/repositories/icoffee) | <Badge tone="client">Client</Badge> | ICOFFEE Egypt's store on Shopify — the new theme (built, not published yet), the accounts and checkout app, and the store scripts | Shopify theme (Liquid) + Cloudflare Worker |
+| [`icoffee`](/repositories/icoffee) | <Badge tone="client">Client</Badge> | ICOFFEE Egypt's store on Shopify — **the theme live at icoffeeegypt.com since 20 Oct 2026**, the accounts and checkout app, and the store scripts | Shopify theme (Liquid) + Cloudflare Worker |
 | [`adawy-dashboard`](/repositories/adawy-dashboard) | <Badge tone="internal">Internal</Badge> | The content dashboard at admin.adawygroup.com — edit a site's text and images without a developer | Next.js 16, Better Auth |
 | [`adawy-content-sandbox`](/repositories/adawy-content-sandbox) | <Badge tone="internal">Internal</Badge> | Where the dashboard publishes while it runs in practice mode — deployed nowhere | Content files only |
 | [`adawy-technical-docs`](/repositories/adawy-technical-docs) | <Badge tone="internal">Internal</Badge> | This handbook | Nextra 4 |
@@ -42,7 +43,7 @@ monorepo, `adawy-platform`, on shared `@adawy/*` packages. This is where
 the only place they apply.
 
 **Client work** is software the department builds *for other businesses*.
-Aladawy Pack (both builds of its website, and its link page), Aladawy Shop (both builds), Jumeira Catering,
+Aladawy Pack (both builds of its website, and its link page), Aladawy Shop (both builds, and its link page), Jumeira Catering,
 Zad Al-Hkoul, Baron and ICOFFEE are customers of the department, not Group brands. Each gets **its own standalone
 repository**, deliberately not coupled to `@adawy/*` — see
 [ADR-010](/architecture/adrs) for why, and
@@ -64,9 +65,11 @@ discipline. What they do not share is **code**.
 [`adawy-group-links`](/repositories/adawy-group-links) is Adawy Group's own
 property in a standalone repository, which is neither pattern. It is a
 one-screen microsite rather than a brand site, and the repository itself
-records no reason for sitting outside the monorepo. Its twin,
-[`aladawy-links`](/repositories/aladawy-links), is *not* part of the question:
-it belongs to a client, so a standalone repo is exactly what ADR-010 asks for.
+records no reason for sitting outside the monorepo. Its two copies,
+[`aladawy-links`](/repositories/aladawy-links) and
+[`aladawy-shop-links`](/repositories/aladawy-shop-links), are *not* part of the
+question: they belong to clients, so a standalone repo is exactly what ADR-010
+asks for.
 
 Until that is decided, read the rule as stated above — **Group brand *sites*
 live in the monorepo** — and treat the microsite as a single open case, not a
@@ -99,6 +102,7 @@ precedent. Starting a new Group property outside the platform is still an
 | The Aladawy Pack website (aladawypack.com) | `aladawy-pack-wp` — its text and products are edited in `wp-admin`, not in code |
 | Aladawy Pack's link-in-bio page | `aladawy-links` |
 | The Aladawy Shop site (aladawyshop.com) | `aladawy-shop-wp` |
+| Aladawy Shop's link-in-bio page | `aladawy-shop-links` |
 | Text or an image on a site, without code | Nobody clones anything — use the [dashboard](/repositories/adawy-dashboard) ([videos](/guides/training-videos)) |
 | The content dashboard itself | `adawy-dashboard` |
 | The Jumeira Catering site | `jumeira` |
@@ -141,6 +145,9 @@ running proves your toolchain before anything harder depends on it.
   <Cards.Card title="aladawy-shop" href="/repositories/aladawy-shop" arrow>
     The superseded Next.js storefront — still the reference for prices and grades.
   </Cards.Card>
+  <Cards.Card title="aladawy-shop-links" href="/repositories/aladawy-shop-links" arrow>
+    The link page a third time: Arabic first, on the shop's red, three doors and an inbox.
+  </Cards.Card>
   <Cards.Card title="jumeira" href="/repositories/jumeira" arrow>
     One pinned scroll carrying three scrubbed films. The hardest client build.
   </Cards.Card>
@@ -151,7 +158,7 @@ running proves your toolchain before anything harder depends on it.
     No framework, no build step, on purpose. Edit one file to change the menu.
   </Cards.Card>
   <Cards.Card title="icoffee" href="/repositories/icoffee" arrow>
-    A Shopify store: the new theme, a checkout built on draft orders, and the scripts that update the shop.
+    A live Shopify store: its theme, a checkout built on draft orders, and the scripts that update the shop.
   </Cards.Card>
   <Cards.Card title="adawy-technical-docs" href="/repositories/adawy-technical-docs" arrow>
     This handbook. The best first clone and the best first pull request.
@@ -166,16 +173,17 @@ know is not — so here is the honest matrix.
 
 | | Package manager | AGENTS.md | CI | Tests | Bilingual |
 | --- | --- | --- | --- | --- | --- |
-| `adawy-platform` | pnpm 11.26 | ✅ | ✅ | ✅ | en · ar · fr |
-| `adawy-group-links` | pnpm 11.26 | ⚠️ stub | ⚠️ manual only, deploy skipped | ✅ | en · ar |
-| `aladawy-links` | pnpm 11.26 | ⚠️ stub | ❌ | ✅ | en · ar |
-| `aladawy-pack` | pnpm 11.26 | ❌ | ⚠️ manual only | ✅ | en · ar |
+| `adawy-platform` | pnpm 12.16 | ✅ | ✅ | ✅ | en · ar · fr |
+| `adawy-group-links` | pnpm 12.16 | ⚠️ stub | ⚠️ manual only, deploy skipped | ✅ | en · ar |
+| `aladawy-links` | pnpm 12.16 | ⚠️ stub | ❌ | ✅ | en · ar |
+| `aladawy-shop-links` | pnpm 12.16 | ⚠️ stub | ❌ | ✅ | ar · en |
+| `aladawy-pack` | pnpm 12.16 | ❌ | ⚠️ manual only | ✅ | en · ar |
 | `aladawy-pack-wp` | npm | ❌ | ❌ | ❌ | en · ar |
-| `aladawy-shop` | pnpm 11.26 | ✅ | ❌ | ✅ | ar · en |
-| `aladawy-shop-wp` | pnpm 12.4 + Composer | ❌ | ⚠️ manual only | ✅ | ar · en |
-| `adawy-dashboard` | pnpm 11.26 | ❌ | ❌ | ✅ | ar · en |
-| `jumeira` | pnpm 11.26 | ✅ +4 more | ⚠️ manual only | ✅ | ar · en |
-| `zad-alhkoul` | pnpm 11.26 | ⚠️ stub | ⚠️ manual only | ✅ | en · ar |
+| `aladawy-shop` | pnpm 12.16 | ✅ | ❌ | ✅ | ar · en |
+| `aladawy-shop-wp` | pnpm 12.16 + Composer | ❌ | ⚠️ manual only | ✅ | ar · en |
+| `adawy-dashboard` | pnpm 12.16 | ❌ | ❌ | ✅ | ar · en |
+| `jumeira` | pnpm 12.16 | ✅ +4 more | ⚠️ manual only | ✅ | ar · en |
+| `zad-alhkoul` | pnpm 12.16 | ⚠️ stub | ⚠️ manual only | ✅ | en · ar |
 | `baron-menu` | npm (image script only) | ❌ | ❌ | ❌ | en · ar |
 | `icoffee` | npm | ✅ | ❌ | ❌ | en · ar |
 | `adawy-technical-docs` | **npm** | ❌ | ⚠️ manual only | ❌ | English only |
@@ -202,17 +210,18 @@ know is not — so here is the honest matrix.
   `adawy-dashboard` have no `AGENTS.md`** (`aladawy-shop-wp` and
   `adawy-dashboard` keep their contract in `docs/`; `aladawy-pack-wp` has no
   README either — its file headers are the map), and in
-  `adawy-group-links`, `aladawy-links` and `zad-alhkoul` the file holds only the
-  block Next.js generates. `zad-alhkoul` and `aladawy-links` at least carry
-  their constraints in a tracked README; `adawy-group-links` keeps them in an
-  untracked local notes file. If
+  `adawy-group-links`, `aladawy-links`, `aladawy-shop-links` and `zad-alhkoul`
+  the file holds only the block Next.js generates. All four carry their
+  constraints in a tracked README instead. If
   you are the next person into one of those repos, writing it is the
   highest-value small PR
   available ([working with AI](/how-we-work/working-with-ai)).
 - **Most CI runs only when started by hand.** The organisation's free GitHub
   Actions minutes ran out on 23 September 2026, and on 27 September every
   workflow was switched to `workflow_dispatch` only. The minutes reset on
-  1 October, but only `adawy-platform` went back to automatic triggers. In a
+  1 October, but only `adawy-platform` went back to automatic triggers, and
+  the minutes have run out again since, so the rest stay manual rather than
+  queue runs that cannot start. In a
   ⚠️ manual-only repo a merge checks and deploys nothing: run the gates by
   hand, then deploy with the Vercel CLI ([deployment](/how-we-work/deployment#most-workflows-run-only-by-hand)).
 - **`aladawy-pack-wp` has no CI, no tests and no staging copy.** `deploy.sh`
@@ -226,11 +235,16 @@ know is not — so here is the honest matrix.
   nothing runs them on a push. Its gates are yours to run by hand until that is
   fixed.
 - **`icoffee` has no CI and no automated tests.** A Shopify theme has no build to gate. Its `tools/` scripts
-  drive the unpublished theme in a browser and are run by hand, and the published theme is one missing
-  `--theme` away on every push ([the rules](/repositories/icoffee#the-rules-to-know-before-editing)).
-- **`aladawy-links` has no CI, on purpose.** Its workflow was removed because
-  a page that changes a few times a year was not worth the pipeline; run its
-  five gates, then `vercel deploy --prod`.
+  drive a preview theme in a browser and are run by hand, and since the new theme went live every push to it
+  reaches customers at once ([the rules](/repositories/icoffee#the-rules-to-know-before-editing)).
+- **`aladawy-links` and `aladawy-shop-links` have no CI, on purpose.** A page
+  that changes a few times a year was not worth the pipeline; run the five
+  gates, then `vercel deploy --prod`.
+- **Dependabot opens monthly, grouped dependency PRs in every repo with
+  dependencies** (all but `adawy-content-sandbox`) — and
+  in a repo without automatic CI those PRs arrive with no checks. Run the
+  repo's gates on the PR branch before merging, and in a by-hand repo deploy
+  after the merge, because the merge alone ships nothing.
 - **`adawy-group-links`' deploy job always skips.** The workflow is manual-only
   now, and even a dispatched run skips the deploy because the repo has no
   `VERCEL_TOKEN` secret, so production ships by
@@ -259,6 +273,13 @@ know is not — so here is the honest matrix.
   monorepo as `apps/api` when it is built ([ADR-009](/architecture/adrs)).
 - **No shared package repository.** `@adawy/*` are workspace packages inside
   the monorepo, published nowhere and versioned with the apps that use them.
+- **The portal concept videos are a local folder, not a repo.** `portal-videos`
+  (the two concept videos for the client and employee portals, rendered from
+  an HTML animation with Chrome and ffmpeg) sits beside the clones in the
+  department's workspace with no git history and nothing deployed. It is a
+  presentation piece for management rather than software anyone ships, which
+  is why it has no page here; its own README covers re-rendering, so ask for
+  the folder if you need it.
 - **No shared client-project package.** The repeated patterns —
   `lib/enquiry.ts`, the content/messages split, the publishing switch — are
   documented here rather than packaged, because a client's deliverable has to

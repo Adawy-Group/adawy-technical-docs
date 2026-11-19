@@ -32,10 +32,12 @@ with an ADR behind it, not a refactor.
 
 <Callout type="info">
   **There is a `package.json` now, and it is not a build.** It exists for one
-  dev-only tool: `sharp` (`^0.35.2`, locked at **0.35.4**, the release carrying
-  the libheif fix for the high-severity AVIF advisory), used by
-  `convert-images.mjs` to optimize photos. It uses **npm** (`package-lock.json`)
-  and has **no `packageManager` pin and no scripts** — unlike the pnpm repos.
+  dev-only tool: `sharp` (`^0.35.5`, locked at **0.35.5**, the release that
+  patches librsvg's CVE-2026-96889; 0.35.4 before it carried the libheif fix
+  for the AVIF advisory), used by `convert-images.mjs` to optimize photos. It
+  uses **npm** (`package-lock.json`), sets `engines.node` to `24.x` like every
+  other repo, and has **no `packageManager` pin and no scripts** — unlike the
+  pnpm repos.
   `.vercelignore` keeps `package.json`, the lockfile, `node_modules` and the
   script out of the deploy, so Vercel serves the folder as plain static files
   and never installs anything. `jsqr` was dropped (19 Sep 2026): neither the
@@ -174,6 +176,7 @@ python3 -m http.server 8848   # → http://localhost:8848  (python on Windows)
 | `package.json`, `package-lock.json` | npm, for `sharp` only — not deployed |
 | `PRODUCT.md` | Users, brand personality, anti-references, design principles |
 | `.gitattributes` | Pins checkouts to LF on every platform |
+| `.github/dependabot.yml` | Monthly, grouped npm updates for `sharp` (security fixes still open at once); no Actions entry, because there are no workflows |
 
 There is **no `AGENTS.md`**, no tests and no lint/format tooling. `PRODUCT.md`
 is the closest thing to a contract: its five principles (print menu is the

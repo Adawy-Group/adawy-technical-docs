@@ -1,0 +1,237 @@
+---
+title: aladawy-shop-links
+description: Aladawy Shop's link-in-bio page — the aladawy-links construction rebranded again, Arabic first and standing on the shop's red, with three doors and one inbox, shipped by hand with no CI.
+tags: ['Client work', 'Next.js 16', 'One route', 'No CI']
+---
+
+# `aladawy-shop-links`
+
+**Client project.** The "link in bio" page for **Aladawy Shop**, the
+packaging and kitchen-supply shop whose store is
+[`aladawy-shop-wp`](/repositories/aladawy-shop-wp): one screen carrying the
+website, Facebook and Instagram, with the shop's inbox under them — in Arabic
+and English, on the brand red.
+
+Private · standalone Next.js 16.4 app · Vercel project `aladawy-shop-links`
+(team `adawy-s-projects`) · production at `aladawy-shop-links.vercel.app` ·
+**deployed by hand**
+
+<Callout type="warning">
+  ***Aladawy* Shop is a client, not a Group brand**, and a sister of the
+  client [Aladawy Pack](/repositories/aladawy-pack). Nothing here belongs in
+  [`adawy-platform`](/repositories/adawy-platform); the page sits with the
+  shop's own repositories, [`aladawy-shop-wp`](/repositories/aladawy-shop-wp)
+  (live) and [`aladawy-shop`](/repositories/aladawy-shop) (superseded).
+</Callout>
+
+<Stats>
+  <Stat value="1" label="route" hint="everything else 404s inside the locale" />
+  <Stat value="3" label="destinations" hint="website · Facebook · Instagram" />
+  <Stat value="1" label="contact line" hint="the inbox, and nothing else yet" />
+  <Stat value="0" label="CI workflows" hint="checks run by hand before a deploy" />
+</Stats>
+
+## Same page as `aladawy-links`, a third brand
+
+The README says it plainly: *same page, same construction and the same motion
+as* [`aladawy-links`](/repositories/aladawy-links) and
+[`adawy-group-links`](/repositories/adawy-group-links). It was built from the
+Aladawy Pack page, and the three repositories share the file tree and the exact
+dependency set. Everything the Group page explains about the construction
+applies here unchanged — the always-on locale prefix, the JS-gated GSAP
+entrance, the clip-path theme reveal, the baked pattern tile, silent-on-failure
+copy buttons, `X-Robots-Tag` on every response, the "never letterspace Arabic"
+rule. Read [that page](/repositories/adawy-group-links) for the reasons; this
+one covers what differs.
+
+| | `adawy-group-links` | `aladawy-links` | `aladawy-shop-links` |
+| --- | --- | --- | --- |
+| World | Group work | Client work | **Client work** |
+| Default locale | `en` | `en` | **`ar`** — `/` redirects to `/ar` |
+| Palette | Black, white, gray | Black, white, gray | **Brand red `#c0272d` leads**, white ink; charcoal and black |
+| Landing theme | Follows the system | Follows the system | **Always the red**; black is the toggle's alternative |
+| Mark | Six-piece mark, 4×4 grid | AP monogram, four pieces | **AS monogram**, four pieces, vector |
+| Wordmark | Vector SVG | PNG through a CSS mask | PNG through a CSS mask |
+| Fonts | Montserrat + Cairo | Archivo + Inter + IBM Plex Sans Arabic | **Inter + Montserrat**, **Tajawal + Cairo** for Arabic |
+| Destinations | 7 | 6 | **3** — website, Facebook, Instagram |
+| Contact | Number, inbox, head office, branches | Number, inbox, two map pins | **The inbox only** |
+| Arabic brand | عدوى | العدوي باك | **العدوي شوب** |
+| Pattern tile | Two (ink, chalk) | Two (ink, chalk) | **One white tile** for both grounds |
+| Icons | Static files | Static files | **Baked from the monogram** (`pnpm icons:bake`) |
+| CI / deploy | Manual-only workflow, deploy skipped | None, by hand | **None** — `vercel deploy --prod` by hand |
+
+The three are **copies, not a shared package**. A fix to the shared
+construction made in one does not reach the others; carry it across by hand.
+
+## Stack
+
+| | |
+| --- | --- |
+| Framework | Next.js 16.4.5 (App Router), React 19.3.1 |
+| Language | TypeScript 6.0.3, strict, pinned exactly (`typescript-eslint` only accepts TypeScript below 6.1) |
+| Styling | Tailwind CSS v4 (CSS-first) + shadcn/ui (base-nova) on `@base-ui/react`, RTL |
+| Theme | next-themes, `defaultTheme="light"`, `enableSystem={false}`, with the hand-rolled circular clip-path reveal |
+| Motion | GSAP 3 (`@gsap/react`), gated on JavaScript and reduced motion |
+| i18n | next-intl 4 — `ar` (default) + `en`, `localePrefix: 'always'` |
+| Fonts | Inter (display, `opsz` axis), Montserrat (body), Tajawal 700 (Arabic display), Cairo (Arabic body), all `preload: false` |
+| Tests | Vitest 5 — six files |
+| Lint / format | ESLint 10 (`eslint-config-next` 16.4.4), Prettier 3 + `prettier-plugin-tailwindcss` |
+| Tooling | pnpm **12.16.1** (pinned in `packageManager`); Node 24 (`engines: 24.x`); Dependabot monthly, grouped, same npm rules as the two siblings |
+| Agent contract | `AGENTS.md` holds **only** the block `next dev` generates; the README carries the constraints |
+
+No API routes, no server actions, no forms, no database.
+
+## Layout
+
+```text
+app/[locale]/        page.tsx (the whole site) · [...rest] → not-found ·
+                     layout.tsx · not-found.tsx · opengraph-image.tsx
+app/                 robots.ts · sitemap.ts · fonts.ts · globals.css ·
+                     icon.png · apple-icon.png · favicon.ico (baked)
+components/brand/    aladawy-shop-mark.tsx · aladawy-shop-wordmark.tsx ·
+                     lib/aladawy-shop-mark.ts (+ test) ·
+                     lib/mark-pattern-tile.ts (+ test)
+components/…         backdrop · chrome · contact · entrance · links · ui
+lib/                 links.ts · contact.ts · site.ts (+ tests)
+messages/            ar.json · en.json (+ parity and brand-spelling tests)
+i18n/ + proxy.ts     next-intl routing
+scripts/             build-pattern-tile.ts (pnpm pattern:bake) ·
+                     build-icons.ts (pnpm icons:bake)
+public/              brand/wordmark.png · pattern/tile.png
+```
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev             # http://localhost:3000 → redirects to /ar
+pnpm build           # production build, both locales prerendered
+pnpm lint
+pnpm typecheck       # next typegen && tsc --noEmit — keep the typegen half
+pnpm test            # vitest
+pnpm format:check    # or pnpm format to write
+pnpm pattern:bake    # re-rasterise public/pattern/tile.png from the tile geometry
+pnpm icons:bake      # re-cut app/icon.png, apple-icon.png, favicon.ico from the monogram
+```
+
+`typecheck` runs `next typegen` first for the same reason as on the Group
+page: the layout uses Next 16's generated `LayoutProps<"/[locale]">`, which
+does not exist until typegen has run.
+
+## What differs, with its reasons
+
+**Arabic is the default locale.** aladawyshop.com is Arabic first, and the
+shop sells in Egypt, so a browser that asks for neither language should land
+on the one the shop's customers read. Every URL still carries its prefix
+(`/ar`, `/en`), for the Group page's reason: a link pasted into a bio must be
+the address everyone lands on.
+
+**The red leads, and the system's dark mode is ignored on purpose.** The page
+stands on the shop's brand surface: red ground, white ink, the tokens and
+audited contrast of `.surface-brand` from the shop's own stylesheet. `primary`
+inverts with it, so each door's tile is white with a red glyph, the way the
+shop's buttons do it. Depth in the field comes from black, not from light,
+because white stirred into this red is pink. The toggle switches to the shop's
+black field, but that is an alternative, never the landing:
+`components/chrome/theme-provider.tsx` sets `enableSystem={false}`, because
+following the system would hand every phone in dark mode the black page — most
+of them — and the red is the brand. The tab icon, home-screen icon and share
+card are red for the same reason. Corners are square, as the shop's are; only
+the chrome's two controls are round.
+
+**The monogram is vector, traced, and tested at its joins.** The AS monogram is
+four pieces (the A's bowl and leg, the S's two bowls, the upper one carrying
+the spine), fitted to `aladawy-shop/app/icon.png`, the largest raster of it
+there is, because no vector master exists. The upper S piece has corners typed
+by hand at the crossing of two curves, and
+`components/brand/lib/aladawy-shop-mark.test.ts` checks each corner sits on
+both curves. In the test's words, a radius moved without re-solving them
+*"tears open by a hair — too small to notice in review, large enough to show as
+a nick once the entrance strokes it."* After touching the geometry, run
+`pnpm icons:bake`, because the icons are cut from it and nothing else updates
+them.
+
+**The wordmark is a CSS mask, like the Pack page's.** It is the shop's own
+`wordmark.webp`, enlarged threefold with its edge re-sharpened so it stays
+crisp on a 3× phone, painted through a mask so it takes `currentColor` (white
+on both grounds) without a `filter: invert`. The aspect ratio
+(`aspect-[299/93]`) must stay a **class**, for the reason on
+[`aladawy-links`](/repositories/aladawy-links#what-differs-with-its-reasons):
+GSAP's `clearProps: "all"` strips inline styles, and a masked box with no
+ratio collapses to nothing.
+
+**One pattern tile for both grounds.** The construction pattern is baked once
+in white, and `globals.css` sets its opacity and edge mask per ground, because
+white ink is right on both the red and the black.
+
+**Three doors, no WhatsApp, no profile.** The website comes first, because it
+is where an order is placed, then Facebook and Instagram. The Facebook page
+has no vanity name, so it is addressed by its numeric id, the one form that
+survives a rename. The link was handed over on `web.facebook.com`, which
+Facebook serves to some networks and then redirects to `www`, so the page
+publishes `www` and a test keeps it there.
+
+**The inbox is the only contact line, until the shop publishes more.**
+`lib/contact.ts` holds `info@aladawyshop.com` and nothing else, because it is
+the only contact detail aladawyshop.com itself prints, and *"a links page is
+the last place to be the first to print one."* When the shop puts a number or
+an address on its own site, they go in that file, with their labels under
+`Contact.*` in the messages; the Pack page shows the shape.
+
+**The Arabic brand is العدوي شوب, and the test knows both neighbours.**
+`messages/brand-spelling.test.ts` rejects the parent group's dotless عدوى,
+the forms that drop the ع (الأدوي, الادوي, الإدوي, الأدوى), and **العدوي باك**, the
+sister brand this page was copied from, because a leftover from the Pack page
+would not look like a typo to anyone reading it. It also requires العدوي to be
+followed by شوب, and the correct form to appear more than three times.
+
+## Tests
+
+| Test | What would otherwise ship broken |
+| ---- | -------------------------------- |
+| `lib/links.test.ts` | Exactly three destinations, website first; unique keys; every link `https:`; Facebook on `www.facebook.com`; each door's detail line (the domain, the handle) matches the address it opens, in both locales; a label and detail for every link in every locale |
+| `lib/contact.test.ts` | The inbox is a lowercase address on the shop's own domain, the website's host — another domain would be a typo or a personal address |
+| `messages/parity.test.ts` | Identical key trees in `ar` and `en`, no empty strings |
+| `messages/brand-spelling.test.ts` | The Arabic brand form, as above |
+| `components/brand/lib/aladawy-shop-mark.test.ts` | Four pieces in reading order; every typed S corner on both curves that cross there; every coordinate inside the frame |
+| `components/brand/lib/mark-pattern-tile.test.ts` | Five outlines and one solid; every shape inside the tile so the raster repeats without a seam; a one-pixel hairline at on-screen size |
+
+## Deployment — by hand, on purpose
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test && pnpm format:check && pnpm build
+vercel whoami        # must be an account in adawy-s-projects
+vercel deploy --prod
+```
+
+There is **no CI and no push-to-deploy**, as on `aladawy-links`: the only file
+under `.github/` is `dependabot.yml`. A page like this changes a few times a
+year, so a pipeline would be more moving parts than it earns. Vercel's Git
+integration is not an option either: the Hobby plan refuses to connect a
+private organisation repo.
+
+<Callout type="important">
+  **Run `vercel whoami` first.** A CLI signed in to another account does not
+  fail: it cannot see this project, so it offers to create a new one in the
+  wrong place. And run all five checks, because nothing else does, on a push or
+  on a Dependabot PR, and a merge deploys nothing.
+</Callout>
+
+`lib/site.ts` resolves the public origin as `NEXT_PUBLIC_SITE_URL` →
+`https://$VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`. A custom
+domain such as `links.aladawyshop.com` is anticipated but not attached;
+`NEXT_PUBLIC_SITE_URL` (the only variable in `.env.example`, optional) is how
+metadata would pick it up. See [Deployment](/how-we-work/deployment).
+
+**Not in the content dashboard.** The
+[dashboard](/repositories/adawy-dashboard)'s `lib/sites.ts` has entries for the
+other two link pages but none for this one, so its text is edited in code.
+
+## Recent history
+
+- **2026-11-17 → 19** — the first Dependabot PR: Next 16.4.5.
+- **2026-11-03** — security update: Next 16.4.4, React 19.3.1, Node 24 in
+  `engines`, pnpm 12.16.1, TypeScript pinned to 6.0.3, `@types/node` on 24.x,
+  and the monthly grouped Dependabot config.
+- **2026-10-11** — the page built from `aladawy-links`: the AS monogram and
+  wordmark, the red ground, Arabic as the default, three doors and the inbox.
