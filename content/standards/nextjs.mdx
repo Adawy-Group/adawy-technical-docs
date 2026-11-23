@@ -62,7 +62,7 @@ Five repos, one shape:
 | ------- | -------------- | -------- |
 | The locale list, default and prefix mode | `i18n/routing.ts` (or `@adawy/i18n`) | **One source of truth.** Anything that enumerates locales imports it — never a hand-written array |
 | Locale detection and redirect | `proxy.ts` | Not `middleware.ts`. Resolution order is URL prefix → cookie → `Accept-Language` |
-| Links and router APIs | `@/i18n/navigation` | Importing `next/link` or `next/navigation`'s router APIs in app code is a **lint error** — the originals drop the locale prefix |
+| Links and router APIs | `@/i18n/navigation` | Importing `next/link` or `next/navigation`'s router APIs in app code is a **lint error** — the originals drop the locale prefix. The platform's holding apps have no such file: `@adawy/brand-app` builds the `Link` from the app's routing |
 | Static rendering | `setRequestLocale(locale)` in the `[locale]` layout **and each page** | Without it every page opts out of static rendering and goes dynamic, silently |
 
 **`localePrefix` is a per-project decision with a real reason behind it.**
@@ -72,6 +72,13 @@ pasted into a social bio must not depend on `Accept-Language`. `as-needed`
 leaves the default locale at `/`, which is why
 [`zad-alhkoul`](/repositories/zad-alhkoul) uses it for an export audience.
 Neither is the house default; read the routing file before you assume.
+
+**A plain `<a>` with the locale written in is sometimes the right link.**
+`apps/studio` links between its own pages with `<a>`, because next-intl's
+`Link` navigates on the client, and there that skipped each page's inline
+entrance script and the browser's cross-document view transitions. Each such
+link carries a one-line comment saying so. Do it only for a reason of that
+kind, and write the reason down, or the next person will "fix" it.
 
 <Callout type="warning">
   **A `proxy.ts` matcher must exclude extension-less metadata routes.** The
@@ -123,12 +130,14 @@ The same discipline applies to the origin those URLs are built from: resolve it
 per-deployment hostname, so a canonical built from it points at a URL that will
 not exist next week.
 
-## Intake is a route handler
+## Intake is validated on the server
 
-Every form in the org posts to a **POST route handler** under `app/api/`, which
-validates the body with the same zod schema the form used, and delivers through
-[the seam](/architecture/patterns#1-the-seam). Server Actions are not used for
-intake in any repo today.
+Every form in the client repos posts to a **POST route handler** under
+`app/api/`, which validates the body with the same zod schema the form used,
+and delivers through [the seam](/architecture/patterns#1-the-seam). The
+platform's forms (`group`, `software`, `studio`) are Server Actions instead,
+with the same zod schema on the server and delivery through `@adawy/mail`.
+Either way the server re-validates; the form's own validation is only UX.
 
 The full pattern, with the spam defences and the reason client and server share
 one schema: [Forms & Enquiries](/guides/forms-and-enquiries).

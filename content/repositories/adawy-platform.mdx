@@ -37,7 +37,7 @@ apps/
 ├── studio/     Adawy Studio                → adawystudio.com, a 3D stage: home, about, work,
 │                                             services, contact, careers (en/ar)
 ├── software/   Adawy Software              → adawysoftware.com (parked; served on
-│                                             adawy-software.vercel.app), the scroll film (en/ar)
+│                                             its Vercel address), the desktop story (en/ar)
 ├── pack/       Adawy Pack                  → adawypack.com, holding page (en/ar)
 ├── print/      Adawy Print                 → adawyprint.com, holding page (en/ar)
 ├── supplies/   Adawy Supplies              → adawysupplies.com, holding page (en/ar)
@@ -46,14 +46,16 @@ apps/
 └── it/ … manufacturer/                     23 glyph-brand holding pages, no domain yet (en/ar)
 
 packages/
-├── ui/                 @adawy/ui         shadcn primitives + shared sections, ours to edit
-├── design/             @adawy/design     Tailwind v4 token structure (CSS-first)
-├── motion/             @adawy/motion     GSAP (+ SplitText, ScrambleText) + Lenis, registered once
+├── ui/                 @adawy/ui         shadcn primitives, the theme slots, the CSSProperties typing; ours to edit
+├── motion/             @adawy/motion     GSAP (+ SplitText, ScrambleText) + Lenis, registered once; useInView
 ├── i18n/               @adawy/i18n       locale list, direction, next-intl helpers
-├── site/               @adawy/site       identity, routes, hreflang, robots, sitemap, brand next.config, test helpers
-├── holding/            @adawy/holding    the holding-page body every holding app renders
-├── brand-app/          @adawy/brand-app  the holding-app shell: layout, page, fonts, proxy, holding.css, mark, entrance, icon bake
+├── site/               @adawy/site       identity, routes, hreflang, robots, sitemap, proxy, next-config helpers,
+│                                         the group's JSON-LD and software credit, test helpers
+├── brand-app/          @adawy/brand-app  the brand-app shell: layout, page, holding page, fonts, holding.css,
+│                                         BrandMark, entrances, icon bake
 ├── analytics/          @adawy/analytics  PostHog behind a consent banner, for every app
+├── gl/                 @adawy/gl         WebGL renderer create/dispose, resolution governor, DPR cap, meshopt, eases
+├── mail/               @adawy/mail       Resend mailer, header-safe senders, HTML escaping, rate limit, mail env
 ├── eslint-config/      the architecture-enforcing lint rules
 └── typescript-config/  shared tsconfig bases
 ```
@@ -72,7 +74,7 @@ much is bespoke:
 | | The five flagship holding apps | The twenty-three glyph holding apps |
 | --- | --- | --- |
 | Field and ink | The pair measured in that brand's `[data-brand]` block in `apps/group/app/globals.css` | The brand's palette 300 as the field, and whichever of the group's two inks clears AA on it |
-| Mark and entrance | Bespoke, animated per app | The designer's glyph, drawn by `BrandMark`, with the shared bloom entrance (`@adawy/brand-app/entrance.css`) |
+| Mark and entrance | Bespoke, animated per app; the copy and footer entrance is shared (`@adawy/brand-app/copy-entrance.css`) | The designer's glyph, drawn by `BrandMark`, with the shared bloom entrance (`@adawy/brand-app/entrance.css`) |
 | Shell | `@adawy/brand-app` (since 2026-11-08, #394) | `@adawy/brand-app` |
 | Contrast | Measured by hand and recorded in the app's `globals.css` | A test in `lib/brand/<app>-mark.test.ts` pins the pair at 4.5:1 |
 | Domain | Each has one, and is indexed | None yet, so every deployment is `noindex` |
@@ -109,42 +111,55 @@ because the headline has to paint at once on a phone. The studio's own
 `apps/studio/lib/work/work.ts`, baked by `work:bake`.
 
 **`software` is Adawy Software's own site.** It replaced its holding page on
-2026-10-08 (#341), and since 2026-10-22 (#359) its front page is "Inside Adawy
-Software", a scroll film that follows one order from a WhatsApp message through
-five worlds (board, canvas, editor, system, live) on its own typed WebGL engine
-in `components/film/`, ending in a chat that really emails the team (a Server
-Action with zod, a honeypot, a rate limit and BotID, sent through Resend). A
-browser without a real GPU gets a static, server-rendered version of every
-word and never downloads the film, because PageSpeed renders without a GPU and
-the film drawn on the CPU froze the main thread for seconds. Its
-`PRODUCTION_HOST` names adawysoftware.com, but that domain is still parked at
-the registrar, so the site is served on adawy-software.vercel.app, which is
-`noindex` like any host that is not the production one. PR #424, an operable
-desktop story to replace the film, is open and not merged.
+2026-10-08 (#341). Since 2026-11-19 (#424, extended by #426) its front page is
+a desktop story in `components/story/`: an office at night turns into a
+software studio as the visitor scrolls (three.js), and the camera ends inside
+a monitor where the page becomes a computer the visitor operates, with working
+Figma, VS Code, GitHub, Deploy, Work, Team and Mail windows. Mail is a Server
+Action that really emails the team (zod, a honeypot, a rate limit and BotID,
+sent through `@adawy/mail`). The same company is also a plain server-rendered
+page under the story, and a browser without JavaScript or a real GPU gets only
+that, because PageSpeed renders without a GPU and a 3D room drawn on the CPU
+freezes the main thread. Its `PRODUCTION_HOST` names adawysoftware.com, but
+that domain is still parked at the registrar, so the site is served on its
+Vercel address, which is `noindex` like any host that is not the production
+one.
 
 **`@adawy/brand-app` is the shell every holding app is built on.** It owns
 everything around the holding page that each app used to copy: the `[locale]`
-layout and metadata, the page, the fonts, the locale proxy, `BrandMark`, the
-shared entrance, `holding.css` (the imports, design slots and Arabic font swap
-every brand stylesheet repeated), a WCAG contrast helper (`./contrast`) and a
-Node-only `./icons` entry for the icon bake. Before it, those were 439
-identical lines per app. `print` and the glyph brands came first (#281,
-64f0333), and `pack`, `supplies`, `marketing` and `bizdev` moved on in the
-2026-11-08 clean-up (#394), which also replaced twenty-eight identical
-`next.config.ts` files with `createBrandNextConfig` from `@adawy/site`.
-`software` uses the shell's layout, page, entrance and icon bake around its own
-film. `apps/studio` uses only its icon bake and `apps/group` none of it,
-deliberately, because their routing, proxy, sitemap and layout all differ, so
+layout and metadata, the holding page itself, the fonts, `BrandMark`, the
+shared entrances, `holding.css` (the imports, design slots and Arabic font
+swap every brand stylesheet repeated), a WCAG contrast helper (`./contrast`)
+and a Node-only `./icons` entry for the icon bake. A brand's `page.tsx` is one
+`createHoldingPage({ routing, identity, mark, socials })` call, its
+`proxy.ts` is `createBrandProxy(routing)` from `@adawy/site/proxy` plus the
+matcher (which Next parses statically, so it cannot be imported), and its
+`next.config.ts` is `createBrandNextConfig` from `@adawy/site/next-config`.
+The package builds the locale-aware `Link` from the app's routing, so a
+holding app has no `i18n/navigation.ts` and no holding component of its own.
+`print` and the glyph brands came first (#281, 64f0333), `pack`, `supplies`,
+`marketing` and `bizdev` moved on in the 2026-11-08 clean-up (#394), and the
+2026-11-23 refactor (#430) folded the old `@adawy/holding` body into it.
+`software` uses the shell's layout, `createBrandPage`, entrance and icon bake
+around its own story. `apps/studio` uses only the icon bake and `BrandMark`
+(through `@adawy/brand-app/brand-mark`, which skips the layout and its fonts,
+with the petal entrance passed as `pieceClassName`), and `apps/group` none of
+it, deliberately, because their routing, sitemap and layout all differ, so
 **check an app's imports before assuming a change to the shell reaches it**.
 
 The repo extracts a package on the **third use, not the first**, because an
 abstraction made from one example encodes that example's accidents.
-`@adawy/site` and `@adawy/holding` came out once `pack` and `studio` had
-hand-copied the same platform layer twice, and that is what made twenty-four
-apps in one change affordable: each new app is mostly configuration.
+`@adawy/site` and the holding-page package came out once `pack` and `studio`
+had hand-copied the same platform layer twice, and that is what made
+twenty-four apps in one change affordable: each new app is mostly
+configuration. `@adawy/mail` and `@adawy/gl` came out the same way on
+2026-11-23 (#432), once `group`, `software` and `studio` each carried a fork of
+the same mailer and WebGL renderer code, and the same refactor folded the
+holding package into `@adawy/brand-app` and `@adawy/site` and the token
+package into `@adawy/ui`, because neither had a job left of its own.
 `@adawy/utils` is still waiting for a second caller. What `group` does not
 share lives in its own `features/` + `platform/` layering
-([ADR-010](/architecture/adrs)).
+([ADR-011](/architecture/adrs)).
 
 Planned but not built: `apps/sites` (the multi-tenant long tail,
 [ADR-008](/architecture/adrs)) and `apps/api` (the Phase-2 NestJS backend,
@@ -210,13 +225,14 @@ pnpm --filter=group exec vitest                          # watch mode
 `software:work`, …) that regenerate the committed 3D models, textures,
 recordings and audio. Every other app has `icons:bake`, which writes the app
 icons, `favicon.ico` and the Open Graph card from the brand's artwork
-(`studio` also has `work:bake`, and `software` has `work:sync` and
-`film:assets`).
+(`studio` also has `work:bake`, and `software` has `work:sync`).
 Secrets for the group's forms (`RESEND_API_KEY`, `INQUIRY_TO`, `INQUIRY_FROM`)
 are listed in `apps/group/.env.example`, and the software chat's (`CHAT_TO`,
 `CHAT_FROM`) in `apps/software/.env.example`. `studio` has no example file:
 `apps/studio/lib/env/env.ts` reads the Resend key, `INQUIRY_TO`,
-`INQUIRY_FROM` and `RESEND_SEGMENT_ID` (the newsletter). A new build-time
+`INQUIRY_FROM` and `RESEND_SEGMENT_ID` (the newsletter). All three apps parse
+them with `parseMailEnv` from `@adawy/mail`, so a malformed value fails the
+build the same way everywhere and a blank one counts as unset. A new build-time
 secret also goes into the build task's `env` list in `turbo.json`, because
 Turborepo hashes only the variables listed there and would otherwise reuse a
 cached build after the value changed.
@@ -244,9 +260,13 @@ piece, since each piece's path is its React key.
 `group` adds `brand-spelling` and `seo` checks on its messages. `software`
 tests its chat, work list and structured data, and `studio` its inquiry,
 application and newsletter. The packages test locales and direction (`i18n`),
-identity, routes, robots, alternates and the brand `next.config` (`site`), the
-shell's layout and page (`brand-app`), the organisation structured data
-(`holding`), consent (`analytics`), the scroll ease (`motion`), and `ui`.
+identity, routes, robots, alternates, the proxy, the organisation structured
+data and the brand `next.config` (`site`), the shell's layout and the holding
+page, including that it emits JSON-LD only on an indexable deploy
+(`brand-app`), the mailer, sender headers, escaping, rate limit and mail env
+(`mail`), the eases, frame policy and resolution governor (`gl`), consent
+(`analytics`), the scroll ease (`motion`), and `ui`. Tests moved with the code
+into `mail` and `gl`, so the app suites shrank by the same amount.
 
 ## Things that will surprise you
 
@@ -275,16 +295,23 @@ the package or that routing file, never a hand-written array
 `lib/site/production-host.ts` (`platform/seo/production-host.ts` in
 `apps/group`). It is the switch for indexing, the canonical origin and the
 sitemap, and it only turns them on for the production deployment serving that
-host, so previews stay `noindex`. Eight apps name one: `group`, `studio`,
+host, so previews stay `noindex`. `isIndexableDeploy` in `@adawy/site` makes
+that decision for both the site identity and the `next.config` headers
+(`parseMailEnv` in `@adawy/mail` makes the same check for the mail
+settings), so the `X-Robots-Tag` and the page can never disagree. Eight apps
+name one: `group`, `studio`,
 `software`, `pack`, `print`, `supplies`, `marketing` and `bizdev`. The
 twenty-three glyph holding apps are `null`, so every one of their deployments
 is `noindex` until it gets a domain. A named host that does not serve the app
 yet has the same effect: adawysoftware.com is parked, so no `software`
 deployment is indexed until its DNS points at Vercel. adawybusinessdevelopment.com's DNS is on Cloudflare, not on
-Verpex with the other brand domains, so look there when it misbehaves. A
-holding page on a domain also links back to adawygroup.com and names Adawy
-Group as its parent organisation in its structured data (`@adawy/holding`'s
-`siteUrl`). The group's brand pages link out through each brand's `site` in
+Verpex with the other brand domains, so look there when it misbehaves. Every
+holding page links back to adawygroup.com, and on an indexable production
+deploy it also names Adawy Group as its parent organisation in Organization
+JSON-LD (`OrganizationLd` from `@adawy/site`). Before #430 that JSON-LD was
+emitted on every deploy, so the glyph brands without a domain published it
+with a preview or `localhost` origin, and `bizdev`, which passed no site URL,
+had neither the JSON-LD nor the group link. The group's brand pages link out through each brand's `site` in
 `BRAND_PAGES` (#297), and that field stays `null` until the brand has a live
 domain (Software's included, while adawysoftware.com is parked), which hides
 the hero's "Visit site" pill (#328): a link to a `noindex` `*.vercel.app`
@@ -343,12 +370,18 @@ the paths seen so far (#351). The hosts live in
 `apps/group/platform/analytics/lib/meta-pixel.ts`, which is where to allow a
 new one if the browser console reports a CSP violation.
 
-**Mail is not shared across apps.** In `apps/group` the contact and careers
-forms share one mail layer in `platform/mail` (mailer port, Resend adapter,
-rate limit, email shell), moved there on 2026-10-11 so careers would not
-import the contact feature's internals. `software` (`lib/mail`, adapted from
-the group's) and `studio` (`lib/contact`, `lib/rate-limit.ts`) each carry their
-own, so a fix to one app's mail code does not reach the others.
+**Mail is one package; the emails are each app's own.** `@adawy/mail` holds
+what the three apps with forms used to fork: the Resend mailer behind a
+`Mailer` port, the header-safe sender helpers (a visitor's name never reaches
+a `From:` or `Reply-To:` header raw), HTML escaping, the sliding-window rate
+limit with per-form overrides, `clientKeyFrom` for the visitor's IP, and
+`parseMailEnv`. A fix to any of those now reaches `group`, `software` and
+`studio` at once, which is why it moved: three copies had already drifted
+(studio had grown a rate limiter of its own). The templates, email shells and
+copy stay in each app (`apps/group/platform/mail`, `apps/software/lib/mail`,
+`apps/studio/lib/*`), because they carry each brand's voice. The mailer
+reports a Resend failure as `{ ok: false }` instead of throwing, so a form
+shows its `failed` state rather than an error page.
 
 **The layering in `apps/group` is enforced, not suggested.** `platform/` never
 imports `features/`, a feature reaches another only through its barrel,
@@ -360,8 +393,17 @@ CI fails on a breach instead of waiting for a reviewer to notice.
 home page, from the entrance field to the Why-Choose crystal, is a pass on a
 single `three.js` context, driven by scroll through a strict
 driver → channel → stage split. Each of the thirteen brand pages plays its own
-3D take through the same canvas host. Do not add a second host — see
+3D take through the same canvas host, and ten of them are built on one
+`createScrollScene` factory. Do not add a second host — see
 [Platform Architecture](/architecture/platform-architecture).
+
+**Every WebGL renderer is made and freed through `@adawy/gl`.**
+`createRenderer` and `disposeRenderer` (which calls `forceContextLoss()`
+after `dispose()`) replace the boots each app had written, because a renderer
+that is disposed but keeps its context counts against the browser's context
+limit until garbage collection, and the page that breaks is the next one.
+The package also holds the resolution governor, the DPR cap, the meshopt
+decoder and the shared eases. Scene code stays in the apps.
 
 **shadcn components are ours to edit.** Everything under
 `packages/ui/src/components` was vendored by the CLI. When a consumer needs
@@ -371,6 +413,24 @@ tailwind-merge will not treat a bare `h-14` as overriding them. The site's
 button is `ActionButton`/`ActionLink` from `@/platform/ui/action`; importing
 shadcn's `Button` from app code is an ESLint error. `AGENTS.md` has the full
 contract.
+
+**The whole repo follows one code and comment standard since 2026-11-23.**
+The refactor (#427 to #432) brought `group`, `software`, `studio`, the
+packages and the 28 brand apps to the rules in
+[Coding Conventions](/standards/coding#component-code): no static inline
+styles, Tailwind tokens and `cva` instead of hand-rolled class strings, logic
+in hooks, small single-purpose files, shared code in `platform/` or
+`packages/`, no dead code, and one-sentence TSDoc with no banners or narrative
+comments. A PR that brings any of those back is a review comment, not a style
+preference. One typing makes the first rule cheap: `@adawy/ui`'s
+`css-properties.d.ts`, loaded by the `nextjs.json` and `react-library.json`
+tsconfig bases, lets `style` take `--*` custom properties without a cast.
+
+**Studio's internal links are plain `<a>` on purpose.** next-intl's `Link`
+navigates on the client, and on the studio site that skipped each page's
+inline entrance script and the cross-document view transitions (tested in
+#428). Each such link carries a one-line note saying so; do not "fix" it to
+`Link`.
 
 **Files are kebab-case, enforced.** `unicorn/filename-case` fails the build on
 a PascalCase file, because mixed-case names break git on case-insensitive
@@ -401,9 +461,11 @@ Also at the root: `README.md` (the tour and the commands), `AGENTS.md` (the
 Next.js and Turborepo warnings and the shadcn contract), `PRODUCT.md` (users,
 brand personality, anti-references and design principles for adawygroup.com).
 `apps/studio` has its own `PRODUCT.md`. Each app and most packages have their
-own `README.md`, brought up to date on 2026-11-03 (#387). The `studio` and
-`software` READMEs still describe the versions of those sites before Studio v2
-and the film, so read their code first.
+own `README.md`, brought up to date on 2026-11-03 (#387) and again for the
+packages and brand apps in the 2026-11-23 refactor. The `studio` README still
+describes the site before Studio v2, and the `software` README says its
+`PRODUCTION_HOST` is `null` when the code names adawysoftware.com, so read
+their code first.
 
 [Platform Architecture](/architecture/platform-architecture) explains that
 split and summarizes what each of those files is for.
@@ -471,7 +533,9 @@ flowchart LR
   time, merges were verified locally (`pnpm turbo lint typecheck test build`
   and `pnpm format:check`) and each affected app shipped by hand with
   `vercel deploy --prod` from `main`. From 8 to 10 November that covered the
-  shell clean-up and the whole of Studio v2. While runs are not starting, a
+  shell clean-up and the whole of Studio v2, and on 23 November the refactor
+  merge, which touched the packages and so reached all thirty-one apps. While
+  runs are not starting, a
   red run says nothing about the code and a merged PR is not a deployed one:
   check the deployment itself, and follow the hand procedure on
   [Deployment](/how-we-work/deployment).

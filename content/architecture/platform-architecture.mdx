@@ -65,11 +65,14 @@ work:
   logic; routing those through a UI barrel would be ceremony.
 - **`lib/` is the only layer with unit tests,** and it is testable precisely
   because it imports neither React nor three.js.
-- **What a second feature needs moves down to `platform/`.** When the careers
-  form needed the contact form's mailer, rate limit and email layout, they
-  moved to `platform/mail` (2026-10-11) instead of careers reaching into
-  contact. A feature may reach another only through its barrel, and those
-  were internals.
+- **What a second feature needs moves down to `platform/`; what a second
+  app needs moves on to `packages/`.** When the careers form needed the
+  contact form's mailer, rate limit and email layout, they moved to
+  `platform/mail` (2026-10-11) instead of careers reaching into contact. A
+  feature may reach another only through its barrel, and those were
+  internals. When `software` and `studio` had each copied the mailer and the
+  rate limit too, those went one step further, into `@adawy/mail`
+  (2026-11-23); only the group's email shell stays in `platform/mail`.
 
 ## 1. One canvas, many passes
 
@@ -286,7 +289,32 @@ owns only its choreography and what it draws:
 The careers page's badge on a lanyard (#346) is a scene on the same host, so
 it gets the same lifecycle rather than one of its own. The pointer lean, the
 fade and the tiled textures the brand takes share are in common code (#395),
-so a fourteenth take inherits them instead of copying them.
+so a fourteenth take inherits them instead of copying them. The renderer
+itself comes from `createRenderer` in `@adawy/gl`, and `disposeRenderer`
+calls `forceContextLoss()` after `dispose()`, so the context is handed back
+at once rather than whenever the garbage collector runs.
+
+**Most takes are built on one scroll-scene factory.**
+`platform/gl/scroll-scene.ts` (`createScrollScene`, with `orbitShots`,
+`loadModel` and `tiledLoader`) owns what the takes used to copy: lights and
+shadow setup, compiling and warming the take before the reveal, the
+per-frame step, the single redraw under reduced motion, and the About side
+shift. A take on it supplies only its set, its `applyFrame`, its `draw` and
+its shadow key. Ten of the thirteen use it (AI, Business Development,
+Events, Law Firm, Marketing, Print, Private Label, Production, Studio,
+Supplies). Three keep their own lifecycle because they break one of its
+assumptions:
+
+- **Pack** must skip the every-other-frame contact-shadow pass during its
+  warm take.
+- **Media Production** compiles a monitor-feed render target, runs its warm
+  take even under reduced motion, and draws its shadows once.
+- **Software** draws soft (PCF) shadows every frame through an
+  `EffectComposer`.
+
+Start a new take on the factory. Fork the lifecycle only for a reason of
+that size, and say which one in the scene file, because a fourth hand-copied
+lifecycle is the drift the factory removed.
 
 **Not everything that moves is WebGL.** Software's Selected Work is a reel of
 screen recordings of four live flagship sites in a plain browser window,

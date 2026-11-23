@@ -20,24 +20,32 @@ a rule without a reason is a candidate for deletion.
   submissions, API responses, Odoo webhooks, CMS content — is parsed with a
   Zod schema before it enters typed code. *Why:* types are compile-time only;
   the boundary is where runtime reality enters.
-- **Document the `@adawy/*` public surface.** An exported symbol in a shared
-  package carries a short comment saying what role it plays and which rule it
-  enforces — not a restatement of its signature. *Why:* the packages are the
-  product; a brand developer should understand `@adawy/motion` from the editor
-  tooltip without reading the source. App-internal code does not owe this.
+- **Every export carries one sentence of TSDoc.** One plain sentence saying
+  what the symbol is for, not a restatement of its signature, and no
+  `@param`/`@returns` lines that only repeat the types. *Why:* the editor
+  tooltip is where the next developer reads it, so a brand developer should
+  understand `@adawy/motion` without opening the source, and one sentence is
+  what gets read; a paragraph gets skipped and then goes stale.
 
 ## Comments
 
 House style is **sparse and human-voiced**. A comment earns its place by
 recording something the code cannot say for itself.
 
-- **Write down constraints, not narration.** "This is restated in
-  `next.config.ts` because Next loads that file outside the app bundle" is
-  worth permanent space. "Loop over the products" is not.
+- **Only short "why" notes, one line each.** "Inline because Next parses
+  this field statically" is worth permanent space. "Loop over the products"
+  is not, and neither is a field-by-field description of what a type already
+  says.
 - **If a line is load-bearing for a non-obvious reason, say so** — the next
   person's instinct will be to simplify it away.
-- **No shouted section headers, no per-function essays.** The platform repo has
-  had two dedicated passes cutting these back out; do not add them back.
+- **No banners, file headers, narrative or history.** No `// ── Section ──`
+  or `// --- x ---` dividers, no prose telling the story of a module, no
+  "this used to…" notes. The history is in git, where `git log -p` shows it
+  with the diff that made it true. The platform's 2026-11-23 refactor removed
+  thousands of lines of these across every app and package; do not add them
+  back.
+- **Plain words.** No em dashes, no "we", no marketing voice. A comment is a
+  note to a colleague.
 - **Prefer a clearer name over a comment explaining an unclear one.**
 
 *Why:* comments are code that cannot be tested and does not fail when it goes
@@ -61,6 +69,50 @@ much code is AI-assisted — see [Working with AI](/how-we-work/working-with-ai)
   on 37 others.
 - **Forms: React Hook Form + Zod resolver.** One validation schema serves
   client and server.
+
+## Component code
+
+These hold across `adawy-platform` since its 2026-11-23 refactor, and are what
+review asks of new code in every repo. None of them is a lint rule yet, so
+they are the reviewer's job.
+
+- **No static inline styles.** `style={{ … }}` carries only values computed
+  at runtime, and those as CSS custom properties (`style={{ "--piece": i }}`)
+  that a class reads. *Why:* a static inline style cannot be themed, has no
+  `dark:`, `ar:` or breakpoint variants, and beats every class, so it is the
+  one place a token override silently stops working. In the platform,
+  `style` accepts `--*` properties without a cast (`@adawy/ui`'s
+  `css-properties.d.ts`, loaded by the tsconfig bases), so there is no
+  typing excuse.
+- **Tailwind tokens, not arbitrary values.** A colour, a font or a timing used
+  twice becomes an `@theme` token, and a set of utilities used together
+  becomes an `@utility` rule. *Why:* `text-[#c0272d]` in five files is five
+  places a rebrand has to find; a token is one.
+- **Variants go through `cva`.** A component with tones or sizes declares them
+  once (`cva({ variants: { tone, size } })`) and callers pick one. *Why:*
+  hand-rolled ternaries of class strings drift apart copy by copy; a `cva`
+  table is the list of what exists.
+- **shadcn components are edited in place.** Different geometry is a new
+  size or variant on the component, never classes fighting it from the call
+  site ([UI standards](/standards/ui#component-rules)).
+- **Logic lives in hooks.** State, effects, timers and observers go in a
+  `use…` hook or a reducer next to the component, and the component renders.
+  *Why:* the logic can then be tested without the markup, and a 1,000-line
+  component is almost always three hooks and a layout that were never split.
+- **Small, single-purpose files.** A file that holds several components, or
+  one that needs a table of contents, gets split. *Why:* the platform's
+  VS Code and Figma windows were single files of close to 2,000 lines each
+  before they were split into regions and reducers, and nobody could change one
+  part without reading all of it.
+- **Shared code is never copied.** What two features in one app need goes in
+  that app's `platform/`; what two apps need goes in `packages/`. *Why:* the
+  mailer and the WebGL renderer code had been copied into three apps and had
+  drifted before they became `@adawy/mail` and `@adawy/gl`; a fix to one copy
+  reached one app.
+- **No dead code.** Unused files, exports, dependencies and commented-out
+  blocks are deleted, not kept "for later". *Why:* dead code is read,
+  maintained and upgraded like live code, and nothing tells the reader it is
+  dead. Git keeps it if it is ever wanted back.
 
 ## Testing
 

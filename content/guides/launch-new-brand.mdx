@@ -25,8 +25,8 @@ A brand can be on the platform in two places, and they are added separately:
 | | Its own app | Its group brand page |
 | --- | --- | --- |
 | Where | `apps/<brand>`, on the brand's own domain | `/ecosystem/<brand>` on adawygroup.com |
-| What it is today | A holding page (thirty-one apps, twenty-nine of them holding pages) | One of thirteen company pages, each with its own 3D take |
-| Built from | `@adawy/brand-app` + `@adawy/holding` | One entry in `BRAND_PAGES` in `apps/group` |
+| What it is today | A holding page (thirty-one apps, twenty-eight of them holding pages) | One of thirteen company pages, each with its own 3D take |
+| Built from | `createHoldingPage` from `@adawy/brand-app`, on `@adawy/site` | One entry in `BRAND_PAGES` in `apps/group` |
 | Adding one | [Steps 1–4](#the-workflow) | [Step 5](#the-workflow) |
 
 Every brand gets its own app first, because that is cheap, deploys
@@ -73,8 +73,29 @@ custom sections, or bespoke motion?**
 1. **Scaffold:** for a holding page, copy one of the glyph-brand apps
    (`apps/hr`, `apps/farm`, …), because they are the ones built entirely on
    `@adawy/brand-app` and carry nothing bespoke to unpick. Rename the folder,
-   the `package.json` name and the names in `lib/site/identity.ts`. For a
-   full site, copy the structurally closest app instead (creative →
+   the `package.json` name, the `brand` key passed to `createBrandLayout` in
+   `app/[locale]/layout.tsx`, and the EN and AR names in
+   `lib/site/identity.ts` (which also exports the brand's `socials`, if it has
+   any). The page is one call and needs no other component:
+
+   ```tsx filename="apps/<brand>/app/[locale]/page.tsx"
+   export default createHoldingPage({
+     routing,
+     identity: site,
+     socials, // optional
+     mark: (
+       <BrandMark viewBox={MARK_VIEW_BOX} paths={MARK_PATHS} className="holding-mark" />
+     ),
+   })
+   ```
+
+   `proxy.ts` is `createBrandProxy(routing)` from `@adawy/site/proxy` plus its
+   `matcher`, written inline because Next parses that field statically, and
+   `next.config.ts` is `createBrandNextConfig` from `@adawy/site/next-config`.
+   There is no `components/holding/` and no `i18n/navigation.ts` to copy:
+   the package renders the holding page and builds its locale-aware `Link`
+   from the app's routing, so a fix to either ships to every brand at once.
+   For a full site, copy the structurally closest app instead (creative →
    `apps/studio`). Either way the app should contain only routes, content and
    token values — everything else comes from `@adawy/*` packages
    ([keep apps thin](/standards/project-structure)).
@@ -83,8 +104,12 @@ custom sections, or bespoke motion?**
    shared token structure — never edited copies of shared components.
    - The field is the brand's palette 300, in the app's `app/globals.css`.
    - `lib/brand/<brand>-mark.ts` holds the field, the ink and the glyph's
-     paths, ordered centre-out for the shared entrance. Its test pins ink on
-     field at 4.5:1, so an ink that fails AA fails CI instead of shipping.
+     paths (`MARK_PATHS`, `MARK_VIEW_BOX`, which the page hands to
+     `BrandMark`), ordered centre-out for the shared entrance
+     (`@import "@adawy/brand-app/entrance.css"` after `holding.css`). Its test
+     pins ink on field at 4.5:1, so an ink that fails AA fails CI instead of
+     shipping, and checks no two pieces share a path, because `BrandMark`
+     keys each piece by its path data.
    - `scripts/lockup.svg` is the full lockup for the share card. Then
      `pnpm --filter=<brand> icons:bake` writes the icons, `favicon.ico` and
      the Open Graph card, which are committed.
@@ -96,11 +121,15 @@ custom sections, or bespoke motion?**
    - **The Vercel project**: root directory `apps/<brand>`. The deploy's
      preflight fails loudly on anything else, because a wrong root directory
      would upload green and build the repo root.
-   - **`@adawy/analytics`**: the brand's key in the `Brand` union, and
-     `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` on the project for Production only.
+   - **`@adawy/analytics`**: the brand's key in the `Brand` union (the same
+     key the layout's `brand` takes), and `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`
+     on the project for Production only.
 4. **Domain:** set `PRODUCTION_HOST` in `lib/site/production-host.ts`. Until
-   it names a host, every deployment is `noindex`, which is right for a
-   placeholder on a platform hostname. Then add the domain to the Vercel
+   it names a host, every deployment is `noindex` and the holding page emits
+   no Organization JSON-LD, which is right for a placeholder on a platform
+   hostname: structured data naming a preview origin as the brand's site is
+   worse than none. Once the production deployment serves that host, both
+   turn on together. Then add the domain to the Vercel
    project and verify the production deployment serves the new brand before
    announcing anything. A group domain's DNS and email live on the Verpex
    host, so the website moves in two phases, email first:
@@ -132,7 +161,8 @@ custom sections, or bespoke motion?**
    check these too:
    - `PRODUCTION_HOST` names the domain.
    - The production host's responses carry `X-Robots-Tag: index, follow, …`,
-     not `noindex`.
+     not `noindex`, and its page source has the Organization JSON-LD with the
+     real domain and Adawy Group as the parent.
    - The project's `*.vercel.app` redirects to the domain.
    - The brand's `site` is set in the group's `BRAND_PAGES` (if it has a
      group page), so adawygroup.com links to it.
