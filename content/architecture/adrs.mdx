@@ -64,6 +64,11 @@ was wrong is the most useful thing in the file.
   `@adawy/site` (identity, routes, metadata) and `@adawy/holding`. Own apps are
   for flagship brands; the long tail is served by one multi-tenant app
   ([ADR-008](#adr-008--flagships-get-their-own-app-the-long-tail-shares-one-multi-tenant-app)).
+  *The package list is the one decided; the decision stands, the list has
+  moved.* On 2026-11-23 `@adawy/design` was folded into `@adawy/ui`,
+  `@adawy/holding` into `@adawy/brand-app` and `@adawy/site`, and `@adawy/gl`
+  and `@adawy/mail` were extracted. The current set is on
+  [the platform page](/repositories/adawy-platform#what-is-in-it-today).
 - **Consequences:** A fix in a shared package ships to every brand from one
   PR; Turborepo rebuilds only affected apps. Each brand deploys independently —
   a bad deploy on one site cannot take down the others, and flagships keep
@@ -314,7 +319,8 @@ was wrong is the most useful thing in the file.
   `platform/sound`, group data (members, marks, industries) to
   `platform/brand`, five private `lerp`s and three incompatible `clamp`s
   collapsed into `platform/math`, and eight hand-rolled renderer boots into
-  one `bootRenderer`. Trade-offs: a cross-feature convenience import is now
+  one `bootRenderer` (since 2026-11-23 that is `createRenderer` in
+  `@adawy/gl`, shared with `studio` and `software`). Trade-offs: a cross-feature convenience import is now
   an error whose fix is a deliberate move to platform, and `git blame`
   crosses one large rename boundary (use `--follow`).
 

@@ -18,13 +18,13 @@ Dashed boxes are **decided but not built**
 flowchart TD
     subgraph MONO["adawy-platform (Turborepo + pnpm)"]
         subgraph PKGS["packages/ — where the engineering lives"]
-            UI["@adawy/ui<br/>shadcn primitives"]
-            TW["@adawy/design<br/>design tokens"]
+            UI["@adawy/ui<br/>shadcn primitives · theme slots"]
             MO["@adawy/motion<br/>GSAP + Lenis"]
             IN["@adawy/i18n<br/>locales + direction"]
             SEOP["@adawy/site<br/>identity · routes · metadata"]
-            UT["@adawy/holding<br/>holding-page shell"]
-            BA["@adawy/brand-app<br/>holding-app shell"]
+            BA["@adawy/brand-app<br/>brand-app shell · holding page"]
+            GLM["@adawy/gl · @adawy/mail<br/>WebGL renderers · form mail"]
+            AN["@adawy/analytics<br/>PostHog behind consent"]
             LINT["@adawy/eslint-config<br/>@adawy/typescript-config<br/>the rules, machine-enforced"]
         end
         subgraph APPS["apps/ — a thin app per flagship + one multi-tenant app"]
@@ -53,27 +53,26 @@ flowchart TD
 
 | | Built today | Decided, not built |
 | --- | --- | --- |
-| Apps | `group`, `studio`, `pack`, `print`, `supplies`, `marketing`, `bizdev`, and twenty-four holding apps for the newer brands (`software` … `manufacturer`) | `sites`, `api` |
+| Apps | `group`, `studio`, `software`, `pack`, `print`, `supplies`, `marketing`, `bizdev`, and twenty-three holding apps for the newer brands (`it` … `manufacturer`) | `sites`, `api` |
 | Packages | all **ten** `@adawy/*` | — |
 | Domains | adawygroup.com, adawystudio.com, adawypack.com, adawyprint.com, adawysupplies.com, adawymarketingsolutions.com, adawybusinessdevelopment.com | The long tail's, through `sites` |
 | Tooling | The [content dashboard](/repositories/adawy-dashboard), in practice mode ([ADR-014](/architecture/adrs)) | — |
 | Behind them | — | the backend, PostgreSQL, both portals |
 
-Every app except `group` and `studio` is a **holding page**. Seven apps are
+Every app except `group`, `studio` and `software` is a **holding page**. Seven apps are
 live on their own domains ([Domains, DNS & Email](/architecture/domains-and-email));
 the twenty-four added in September 2026 have none yet and stay `noindex`.
 The dotted edge is the [content dashboard](/repositories/adawy-dashboard): it
 sits outside the monorepo and, once live, publishes text and image changes
 into it as ordinary commits
 ([how](/architecture/platform-architecture#4-commits-that-do-not-come-from-a-developer)).
-The holding pages are one branded screen each — the older flagships on
-`@adawy/holding`, `print` and the twenty-four newer apps on the
-`@adawy/brand-app` shell. They are real apps with real deploys, which is why a
+The holding pages are one branded screen each, all twenty-eight rendered by
+`createHoldingPage` from the `@adawy/brand-app` shell. They are real apps with real deploys, which is why a
 change to `packages/ui` verifies and deploys every app rather than one.
 
 ## Why this shape (the business reason)
 
-- A fix in `@adawy/ui` or a token change in `@adawy/design` ships
+- A fix in `@adawy/ui` or a change to its theme slots ships
   **from one PR** and reaches every brand site — never the same change ×38.
 - Each brand deploys **independently** as its own Vercel project: a bad deploy
   on one site cannot take down the others, and flagship brands keep full

@@ -35,7 +35,7 @@ delivery, priority first:
 
 1. **adawygroup.com** (`apps/group`) — the corporate site and the first app
    in the monorepo. Building it builds the permanent foundation: the
-   `@adawy/*` packages (ui, design, motion, i18n, site, holding, brand-app), hosting,
+   `@adawy/*` packages (ui, motion, i18n, site, brand-app and the rest), hosting,
    domains, and the deployment pipeline. Committed dates:
    [kickoff 14 June → launch 23 July 2026](/about/timeline).
 2. **Adawy Studio** (`apps/studio`) — the creative flagship; sets the design
@@ -59,9 +59,12 @@ delivery, priority first:
    apps on `@adawy/brand-app` (Software, IT, AI, Law Firm, Production and the
    rest), none on a domain yet, and on 1 October seven of them got company
    pages on adawygroup.com. On 8 November the twenty-eight brand apps moved
-   onto one shared shell. Adawy Software outgrew its holding page: since
-   22 October it is a full site, the "Inside Adawy Software" scroll film, on
-   `adawy-software.vercel.app` while adawysoftware.com waits on its DNS.*
+   onto one shared shell, and on 23 November a platform-wide refactor made
+   each of their pages a single `createHoldingPage` call and moved the mail
+   and WebGL code the three full sites had each forked into shared packages.
+   Adawy Software outgrew its holding page: since 22 October it is a full
+   site, since 19 November an operable desktop story, served on its Vercel
+   address while adawysoftware.com waits on its DNS.*
    ([the workflow](/guides/launch-new-brand)). Six weeks per site becomes
    one week per site as the packages mature.
 

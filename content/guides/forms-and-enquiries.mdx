@@ -38,8 +38,9 @@ enough ([coding conventions](/standards/coding)).
 
 1. **A honeypot field** — hidden from humans, filled by naive bots. Discard the
    submission silently; do not return an error that tells a bot it was caught.
-2. **Rate limiting** per IP. `lib/rate-limit.ts` in the client repos; the
-   platform additionally runs **BotID** on its contact route.
+2. **Rate limiting** per IP. `lib/rate-limit.ts` in the client repos;
+   `checkRateLimit` from `@adawy/mail` in the platform, which also runs
+   **BotID** on the group and software forms.
 3. **Server-side validation** — a schema that rejects nonsense is itself a
    filter.
 
@@ -49,8 +50,8 @@ the three measures above already handle at this volume.
 ## One delivery seam
 
 **Every project routes submissions through a single module** — `lib/enquiry.ts`
-in the client projects, the mailer module in the platform. One function, one
-place.
+in the client projects, the `Mailer` from `@adawy/mail` in the platform. One
+function, one place.
 
 ```ts
 // lib/enquiry.ts — the only place a submission leaves the app
@@ -77,10 +78,11 @@ checklist](/how-we-work/client-projects#launch-checklist), and it is not
 complete until a **test submission has arrived in the client's actual inbox**.
 
 The platform delivers through **Resend**, configured with `RESEND_API_KEY`,
-`INQUIRY_TO` and `INQUIRY_FROM`. Those are declared in `turbo.json` so a
-changed value busts the right build cache, and documented in
-`apps/group/.env.example` — the only committed env template
-([security](/standards/security)).
+`INQUIRY_TO` and `INQUIRY_FROM` (the software chat's are `CHAT_TO` and
+`CHAT_FROM`), each app parsing them with `parseMailEnv` from `@adawy/mail`.
+Those are declared in `turbo.json` so a changed value busts the right build
+cache, and documented in `apps/group/.env.example` and
+`apps/software/.env.example` ([security](/standards/security)).
 
 ## Form UX rules
 
@@ -103,7 +105,7 @@ changed value busts the right build cache, and documented in
 | ---- | ----- |
 | `aladawy-shop` | `lib/schemas/quote-request.ts`, `lib/enquiry.ts`, `lib/rate-limit.ts`, `app/api/quote/route.ts` |
 | `aladawy-pack` | `lib/schemas/`, `lib/enquiry.ts`, `app/api/contact/route.ts`, `app/api/quote/route.ts` |
-| `adawy-platform` | `apps/group/lib/contact/` — schema, service, mailer, rate limit, and the multi-step inquiry form |
+| `adawy-platform` | `apps/group/features/contact/` (schema, service, email and the multi-step inquiry form), the Server Action in `apps/group/app/[locale]/contact/actions.ts`, and `packages/mail` (mailer, sender headers, rate limit, mail env) |
 
 The platform's version is the most developed: a multi-step form with country
 and industry fields, a typed email template, and its own tests. Read it before

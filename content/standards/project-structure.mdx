@@ -32,23 +32,24 @@ adawy-platform/
 │   ├── sites/      Long-tail brands — one multi-tenant app, hostname → config (planned, ADR-008)
 │   └── api/        NestJS backend (Phase 2, deployed off-Vercel — ADR-009)
 └── packages/
-    ├── ui/                 @adawy/ui                (shadcn primitives, vendored and ours)
-    ├── design/             @adawy/design            (Tailwind v4 token structure, CSS-first)
-    ├── motion/             @adawy/motion            (GSAP + Lenis primitives)
+    ├── ui/                 @adawy/ui                (shadcn primitives, vendored and ours; the theme slots)
+    ├── motion/             @adawy/motion            (GSAP + Lenis primitives, useInView)
     ├── i18n/               @adawy/i18n              (locale list, direction)
-    ├── site/               @adawy/site              (identity, routes, alternates, request config)
-    ├── holding/            @adawy/holding           (the shared holding-page shell)
-    ├── brand-app/          @adawy/brand-app         (the one shell every brand app shares, since 8 Nov 2026)
+    ├── site/               @adawy/site              (identity, routes, alternates, proxy, next-config, group JSON-LD)
+    ├── brand-app/          @adawy/brand-app         (the brand-app shell and the holding page)
     ├── analytics/          @adawy/analytics         (PostHog behind consent)
-    ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules)
-    └── typescript-config/  @adawy/typescript-config (shared tsconfig bases)
+    ├── gl/                 @adawy/gl                (WebGL renderer lifecycle, resolution governor, eases)
+    ├── mail/               @adawy/mail              (Resend mailer, sender safety, rate limit, mail env)
+    ├── eslint-config/      @adawy/eslint-config     (architecture-enforcing lint rules, one React config)
+    └── typescript-config/  @adawy/typescript-config (shared tsconfig bases, incl. library.json for packages)
 ```
 
 <Callout type="info">
   **Today** thirty-one apps and all ten packages exist. Three are full sites
   (`apps/group`, `apps/studio`, `apps/software`); the other twenty-eight are
   **holding pages** — one branded screen each, all on the `@adawy/brand-app`
-  shell since 8 November 2026 — which is why a change to
+  shell since 8 November 2026 and each a single `createHoldingPage` call since
+  23 November — which is why a change to
   `packages/ui` verifies and deploys every app rather than one. `apps/sites`
   and `apps/api` are planned.
 
@@ -56,7 +57,10 @@ adawy-platform/
   extracted**. `@adawy/site` took the metadata and routing role instead, and
   the utility surface stayed small enough to live in each app. That is rule 5
   below working as intended — extraction happens on the third use, not on the
-  plan.
+  plan. It runs the other way too: `@adawy/design` and `@adawy/holding` were
+  folded into `@adawy/ui`, `@adawy/brand-app` and `@adawy/site` on
+  23 November 2026, once each was a thin layer over one of those, and
+  `@adawy/gl` and `@adawy/mail` came out of the three full sites the same day.
 </Callout>
 
 This is the **Group** monorepo. Client projects are standalone repositories
@@ -90,19 +94,24 @@ bespoke motion — the decision rule lives in the
    `packages/ui`, themed by tokens. *Why:* this is what makes a fix ship once
    and reach every brand ([ADR-001](/architecture/adrs)).
 2. **Where code goes:**
-   - Visual primitives and composed sections → `@adawy/ui`
-   - Design tokens, theme structure, Tailwind base → `@adawy/design`
-   - Animation primitives and scroll machinery → `@adawy/motion`
+   - Visual primitives, composed sections, the theme slots and the Tailwind
+     base → `@adawy/ui`
+   - Animation primitives, scroll machinery and `useInView` → `@adawy/motion`
    - The locale list and direction handling → `@adawy/i18n`
-   - Site identity, routes, alternates, metadata plumbing → `@adawy/site`
-   - The holding-page shell → `@adawy/holding`
+   - Site identity, routes, alternates, metadata plumbing, the proxy and the
+     shared `next.config` pieces → `@adawy/site`
+   - The brand-app layout and the holding page → `@adawy/brand-app`
+   - Creating and freeing a WebGL renderer, the resolution governor, eases →
+     `@adawy/gl`
+   - Sending form mail, sender headers, rate limiting, mail env → `@adawy/mail`
+   - Inside one app, what a second feature needs → that app's `platform/`
    - Anything shared that fits none of these → a new package, on the third use
 3. **Brand identity lives in tokens, not forks.** A brand customizes by
-   overriding token values from `@adawy/design` — never by copying a
+   overriding the token values `@adawy/ui` defines — never by copying a
    shared component into its app and editing it. Genuinely custom sections are
    for flagships only and are explicitly scoped.
 4. **Shared means machinery, not appearance.** Fonts, colors, SEO content,
-   and motion *choreography* are per-brand by design: `@adawy/design` defines
+   and motion *choreography* are per-brand by design: `@adawy/ui` defines
    the token slots (`--brand-font-display`, `--brand`, …) and each brand
    assigns its own values; `@adawy/site` is plumbing fed with brand content;
    `@adawy/motion` ships primitives that brands compose into their own feel.

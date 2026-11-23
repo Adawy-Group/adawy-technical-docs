@@ -61,10 +61,10 @@ other businesses, one standalone repo each
 ([ADR-010](/architecture/adrs), [client projects](/how-we-work/client-projects)).
 
 **Holding page** — a single branded screen standing in for an unbuilt site.
-Every platform app except `apps/group` and `apps/studio` is a holding page
-today: five flagships (`pack`, `print`, `supplies`, `marketing`, `bizdev`) on
-their own domains, and twenty-four brands added in September 2026 with no
-domain yet. So is the current state of `jumeira`. They are real apps with real
+Every platform app except `apps/group`, `apps/studio` and `apps/software` is
+a holding page today, each one `createHoldingPage` call: five flagships
+(`pack`, `print`, `supplies`, `marketing`, `bizdev`) on their own domains, and
+twenty-three brands added in September 2026 with no domain yet. So is the current state of `jumeira`. They are real apps with real
 deploys, which is why a shared-package change verifies every app that compiles
 it.
 

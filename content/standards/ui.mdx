@@ -139,8 +139,16 @@ primitive.
 ## Component rules
 
 - Build with the shared design system: `@adawy/ui` (shadcn-based primitives +
-  section components), themed by `@adawy/design` tokens, animated
-  with `@adawy/motion`. Check whether a component exists before writing one.
+  section components), themed by the token slots in `@adawy/ui/globals.css`,
+  animated with `@adawy/motion`. Check whether a component exists before
+  writing one. The group and studio forms both use its `Field`, `Input`,
+  `Textarea`, `Select` and `PhoneInput` (a country picker that posts the
+  number in E.164) rather than their own, so a form fix lands once.
+- **Variants are `cva`, styles are classes.** A component's tones and sizes
+  are one `cva` table, and `style` carries only runtime values as CSS
+  variables ([why](/standards/coding#component-code)). Studio's `ActionLink`
+  and `ActionButton` are the example: one tone-by-size table replaced a
+  handful of hand-rolled orange pills.
 - **A vendored shadcn component is ours to edit.** When a consumer needs
   different geometry, change the component — do not out-specify it from the
   call site. *Why:* shadcn's defaults are variant-scoped

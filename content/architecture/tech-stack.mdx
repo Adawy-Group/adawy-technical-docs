@@ -37,14 +37,14 @@ these states, and nothing on this page is in a fourth one.
 
 | Layer | Choice | Why |
 | ----- | ------ | --- |
-| Monorepo | **Turborepo + pnpm** — `apps/` per brand + ten shared `@adawy/*` packages (`ui`, `design`, `motion`, `i18n`, `site`, `holding`, `brand-app`, `analytics`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
+| Monorepo | **Turborepo + pnpm** — `apps/` per brand + ten shared `@adawy/*` packages (`ui`, `motion`, `i18n`, `site`, `brand-app`, `analytics`, `gl`, `mail`, `eslint-config`, `typescript-config`) | One PR ships a shared fix to every brand; only affected apps rebuild; each brand still deploys independently |
 | Framework | **Next.js 16 + TypeScript** | Performance built in, first-class Vercel deployment per app, and three years of production experience on the team. Note: middleware is `proxy.ts` in this version |
-| Styling | **Tailwind CSS v4 + shadcn/ui** (`@adawy/ui`, `@adawy/design`) | Tokens are CSS-first (`@theme`): `@adawy/design` defines the token structure, each brand overrides the values — accessible, owned by the team, no component library subscription |
+| Styling | **Tailwind CSS v4 + shadcn/ui + `cva`** (`@adawy/ui`) | Tokens are CSS-first (`@theme`): `@adawy/ui/globals.css` defines the `--brand*` slots, each brand overrides the values, and `cva` names a component's variants so they are not hand-rolled class strings — accessible, owned by the team, no component library subscription |
 | Motion | **GSAP + Lenis** (`@adawy/motion`) | The brand guidelines require cinematic, scroll-driven motion; GSAP is the industry standard and Lenis provides smooth scrolling, driven by GSAP's ticker so they share one clock. Wired once in `@adawy/motion` — the package ships primitives, brands own choreography |
-| 3D | **three.js**, plus **Rapier** for the physics playground | One WebGL context serves the home page as a set of passes; each of the thirteen brand pages plays its own take through the same host ([platform architecture](/architecture/platform-architecture)) |
+| 3D | **three.js** (`@adawy/gl`), plus **Rapier** for the physics playground | One WebGL context serves the home page as a set of passes; each of the thirteen brand pages plays its own take through the same host ([platform architecture](/architecture/platform-architecture)). Every renderer is created and freed through `@adawy/gl`, so none leaks its context |
 | i18n | **next-intl** (`@adawy/i18n`) | `en` / `ar` / `fr` with RTL by design; locale routing and direction handling wired once, used by every brand |
 | Forms | **React Hook Form + Zod** | Type-safe forms with one validation schema shared between client and server ([forms & enquiries](/guides/forms-and-enquiries)) |
-| Transactional email | **Resend** | Contact and quote submissions; reached through a single delivery seam so the provider is swappable |
+| Transactional email | **Resend** (`@adawy/mail` in the platform) | Contact and quote submissions; reached through a single delivery seam so the provider is swappable |
 | Testing | **Vitest**, colocated | Pure logic is extracted specifically so it can be tested without a DOM ([testing](/standards/testing)) |
 | Lint & format | **ESLint 10 (flat config) + Prettier**, both gating CI | `@adawy/eslint-config` machine-enforces the architecture — the rules in this handbook fail the build rather than waiting for a reviewer ([coding](/standards/coding#linting--formatting)) |
 

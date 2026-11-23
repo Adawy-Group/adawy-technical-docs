@@ -40,10 +40,11 @@ flowchart LR
 
 | Seam | Repos | What it hides |
 | ---- | ----- | ------------- |
-| `lib/enquiry.ts` | `aladawy-pack`, `aladawy-shop`, and the mailer in `apps/group` | The mail provider |
+| `lib/enquiry.ts` | `aladawy-pack`, `aladawy-shop`, and the `Mailer` in `@adawy/mail` for the platform | The mail provider |
 | `lib/motion/gsap.ts` (or `@adawy/motion`) | every repo with GSAP | Plugin registration order and the SSR guard |
 | `lib/site.ts` | every client repo | Which of three fallbacks resolved the public origin |
-| `@/i18n/navigation` | every next-intl repo | The locale prefix on every URL |
+| `@/i18n/navigation` | every next-intl repo; the platform's holding apps get it from `@adawy/brand-app` | The locale prefix on every URL |
+| `createRenderer` / `disposeRenderer` (`@adawy/gl`) | the platform's three WebGL apps | Renderer options, and freeing the context on dispose |
 
 **Why, concretely.** Swapping a provider becomes one function body instead of a
 search across the codebase — but that is the small win. The large one is that
